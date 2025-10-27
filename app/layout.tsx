@@ -7,6 +7,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { ContactFormPopup } from '@/components/contact-form-popup';
+// import codeillIcon from '../public/code-ill.svg';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
   title: 'CodeIllustrated Online School - Learn Coding Online',
   description: 'Master coding through our interactive online courses. From crash courses to comprehensive programs.',
   icons: {
-    icon: "/code-ill.svg",
+    icon: '../public/code-ill.svg',
   },
 };
 

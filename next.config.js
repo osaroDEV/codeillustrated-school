@@ -9,9 +9,6 @@ const nextConfig = {
     unoptimized: true,
     path: '/academy/_next/image',
   },
-  experimental: {
-    appDir: true,
-  },
 };
 
 module.exports = nextConfig;

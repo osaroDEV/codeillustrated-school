@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-// import { ThemeToggle } from '@/components/theme-toggle';
+import codeillIcon from '../public/code-ill.svg';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -29,7 +29,7 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <Image
-              src="/code-ill.svg"
+              src={codeillIcon}
               alt="CodeIllustrated Online School"
               width={40}
               height={40}
