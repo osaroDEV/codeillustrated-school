@@ -4,6 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import codeillIcon from '../public/code-ill.svg';
+
 
 export function Footer() {
   const footerLinks = {
@@ -46,7 +48,7 @@ export function Footer() {
           >
             <Link href="/" className="flex items-center space-x-2">
               <Image
-                src="/code-ill.svg"
+                src={codeillIcon}
                 alt="CodeIllustrated Online School"
                 width={40}
                 height={40}
