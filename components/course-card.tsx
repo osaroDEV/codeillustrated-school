@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Course } from '@/store/course-store';
+import { PriceDisplay } from '@/components/price-display';
 import Link from 'next/link';
 
 interface CourseCardProps {
@@ -92,9 +93,11 @@ export function CourseCard({ course, index }: CourseCardProps) {
         <CardFooter className="pt-0">
           <div className="w-full space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold text-red-600">
-                £{course.price}
-              </span>
+              <PriceDisplay
+                price={course.price}
+                className="text-2xl font-bold text-red-600"
+                showCurrency={false}
+              />
               <span className="text-sm text-muted-foreground">
                 by {course.instructor}
               </span>

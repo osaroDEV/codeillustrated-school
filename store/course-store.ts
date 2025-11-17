@@ -1,12 +1,17 @@
 import { create } from "zustand"
 
+export interface PriceValue {
+  usd: number
+  ngn: number
+}
+
 export interface Course {
   id: string
   title: string
   description: string
   duration: string
   type: "crash-course" | "extended"
-  price: number
+  price: PriceValue
   level: "beginner" | "intermediate" | "advanced"
   technologies: string[]
   syllabus: string[]
@@ -50,7 +55,7 @@ const COURSES: Course[] = [
       "2-day program covering digital marketing, SEO, content strategy, and analytics.",
     duration: "2 days",
     type: "extended",
-    price: 66,
+    price: { usd: 66, ngn: 100000 },
     level: "intermediate",
     technologies: [ "Google Analytics",
   "Google Ads",
@@ -85,7 +90,7 @@ const COURSES: Course[] = [
     description: "Comprehensive 3-day program covering SAS programming fundamentals, data manipulation, statistical analysis, and advanced analytics including data mining and machine learning techniques.",
     duration: "3 days",
     type: "extended",
-    price: 99,
+    price: { usd: 99, ngn: 150000 },
     level: "beginner",
     technologies: ["SAS",
   "SAS Studio",
@@ -123,7 +128,7 @@ const COURSES: Course[] = [
     description: "Intensive 5-day bootcamp to master React fundamentals and build your first application.",
     duration: "5 days",
     type: "crash-course",
-    price: 299,
+    price: { usd: 299, ngn: 450000 },
     level: "beginner",
     technologies: ["React", "JavaScript", "HTML", "CSS"],
     syllabus: [
@@ -145,7 +150,7 @@ const COURSES: Course[] = [
     description: "Intensive 3-day bootcamp to master HTML fundamentals and build your first application.",
     duration: "3 days",
     type: "crash-course",
-    price: 199,
+    price: { usd: 199, ngn: 300000 },
     level: "beginner",
     technologies: [ "HTML5",
   "CSS3",
@@ -182,7 +187,7 @@ const COURSES: Course[] = [
     description: "",
     duration: "3 days",
     type: "extended",
-    price: 649,
+    price: { usd: 649, ngn: 980000 },
     level: "advanced",
     technologies: ["JavaScript", "jQuery", "HTML5", "CSS3", "DOM API", "AJAX", "JSON", "ES6+", "Visual Studio Code", "Chrome DevTools"],
     syllabus: [
@@ -209,7 +214,7 @@ const COURSES: Course[] = [
     description: "Intensive 3-day course covering JavaScript essentials for absolute beginners.",
     duration: "3 days",
     type: "crash-course",
-    price: 199,
+    price: { usd: 199, ngn: 300000 },
     level: "beginner",
     technologies: ["JavaScript", "HTML", "CSS", "DOM"],
     syllabus: [
@@ -232,7 +237,7 @@ const COURSES: Course[] = [
     description: "Master modern DevOps practices with Docker, Kubernetes, and AWS cloud services.",
     duration: "3 days",
     type: "crash-course",
-    price: 99,
+    price: { usd: 99, ngn: 150000 },
     level: "advanced",
     technologies: ["Figma", "VSCode"],
     syllabus: [
@@ -255,7 +260,7 @@ const COURSES: Course[] = [
     description: "Build cross-platform mobile applications using React Native and deploy to both iOS and Android.",
     duration: "2 days",
     type: "crash-course",
-    price: 69,
+    price: { usd: 69, ngn: 105000 },
     level: "intermediate",
     technologies: ["React Native", "JavaScript", "Expo", "Firebase"],
     syllabus: [
@@ -312,7 +317,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
       if (filters.technology && !course.technologies.includes(filters.technology)) return false
       if (filters.priceRange) {
         const { min, max } = filters.priceRange
-        if (course.price < min || course.price > max) return false
+        if (course.price.usd < min || course.price.usd > max) return false
       }
       return true
     })

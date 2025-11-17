@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Clock, Users, Star, Award, CheckCircle, Play, Calendar, DollarSign } from "lucide-react"
+import { PriceDisplay } from "@/components/price-display"
 import Link from "next/link"
 
 interface CourseDetailClientProps {
@@ -16,7 +17,7 @@ interface CourseDetailClientProps {
     instructor: string
     duration: string
     level: "beginner" | "intermediate" | "advanced"
-    price: number
+    price: { usd: number; ngn: number }
     rating: number
     students: number
     image: string
@@ -128,7 +129,7 @@ function CourseActions({ course }: { course: CourseDetailClientProps["course"] }
     <div className="flex flex-col sm:flex-row gap-4">
       <Button size="lg" className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600">
         <Play className="mr-2 h-4 w-4" />
-        Enroll Now - £{course.price}
+        Enroll Now - <PriceDisplay price={course.price} showCurrency={false} className="ml-1" />
       </Button>
       <Button
         variant="outline"
@@ -242,7 +243,11 @@ function CourseSidebar({ course }: { course: CourseDetailClientProps["course"] }
         <Card className="sticky top-24">
           <CardContent className="p-6">
             <div className="text-center space-y-4">
-              <div className="text-3xl font-bold text-red-600">£{course.price}</div>
+              <PriceDisplay
+                price={course.price}
+                showCurrency={false}
+                className="text-3xl font-bold text-red-600"
+              />
               <Button
                 size="lg"
                 className="w-full bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"

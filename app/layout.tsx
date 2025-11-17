@@ -7,6 +7,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { ContactFormPopup } from '@/components/contact-form-popup';
+import { CurrencyProvider } from '@/components/currency-provider';
 // import codeillIcon from '../public/code-ill.svg';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -27,13 +28,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <Header />
-        {children}
-        <Footer />
-        <ContactFormPopup />
-        <Toaster />
-        <Analytics />
-        <SpeedInsights />
+        <CurrencyProvider>
+          <Header />
+          {children}
+          <Footer />
+          <ContactFormPopup />
+          <Toaster />
+          <Analytics />
+          <SpeedInsights />
+        </CurrencyProvider>
       </body>
     </html>
   );

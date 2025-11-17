@@ -23,9 +23,9 @@ export default function CoursesPage() {
   const sortedCourses = [...filteredCourses].sort((a, b) => {
     switch (sortBy) {
       case 'price-low':
-        return a.price - b.price;
+        return a.price.usd - b.price.usd;
       case 'price-high':
-        return b.price - a.price;
+        return b.price.usd - a.price.usd;
       case 'rating':
         return b.rating - a.rating;
       case 'duration':
