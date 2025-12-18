@@ -52,10 +52,10 @@ const COURSES: Course[] = [
     id: "smm",
     title: "Strategic Marketing Masterclass",
     description:
-      "2-day program covering digital marketing, SEO, content strategy, and analytics.",
+      "This program covers digital marketing, SEO, content strategy, and analytics.",
     duration: "2 days",
     type: "extended",
-    price: { usd: 66, ngn: 100000 },
+    price: { usd: 66, ngn: 120000 },
     level: "intermediate",
     technologies: [ "Google Analytics",
   "Google Ads",
