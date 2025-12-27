@@ -113,12 +113,12 @@ export default function ResourcesPage() {
       </section>
       <div className='flex'>
       <a href='https://drive.google.com/file/d/19Sfm9NqUo7txs6-Xo1QlgW1-Cr8V_OFc/view?usp=drive_link' target='_blank' rel='noopener noreferrer'>
-        <Button className="fixed bottom-8 right-8 bg-green-500 hover:bg-green-600 text-white shadow-lg">
+        <Button className=" bg-green-500 hover:bg-green-600 text-white shadow-lg">
           Download Mockup 1
         </Button>
       </a>
       <a href='https://drive.google.com/file/d/1GiHVXum8Lrp1ljV_Vbml4JCLdfu2atkM/view?usp=drive_link' target='_blank' rel='noopener noreferrer'>
-        <Button className="fixed bottom-8 right-8 bg-green-500 hover:bg-green-600 text-white shadow-lg">
+        <Button className=" bg-green-500 hover:bg-green-600 text-white shadow-lg">
           Download Mockup 2
         </Button>
       </a>
