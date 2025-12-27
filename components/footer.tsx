@@ -137,6 +137,7 @@ export function Footer() {
               <div className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-red-400" />
                 <span className="text-gray-400">+44 7405 786 279</span>
+                <a href="https://wa.me/447405786279" className="text-gray-400 hover:text-red-400 transition-colors">WhatsApp</a>
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-5 w-5 text-red-400" />

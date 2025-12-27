@@ -44,7 +44,7 @@ export default function AboutUs() {
   const team = [
     { name: 'Osaro Onaiwu', role: 'Founder & CEO', experience: '5+ years Software Engineer' },
     { name: 'Sylvia Agbor', role: 'Head of Communications', experience: '6+ years Writer & SM Manager' },
-    { name: 'Favour Utulu', role: 'UI/UX Director', experience: '4+ years UI/UX Designer' },
+    { name: 'Nosa Skywalker', role: 'UI/UX Director', experience: '4+ years UI/UX Designer' },
     { name: 'David Kim', role: 'Career Success Manager', experience: '10+ years in tech recruitment' }
   ];
 
