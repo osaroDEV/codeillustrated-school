@@ -7,7 +7,7 @@ export interface Resource {
   title: string
   description: string
   fileUrl: string
-  fileType: 'pdf' | 'document' | 'video' | 'code'
+  fileType: 'pdf' | 'document' | 'video' | 'code' | 'image'
   downloadCount?: number
 }
 
@@ -77,6 +77,29 @@ const RESOURCES: Resource[] = [
     fileUrl: 'https://example.com/html5-reference.pdf',
     fileType: 'pdf',
     downloadCount: 523,
+  },
+]
+
+export const MOCKUP_RESOURCES: Resource[] = [
+  {
+    id: 'm1',
+    courseId: 'html-intro',
+    courseName: 'HTML Mockups',
+    title: 'Website Mockup 1',
+    description: 'High-fidelity design mockup for the main website interface (Part 1)',
+    fileUrl: 'https://drive.google.com/file/d/1GiHVXum8Lrp1ljV_Vbml4JCLdfu2atkM/view?usp=drive_link',
+    fileType: 'image',
+    downloadCount: 0,
+  },
+  {
+    id: 'm2',
+    courseId: 'html-intro',
+    courseName: 'HTML Mockups',
+    title: 'Website Mockup 2',
+    description: 'High-fidelity design mockup for the main website interface (Part 2)',
+    fileUrl: 'https://drive.google.com/file/d/19Sfm9NqUo7txs6-Xo1QlgW1-Cr8V_OFc/view?usp=drive_link',
+    fileType: 'image',
+    downloadCount: 0,
   },
 ]
 

@@ -1,11 +1,11 @@
 "use client"
 
+import { ResourceCard } from '@/components/resource-card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { MOCKUP_RESOURCES, useResourcesStore } from '@/store/resources-store'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { ResourceCard } from '@/components/resource-card'
-import { useResourcesStore } from '@/store/resources-store'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 
 export default function ResourcesPage() {
   const { resources, getResourcesByCourse } = useResourcesStore()
@@ -111,18 +111,37 @@ export default function ResourcesPage() {
           )}
         </div>
       </section>
-      <div className='flex'>
-      <a href='https://drive.google.com/file/d/19Sfm9NqUo7txs6-Xo1QlgW1-Cr8V_OFc/view?usp=drive_link' target='_blank' rel='noopener noreferrer'>
-        <Button className=" bg-green-500 hover:bg-green-600 text-white shadow-lg">
-          Download Mockup 1
-        </Button>
-      </a>
-      <a href='https://drive.google.com/file/d/1GiHVXum8Lrp1ljV_Vbml4JCLdfu2atkM/view?usp=drive_link' target='_blank' rel='noopener noreferrer'>
-        <Button className=" bg-green-500 hover:bg-green-600 text-white shadow-lg">
-          Download Mockup 2
-        </Button>
-      </a>
-      </div>
+
+      <section className="py-20 bg-slate-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-10"
+          >
+            <h2 className="text-3xl font-bold mb-4">HTML Mockups</h2>
+            <p className="text-muted-foreground max-w-2xl">
+              Reference designs and high-fidelity mockups for projects.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {MOCKUP_RESOURCES.map((resource, index) => (
+              <motion.div
+                key={resource.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <ResourceCard resource={resource} />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
     </main>
   )
 }
