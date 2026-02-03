@@ -49,13 +49,13 @@ export function Footer() {
             <Link href="/" className="flex items-center space-x-2">
               <Image
                 src={codeillIcon}
-                alt="CodeIllustrated Online School"
+                alt="Code Illustrated Online School"
                 width={40}
                 height={40}
                 className="h-10 w-10"
               />
               <span className="text-xl font-bold bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
-                CodeIllustrated Online School
+                Code Illustrated Online School
               </span>
             </Link>
             <p className="text-gray-400 max-w-sm">
@@ -153,7 +153,7 @@ export function Footer() {
           transition={{ delay: 0.4 }}
           className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400"
         >
-          <p>&copy; {new Date().getFullYear()} CodeIllustrated Online School. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Code Illustrated Online School. All rights reserved.</p>
         </motion.div>
       </div>
     </footer>

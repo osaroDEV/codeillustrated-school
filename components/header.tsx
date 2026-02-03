@@ -37,7 +37,7 @@ export function Header() {
               className="h-10 w-10"
             />
             <span className="hidden sm:block lg:text-xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">
-              CodeIllustrated Online School
+              Code Illustrated Online School
             </span>
             <span className="sm:hidden text-xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">
               CodeIllustrated
