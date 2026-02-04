@@ -73,7 +73,7 @@ export function ChatBot() {
           break;
         case "how_to_register":
           botResponse.text =
-            "Registration is simple! Just find the course you like, click 'Enroll Now', and follow the prompts. Need any help with the process?";
+            "Registration is simple! Just find the course you like, click 'Enroll Now', and fill the contact form. Need any help with the process?";
           botResponse.options = [
             { label: "Contact Support", action: "support" },
             { label: "Back to main", action: "main_menu" },
@@ -89,16 +89,16 @@ export function ChatBot() {
           break;
         case "support":
           botResponse.text =
-            "I'll be happy to connect you with our support team! You can reach us via WhatsApp (message or call), or send us an email for detailed inquiries.";
+            "I'll be happy to connect you with our support team! You can reach us via WhatsApp (message), or send us an email for detailed inquiries.";
           botResponse.options = [
             { label: "Chat on WhatsApp", action: "whatsapp" },
-            { label: "Call Us Now", action: "call" },
+            // { label: "Call Us Now", action: "call" },
             { label: "Send an Email", action: "email" },
             { label: "Back to main", action: "main_menu" },
           ];
           break;
         case "go_to_courses":
-          window.location.href = "academy/courses";
+          window.location.href = "/courses";
           return;
         case "whatsapp":
           window.open("https://wa.me/447405786279", "_blank");
@@ -107,13 +107,13 @@ export function ChatBot() {
           botResponse.options = [
             { label: "Back to main", action: "main_menu" },
           ];
-          break;
-        case "call":
-          window.open("tel:+447405786279", "_self");
-          botResponse.text = "Starting the call... Need anything else?";
-          botResponse.options = [
-            { label: "Back to main", action: "main_menu" },
-          ];
+          // break;
+        // case "call":
+        //   window.open("tel:+447405786279", "_self");
+        //   botResponse.text = "Starting the call... Need anything else?";
+        //   botResponse.options = [
+        //     { label: "Back to main", action: "main_menu" },
+        //   ];
           break;
         case "email":
           window.open("mailto:admin@codeillustrated.com", "_blank");
