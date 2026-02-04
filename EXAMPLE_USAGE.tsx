@@ -7,6 +7,7 @@
 
 import { PriceDisplay } from '@/components/price-display';
 import { useCurrency } from '@/hooks/use-currency';
+import Link from 'next/link';
 
 // ============================================================
 // Example 1: Basic Price Display
@@ -225,9 +226,9 @@ export function Example10_ProductCard() {
         </p>
       </div>
 
-      <button className="w-full mt-4 px-4 py-2 bg-red-600 text-white rounded-lg">
+      <Link href="academy/contact-us" className="w-full mt-4 px-4 py-2 bg-red-600 text-white rounded-lg">
         Enroll Now
-      </button>
+      </Link>
     </div>
   );
 }

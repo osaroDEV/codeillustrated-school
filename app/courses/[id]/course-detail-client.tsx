@@ -1,30 +1,38 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Clock, Users, Star, Award, CheckCircle, Play, Calendar, DollarSign } from "lucide-react"
-import { PriceDisplay } from "@/components/price-display"
-import Link from "next/link"
+import { PriceDisplay } from "@/components/price-display";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { motion } from "framer-motion";
+import {
+  Award,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Play,
+  Star,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
 
 interface CourseDetailClientProps {
   course: {
-    id: string
-    title: string
-    description: string
-    instructor: string
-    duration: string
-    level: "beginner" | "intermediate" | "advanced"
-    price: { usd: number; ngn: number }
-    rating: number
-    students: number
-    image: string
-    type: "crash-course" | "extended"
-    technologies: string[]
-    syllabus: string[]
-  }
+    id: string;
+    title: string;
+    description: string;
+    instructor: string;
+    duration: string;
+    level: "beginner" | "intermediate" | "advanced";
+    price: { usd: number; ngn: number };
+    rating: number;
+    students: number;
+    image: string;
+    type: "crash-course" | "extended";
+    technologies: string[];
+    syllabus: string[];
+  };
 }
 
 const COURSE_BENEFITS = [
@@ -34,23 +42,23 @@ const COURSE_BENEFITS = [
   "Get hands-on coding experience",
   "Understand modern development workflows",
   // "Prepare for technical interviews",
-] as const
+] as const;
 
 const fadeInLeft = {
   initial: { opacity: 0, x: -50 },
   animate: { opacity: 1, x: 0 },
-}
+};
 
 const fadeInRight = {
   initial: { opacity: 0, x: 50 },
   animate: { opacity: 1, x: 0 },
-}
+};
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true },
-}
+};
 
 export function CourseDetailClient({ course }: CourseDetailClientProps) {
   return (
@@ -58,25 +66,37 @@ export function CourseDetailClient({ course }: CourseDetailClientProps) {
       <HeroSection course={course} />
       <CourseDetailsSection course={course} />
     </main>
-  )
+  );
 }
 
-function HeroSection({ course }: { course: CourseDetailClientProps["course"] }) {
+function HeroSection({
+  course,
+}: {
+  course: CourseDetailClientProps["course"];
+}) {
   return (
     <section className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-6"
+          >
             <CourseInfo course={course} />
             <CourseActions course={course} />
           </motion.div>
-          <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} className="relative">
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="relative"
+          >
             <CourseImage course={course} />
           </motion.div>
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function CourseInfo({ course }: { course: CourseDetailClientProps["course"] }) {
@@ -86,16 +106,24 @@ function CourseInfo({ course }: { course: CourseDetailClientProps["course"] }) {
         <Badge
           variant={course.type === "crash-course" ? "destructive" : "secondary"}
           className={
-            course.type === "crash-course" ? "bg-red-600 hover:bg-red-700 text-white" : "text-white bg-orange-600 hover:bg-orange-700"
+            course.type === "crash-course"
+              ? "bg-red-600 hover:bg-red-700 text-white"
+              : "text-white bg-orange-600 hover:bg-orange-700"
           }
         >
           {course.type === "crash-course" ? "Crash Course" : "Extended Program"}
         </Badge>
-        <Badge variant="outline" className="text-white">{course.level}</Badge>
+        <Badge variant="outline" className="text-white">
+          {course.level}
+        </Badge>
       </div>
 
-      <h1 className="text-4xl sm:text-5xl font-bold text-balance text-white">{course.title}</h1>
-      <p className="text-xl text-muted-foreground text-pretty text-white">{course.description}</p>
+      <h1 className="text-4xl sm:text-5xl font-bold text-balance text-white">
+        {course.title}
+      </h1>
+      <p className="text-xl text-muted-foreground text-pretty text-white">
+        {course.description}
+      </p>
 
       <div className="flex items-center space-x-6 text-sm text-white">
         <div className="flex items-center space-x-1">
@@ -121,16 +149,30 @@ function CourseInfo({ course }: { course: CourseDetailClientProps["course"] }) {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
-function CourseActions({ course }: { course: CourseDetailClientProps["course"] }) {
+function CourseActions({
+  course,
+}: {
+  course: CourseDetailClientProps["course"];
+}) {
   return (
     <div className="flex flex-col sm:flex-row gap-4">
-      <Button size="lg" className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600">
-        <Play className="mr-2 h-4 w-4" />
-        Enroll Now - <PriceDisplay price={course.price} showCurrency={false} className="ml-1" />
-      </Button>
+      <Link href="/contact-us">
+        <Button
+          size="lg"
+          className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+        >
+          <Play className="mr-2 h-4 w-4" />
+          Enroll Now -{" "}
+          <PriceDisplay
+            price={course.price}
+            showCurrency={false}
+            className="ml-1"
+          />
+        </Button>
+      </Link>
       <Button
         variant="outline"
         size="lg"
@@ -139,27 +181,41 @@ function CourseActions({ course }: { course: CourseDetailClientProps["course"] }
       >
         <Link href="/contact-us">
           <Calendar className="mr-2 h-4 w-4 text-white group-hover:text-black" />
-          <span className="text-white group-hover:text-black">Schedule Demo</span>
+          <span className="text-white group-hover:text-black">
+            Schedule Demo
+          </span>
         </Link>
       </Button>
     </div>
-  )
+  );
 }
 
-function CourseImage({ course }: { course: CourseDetailClientProps["course"] }) {
+function CourseImage({
+  course,
+}: {
+  course: CourseDetailClientProps["course"];
+}) {
   return (
     <div className="relative overflow-hidden rounded-2xl shadow-2xl">
-      <img src={course.image || "/placeholder.svg"} alt={course.title} className="w-full h-96 object-cover" />
+      <img
+        src={course.image || "/placeholder.svg"}
+        alt={course.title}
+        className="w-full h-96 object-cover"
+      />
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
       <div className="absolute bottom-6 left-6 text-white">
         <p className="text-sm opacity-90">Instructor</p>
         <p className="text-lg font-semibold">{course.instructor}</p>
       </div>
     </div>
-  )
+  );
 }
 
-function CourseDetailsSection({ course }: { course: CourseDetailClientProps["course"] }) {
+function CourseDetailsSection({
+  course,
+}: {
+  course: CourseDetailClientProps["course"];
+}) {
   return (
     <section className="py-20 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -172,10 +228,14 @@ function CourseDetailsSection({ course }: { course: CourseDetailClientProps["cou
         </div>
       </div>
     </section>
-  )
+  );
 }
 
-function CourseCurriculum({ course }: { course: CourseDetailClientProps["course"] }) {
+function CourseCurriculum({
+  course,
+}: {
+  course: CourseDetailClientProps["course"];
+}) {
   return (
     <motion.div {...fadeInUp}>
       <Card>
@@ -208,7 +268,7 @@ function CourseCurriculum({ course }: { course: CourseDetailClientProps["course"
         </CardContent>
       </Card>
     </motion.div>
-  )
+  );
 }
 
 function WhatYoullLearn() {
@@ -233,10 +293,14 @@ function WhatYoullLearn() {
         </CardContent>
       </Card>
     </motion.div>
-  )
+  );
 }
 
-function CourseSidebar({ course }: { course: CourseDetailClientProps["course"] }) {
+function CourseSidebar({
+  course,
+}: {
+  course: CourseDetailClientProps["course"];
+}) {
   return (
     <div className="space-y-6">
       <motion.div {...fadeInUp}>
@@ -248,13 +312,15 @@ function CourseSidebar({ course }: { course: CourseDetailClientProps["course"] }
                 showCurrency={false}
                 className="text-3xl font-bold text-red-600"
               />
-              <Button
-                size="lg"
-                className="w-full bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
-              >
-                {/* <DollarSign className="mr-2 h-4 w-4" /> */}
-                Enroll Now
-              </Button>
+              <Link href="/contact-us">
+                <Button
+                  size="lg"
+                  className="w-full bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+                >
+                  {/* <DollarSign className="mr-2 h-4 w-4" /> */}
+                  Enroll Now
+                </Button>
+              </Link>
               <Button
                 variant="outline"
                 size="lg"
@@ -278,7 +344,9 @@ function CourseSidebar({ course }: { course: CourseDetailClientProps["course"] }
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Students</span>
-                <span className="font-medium">{course.students.toLocaleString()}</span>
+                <span className="font-medium">
+                  {course.students.toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Rating</span>
@@ -292,5 +360,5 @@ function CourseSidebar({ course }: { course: CourseDetailClientProps["course"] }
         </Card>
       </motion.div>
     </div>
-  )
+  );
 }

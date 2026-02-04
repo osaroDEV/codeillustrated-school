@@ -61,7 +61,7 @@ export function ContactForm() {
       icon: Phone,
       title: 'Whatsapp',
       value: '+44 7405 786 279',
-      href: 'tel:+44 7405 786 279'
+      href: 'https://wa.me/447405786279'
     },
     {
       icon: MapPin,

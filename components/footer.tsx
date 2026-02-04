@@ -132,12 +132,11 @@ export function Footer() {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-red-400" />
-                <span className="text-gray-400">admin@codeillustrated.com</span>
+                <a href="mailto:admin@codeillustrated.com" className="text-gray-400 hover:text-red-400 transition-colors">admin@codeillustrated.com</a>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-red-400" />
-                <span className="text-gray-400">+44 7405 786 279</span>
-                <a href="https://wa.me/447405786279" className="text-gray-400 hover:text-red-400 transition-colors">WhatsApp</a>
+                <a href="https://wa.me/447405786279" className="text-gray-400 hover:text-red-400 transition-colors">+44 7405 786 279</a>
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-5 w-5 text-red-400" />

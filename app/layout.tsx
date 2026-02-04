@@ -9,7 +9,6 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-// import codeillIcon from '../public/code-ill.svg';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,7 +17,7 @@ export const metadata: Metadata = {
   description:
     "Master coding through our interactive online courses. From crash courses to comprehensive programs.",
   icons: {
-    icon: "../public/code-ill.svg",
+    icon: "academy/code-ill.svg",
   },
 };
 

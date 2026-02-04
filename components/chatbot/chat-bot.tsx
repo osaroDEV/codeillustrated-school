@@ -26,7 +26,7 @@ export function ChatBot() {
         { label: "Browse Courses", action: "browse_courses" },
         { label: "How to register?", action: "how_to_register" },
         { label: "Pricing Information", action: "pricing" },
-        { label: "Talk to Support", action: "support" },
+        { label: "Contact Support", action: "support" },
       ],
     },
   ]);
@@ -73,9 +73,9 @@ export function ChatBot() {
           break;
         case "how_to_register":
           botResponse.text =
-            "Registration is simple! Just find the course you like, click 'Get Started', and follow the prompts. Need any help with the process?";
+            "Registration is simple! Just find the course you like, click 'Enroll Now', and follow the prompts. Need any help with the process?";
           botResponse.options = [
-            { label: "Talk to Support", action: "support" },
+            { label: "Contact Support", action: "support" },
             { label: "Back to main", action: "main_menu" },
           ];
           break;
@@ -83,7 +83,7 @@ export function ChatBot() {
           botResponse.text =
             "Our pricing varies by course. We offer flexible payment options to make learning accessible. Check the individual course pages for details.";
           botResponse.options = [
-            { label: "Talk to Support", action: "support" },
+            { label: "Contact Support", action: "support" },
             { label: "Back to main", action: "main_menu" },
           ];
           break;
@@ -98,7 +98,7 @@ export function ChatBot() {
           ];
           break;
         case "go_to_courses":
-          window.location.href = "/courses";
+          window.location.href = "academy/courses";
           return;
         case "whatsapp":
           window.open("https://wa.me/447405786279", "_blank");
@@ -128,7 +128,7 @@ export function ChatBot() {
             { label: "Browse Courses", action: "browse_courses" },
             { label: "How to register?", action: "how_to_register" },
             { label: "Pricing Information", action: "pricing" },
-            { label: "Talk to Support", action: "support" },
+            { label: "Contact Support", action: "support" },
           ];
           break;
         default:
