@@ -49,7 +49,6 @@ export default function Footer() {
             <h4 className="font-bold text-base text-white sm:text-lg mb-6">Learning</h4>
             <ul className="space-y-4">
               {[
-                { name: "Free Intro Class", href: "/#contact" },
                 ...courses.map((c) => ({
                   name: c.title,
                   href: `/courses/${c.id}`,

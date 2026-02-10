@@ -78,11 +78,11 @@ export default function CoursePage() {
               <ul className="space-y-4 mb-8 text-slate-600">
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-accent-500 mt-0.5 shrink-0" />
-                  <span>Live instructor-led sessions</span>
+                  <span>48 Live instructor-led sessions</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-accent-500 mt-0.5 shrink-0" />
-                  <span>Small class sizes (max 6 students)</span>
+                  <span>1-on-1 mentorship</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-accent-500 mt-0.5 shrink-0" />

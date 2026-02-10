@@ -56,7 +56,7 @@ export const courses: Course[] = [
         ],
       },
     ],
-    duration: "12 Weeks",
+    duration: "24 Weeks",
     level: "Beginner",
     price: "$299",
   },
