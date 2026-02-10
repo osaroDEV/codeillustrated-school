@@ -1,8 +1,8 @@
 import { ChatBot } from "@/components/chatbot/chat-bot";
 import { ContactFormPopup } from "@/components/contact-form-popup";
-import { CurrencyProvider } from "@/components/currency-provider";
-import { Footer } from "@/components/footer";
-import { Header } from "@/components/header";
+// import { CurrencyProvider } from "@/components/currency-provider";
+import Footer from "@/components/Footer";
+import { Navbar } from "@/components/Navbar";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -29,8 +29,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <CurrencyProvider>
-          <Header />
+        {/* <CurrencyProvider> */}
+          <Navbar />
           {children}
           <Footer />
           <ContactFormPopup />
@@ -38,7 +38,7 @@ export default function RootLayout({
           <Toaster />
           <Analytics />
           <SpeedInsights />
-        </CurrencyProvider>
+        {/* </CurrencyProvider> */}
       </body>
     </html>
   );

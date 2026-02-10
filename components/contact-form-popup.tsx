@@ -1,24 +1,37 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { X } from 'lucide-react';
-import { toast } from 'sonner';
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AnimatePresence, motion } from "framer-motion";
+import { X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import * as z from "zod";
 
 const formSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
-  phone: z.string().min(10, 'Please enter a valid phone number'),
-  course: z.string().min(1, 'Please select a course'),
-  message: z.string().min(10, 'Message must be at least 10 characters'),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  phone: z.string().min(10, "Please enter a valid phone number"),
+  course: z.string().min(1, "Please select a course"),
+  message: z.string().min(10, "Message must be at least 10 characters"),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -30,22 +43,22 @@ export function ContactFormPopup() {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      phone: '',
-      course: '',
-      message: '',
+      name: "",
+      email: "",
+      phone: "",
+      course: "",
+      message: "",
     },
   });
 
   useEffect(() => {
     // Check if user has already seen the popup in this session
-    const hasSeenPopup = sessionStorage.getItem('contactPopupSeen');
-    
+    const hasSeenPopup = sessionStorage.getItem("contactPopupSeen");
+
     if (!hasSeenPopup) {
       const timer = setTimeout(() => {
         setIsOpen(true);
-        sessionStorage.setItem('contactPopupSeen', 'true');
+        sessionStorage.setItem("contactPopupSeen", "true");
       }, 30000); // 30 seconds
 
       return () => clearTimeout(timer);
@@ -54,12 +67,12 @@ export function ContactFormPopup() {
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
-    
+
     // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    console.log('Form submitted:', data);
-    toast.success('Thank you! We\'ll get back to you within 24 hours.');
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    console.log("Form submitted:", data);
+    toast.success("Thank you! We'll get back to you within 24 hours.");
     form.reset();
     setIsSubmitting(false);
     setIsOpen(false);
@@ -101,19 +114,24 @@ export function ContactFormPopup() {
               </button>
 
               {/* Header */}
-              <div className="bg-gradient-to-r from-red-600 to-orange-500 px-6 sm:px-8 py-6 sm:py-8 text-white rounded-t-2xl">
+              <div className="bg-gradient-to-r from-primary-500 to-secondary-400 px-6 sm:px-8 py-6 sm:py-8 text-white rounded-t-2xl">
                 <h2 className="text-2xl sm:text-3xl font-bold mb-2">
                   Start Your Coding Journey! 🚀
                 </h2>
                 <p className="text-sm sm:text-base text-white/90">
-                  Fill out the form below and we'll get back to you within 24 hours.
+                  Fill out the form below and we'll get back to you within 24
+                  hours.
                 </p>
               </div>
 
               {/* Form Content */}
               <div className="px-6 sm:px-8 py-6 sm:py-8">
                 <Form {...form}>
-                  <form action="https://formsubmit.co/admin@codeillustrated.com" method="POST" className="space-y-4 sm:space-y-5">
+                  <form
+                    action="https://formsubmit.co/admin@codeillustrated.com"
+                    method="POST"
+                    className="space-y-4 sm:space-y-5"
+                  >
                     <FormField
                       control={form.control}
                       name="name"
@@ -121,7 +139,10 @@ export function ContactFormPopup() {
                         <FormItem>
                           <FormLabel>Full Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your full name" {...field} />
+                            <Input
+                              placeholder="Enter your full name"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -136,7 +157,11 @@ export function ContactFormPopup() {
                           <FormItem>
                             <FormLabel>Email Address</FormLabel>
                             <FormControl>
-                              <Input type="email" placeholder="your@email.com" {...field} />
+                              <Input
+                                type="email"
+                                placeholder="your@email.com"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -150,7 +175,11 @@ export function ContactFormPopup() {
                           <FormItem>
                             <FormLabel>Phone Number</FormLabel>
                             <FormControl>
-                              <Input type="tel" placeholder="+44 7405 786 279" {...field} />
+                              <Input
+                                type="tel"
+                                placeholder="+44 7405 786 279"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -164,20 +193,37 @@ export function ContactFormPopup() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Course Interest</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select a course" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="full-stack">Full Stack Web Development</SelectItem>
-                              <SelectItem value="ux">User Experience (UX) Masterclass</SelectItem>
-                              <SelectItem value="react">React Crash Course</SelectItem>
-                              <SelectItem value="mobile">Mobile App Development</SelectItem>
-                              <SelectItem value="devops">DevOps & Cloud Computing</SelectItem>
-                              <SelectItem value="javascript">JavaScript Fundamentals</SelectItem>
-                              <SelectItem value="other">Other/General Inquiry</SelectItem>
+                              <SelectItem value="full-stack">
+                                Full Stack Web Development
+                              </SelectItem>
+                              <SelectItem value="ux">
+                                User Experience (UX) Masterclass
+                              </SelectItem>
+                              <SelectItem value="react">
+                                React Crash Course
+                              </SelectItem>
+                              <SelectItem value="mobile">
+                                Mobile App Development
+                              </SelectItem>
+                              <SelectItem value="devops">
+                                DevOps & Cloud Computing
+                              </SelectItem>
+                              <SelectItem value="javascript">
+                                JavaScript Fundamentals
+                              </SelectItem>
+                              <SelectItem value="other">
+                                Other/General Inquiry
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -192,7 +238,7 @@ export function ContactFormPopup() {
                         <FormItem>
                           <FormLabel>Message</FormLabel>
                           <FormControl>
-                            <Textarea 
+                            <Textarea
                               placeholder="Tell us about your goals and any questions you have..."
                               className="min-h-[100px] resize-none"
                               {...field}
@@ -215,9 +261,9 @@ export function ContactFormPopup() {
                       <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full sm:flex-1 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 order-1 sm:order-2"
+                        className="w-full sm:flex-1 bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500 order-1 sm:order-2"
                       >
-                        {isSubmitting ? 'Sending...' : 'Send Message'}
+                        {isSubmitting ? "Sending..." : "Send Message"}
                       </Button>
                     </div>
                   </form>

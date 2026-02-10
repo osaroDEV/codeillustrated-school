@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import codeillIcon from '../public/code-ill.svg';
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { Menu, X } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
+import codeillIcon from "../public/code-ill.svg";
 
-export function Header() {
+export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
-    { href: '/', label: 'Home' },
-    { href: '/courses', label: 'Courses' },
-    { href: '/resources', label: 'Resources' },
-    { href: '/about-us', label: 'About' },
-    { href: '/contact-us', label: 'Contact' },
+    { href: "/", label: "Home" },
+    { href: "/courses", label: "Courses" },
+    { href: "/resources", label: "Resources" },
+    { href: "/about-us", label: "About" },
+    { href: "/contact-us", label: "Contact" },
   ];
 
   return (
@@ -36,10 +36,10 @@ export function Header() {
               height={40}
               className="h-10 w-10"
             />
-            <span className="hidden sm:block lg:text-xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">
+            <span className="hidden sm:block lg:text-xl font-bold bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
               Code Illustrated Online School
             </span>
-            <span className="sm:hidden text-xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">
+            <span className="sm:hidden text-xl font-bold bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
               CodeIllustrated
             </span>
           </Link>
@@ -50,7 +50,7 @@ export function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-sm font-medium transition-colors hover:text-red-600 dark:hover:text-red-400"
+                className="text-sm font-medium transition-colors hover:text-primary-500 dark:hover:text-primary-400"
               >
                 {item.label}
               </Link>
@@ -62,7 +62,7 @@ export function Header() {
             {/* <ThemeToggle /> */}
             <Button
               asChild
-              className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+              className="bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
             >
               <Link href="/contact-us">Get Started</Link>
             </Button>
@@ -90,7 +90,7 @@ export function Header() {
         {isMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden border-t"
           >
@@ -99,7 +99,7 @@ export function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="block text-sm font-medium transition-colors hover:text-red-600 dark:hover:text-red-400"
+                  className="block text-sm font-medium transition-colors hover:text-primary-500 dark:hover:text-primary-400"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.label}
@@ -107,7 +107,7 @@ export function Header() {
               ))}
               <Button
                 asChild
-                className="w-full bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+                className="w-full bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
               >
                 <Link href="/contact-us" onClick={() => setIsMenuOpen(false)}>
                   Get Started

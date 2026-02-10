@@ -1,137 +1,63 @@
-"use client"
+"use client";
 
-import { motion } from 'framer-motion';
-import { CourseCard } from '@/components/course-card';
-import { useCourseStore } from '@/store/course-store';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { useState } from 'react';
+import { courses } from "@/lib/courses";
+import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function CoursesPage() {
-  const { courses } = useCourseStore();
-  const [filter, setFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('popular');
-
-  const filteredCourses = courses.filter(course => {
-    if (filter === 'all') return true;
-    if (filter === 'crash-course') return course.type === 'crash-course';
-    if (filter === 'extended') return course.type === 'extended';
-    return course.level === filter;
-  });
-
-  const sortedCourses = [...filteredCourses].sort((a, b) => {
-    switch (sortBy) {
-      case 'price-low':
-        return a.price.usd - b.price.usd;
-      case 'price-high':
-        return b.price.usd - a.price.usd;
-      case 'rating':
-        return b.rating - a.rating;
-      case 'duration':
-        return a.duration.localeCompare(b.duration);
-      default:
-        return b.students - a.students;
-    }
-  });
-
-  const filters = [
-    { value: 'all', label: 'All Courses' },
-    { value: 'crash-course', label: 'Crash Courses' },
-    { value: 'extended', label: 'Extended Programs' },
-    { value: 'beginner', label: 'Beginner' },
-    { value: 'intermediate', label: 'Intermediate' },
-    { value: 'advanced', label: 'Advanced' },
-  ];
-
   return (
-    <main className="min-h-screen">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-20">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
-          >
-            <h1 className="text-4xl text-white sm:text-5xl font-bold mb-4">
-              All <span className="bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">Courses</span>
-            </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Explore our comprehensive collection of coding courses designed for all skill levels
-            </p>
-          </motion.div>
-
-          {/* Filters and Sorting */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="flex flex-col sm:flex-row gap-4 mb-8"
-          >
-            <div className="flex flex-wrap gap-2">
-              {filters.map((filterOption) => (
-                <Button
-                  key={filterOption.value}
-                  variant={filter === filterOption.value ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFilter(filterOption.value)}
-                  className={filter === filterOption.value 
-                    ? "bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600" 
-                    : "border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-950/20"
-                  }
-                >
-                  {filterOption.label}
-                </Button>
-              ))}
-            </div>
-            
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="popular">Most Popular</SelectItem>
-                <SelectItem value="rating">Highest Rated</SelectItem>
-                <SelectItem value="price-low">Price: Low to High</SelectItem>
-                <SelectItem value="price-high">Price: High to Low</SelectItem>
-                <SelectItem value="duration">Duration</SelectItem>
-              </SelectContent>
-            </Select>
-          </motion.div>
-
-          {/* Results Count */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="mb-8"
-          >
-            <Badge variant="secondary" className="text-sm">
-              {sortedCourses.length} course{sortedCourses.length !== 1 ? 's' : ''} found
-            </Badge>
-          </motion.div>
-
-          {/* Courses Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {sortedCourses.map((course, index) => (
-              <CourseCard key={course.id} course={course} index={index} />
-            ))}
-          </div>
-
-          {sortedCourses.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-12"
-            >
-              <p className="text-muted-foreground text-lg">
-                No courses found matching your criteria.
-              </p>
-            </motion.div>
-          )}
+    <main className="min-h-screen bg-background pt-32 pb-24">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black mb-6">
+            Explore All Courses
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Discover the perfect learning path for you. From beginner basics to
+            advanced development, we have everything you need to start your tech
+            journey.
+          </p>
         </div>
-      </section>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {courses.map((course, idx) => (
+            <motion.div
+              key={course.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              className="group p-8 rounded-[2rem] bg-white border border-border hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 flex flex-col items-start h-full"
+            >
+              <div
+                className={`${course.bg} ${course.color} w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}
+              >
+                <course.icon className="w-8 h-8" />
+              </div>
+              <span className="inline-block px-3 py-1 rounded-full bg-slate-100 text-xs font-bold text-slate-600 mb-4 tracking-wider uppercase">
+                {course.age}
+              </span>
+              <h4 className="text-xl sm:text-2xl font-bold mb-4">
+                {course.title}
+              </h4>
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-6 flex-1 line-clamp-3">
+                {course.description}
+              </p>
+              <div className="mt-auto w-full pt-4 border-t border-slate-100 flex items-center justify-between">
+                <span className="font-bold text-lg text-slate-900">
+                  {course.price}
+                </span>
+                <Link
+                  href={`/courses/${course.id}`}
+                  className="text-primary font-bold inline-flex items-center gap-2 group/btn hover:underline"
+                >
+                  Details
+                  <span className="block w-2 h-2 bg-primary rounded-full group-hover/btn:w-6 transition-all" />
+                </Link>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
     </main>
   );
 }

@@ -108,12 +108,12 @@ export function ChatBot() {
             { label: "Back to main", action: "main_menu" },
           ];
           // break;
-        // case "call":
-        //   window.open("tel:+447405786279", "_self");
-        //   botResponse.text = "Starting the call... Need anything else?";
-        //   botResponse.options = [
-        //     { label: "Back to main", action: "main_menu" },
-        //   ];
+          // case "call":
+          //   window.open("tel:+447405786279", "_self");
+          //   botResponse.text = "Starting the call... Need anything else?";
+          //   botResponse.options = [
+          //     { label: "Back to main", action: "main_menu" },
+          //   ];
           break;
         case "email":
           window.open("mailto:admin@codeillustrated.com", "_blank");

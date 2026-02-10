@@ -1,29 +1,28 @@
-"use client"
+"use client";
 
-import { ResourceCard } from '@/components/resource-card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { MOCKUP_RESOURCES, useResourcesStore } from '@/store/resources-store'
-import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { ResourceCard } from "@/components/resource-card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { MOCKUP_RESOURCES, useResourcesStore } from "@/store/resources-store";
+import { motion } from "framer-motion";
+import { useState } from "react";
 
 export default function ResourcesPage() {
-  const { resources, getResourcesByCourse } = useResourcesStore()
-  const [selectedCourse, setSelectedCourse] = useState<string>('all')
+  const { resources, getResourcesByCourse } = useResourcesStore();
+  const [selectedCourse, setSelectedCourse] = useState<string>("all");
 
-  const filteredResources = selectedCourse === 'all'
-    ? resources
-    : getResourcesByCourse(selectedCourse)
+  const filteredResources =
+    selectedCourse === "all" ? resources : getResourcesByCourse(selectedCourse);
 
-  const courseIds = Array.from(new Set(resources.map(r => r.courseId)))
-  const courses = courseIds.map(id => {
-    const resource = resources.find(r => r.courseId === id)
-    return { id, name: resource?.courseName || id }
-  })
+  const courseIds = Array.from(new Set(resources.map((r) => r.courseId)));
+  const courses = courseIds.map((id) => {
+    const resource = resources.find((r) => r.courseId === id);
+    return { id, name: resource?.courseName || id };
+  });
 
   return (
     <main className="min-h-screen">
-      <section className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-20">
+      <section className="bg-gradient-to-br from-slate-900 via-accent-950 to-slate-900 py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -31,10 +30,14 @@ export default function ResourcesPage() {
             className="text-center mb-12"
           >
             <h1 className="text-4xl text-white sm:text-5xl font-bold mb-4">
-              Learning <span className="bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">Resources</span>
+              Learning{" "}
+              <span className="bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
+                Resources
+              </span>
             </h1>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Download study materials, guides, and reference documents for all our courses
+              Download study materials, guides, and reference documents for all
+              our courses
             </p>
           </motion.div>
 
@@ -45,11 +48,12 @@ export default function ResourcesPage() {
             className="flex flex-wrap gap-3 justify-center mb-12"
           >
             <Button
-              onClick={() => setSelectedCourse('all')}
-              variant={selectedCourse === 'all' ? 'default' : 'outline'}
-              className={selectedCourse === 'all'
-                ? 'bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600'
-                : 'border-red-200 hover:bg-red-50'
+              onClick={() => setSelectedCourse("all")}
+              variant={selectedCourse === "all" ? "default" : "outline"}
+              className={
+                selectedCourse === "all"
+                  ? "bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
+                  : "border-primary-200 hover:bg-primary-50"
               }
             >
               All Resources
@@ -58,11 +62,12 @@ export default function ResourcesPage() {
               <Button
                 key={course.id}
                 onClick={() => setSelectedCourse(course.id)}
-                variant={selectedCourse === course.id ? 'default' : 'outline'}
+                variant={selectedCourse === course.id ? "default" : "outline"}
                 size="sm"
-                className={selectedCourse === course.id
-                  ? 'bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600'
-                  : 'border-red-200 hover:bg-red-50'
+                className={
+                  selectedCourse === course.id
+                    ? "bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
+                    : "border-primary-200 hover:bg-primary-50"
                 }
               >
                 {course.name}
@@ -77,7 +82,8 @@ export default function ResourcesPage() {
             className="mb-8"
           >
             <Badge variant="secondary" className="text-sm">
-              {filteredResources.length} resource{filteredResources.length !== 1 ? 's' : ''} available
+              {filteredResources.length} resource
+              {filteredResources.length !== 1 ? "s" : ""} available
             </Badge>
           </motion.div>
         </div>
@@ -141,7 +147,6 @@ export default function ResourcesPage() {
           </div>
         </div>
       </section>
-
     </main>
-  )
+  );
 }

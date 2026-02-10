@@ -1,35 +1,37 @@
-"use client"
+import { cn } from "@/lib/utils";
 
-import { useCurrency } from '@/hooks/use-currency';
-import type { PriceValue } from '@/store/course-store';
+interface PriceValue {
+  usd: number;
+  ngn: number;
+}
 
 interface PriceDisplayProps {
-  price: PriceValue;
+  price: PriceValue | string | number;
   className?: string;
   showCurrency?: boolean;
 }
 
-/**
- * Reusable Price component that displays prices in user's currency
- * Automatically switches between USD ($) and NGN (₦) based on location
- *
- * Usage:
- * <PriceDisplay price={{ usd: 299, ngn: 450000 }} />
- */
-export function PriceDisplay({ price, className = '', showCurrency = true }: PriceDisplayProps) {
-  const { currency, symbol } = useCurrency();
+export function PriceDisplay({
+  price,
+  className,
+  showCurrency = true,
+}: PriceDisplayProps) {
+  let formattedPrice: string;
 
-  const amount = currency === 'NGN' ? price.ngn : price.usd;
-  const formattedAmount = amount.toLocaleString();
+  if (typeof price === "object" && price !== null && "usd" in price) {
+    // Default to USD for now, or handle currency selection if context existed
+    formattedPrice = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(price.usd);
+  } else if (typeof price === "number") {
+    formattedPrice = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(price);
+  } else {
+    formattedPrice = String(price);
+  }
 
-  return (
-    <span className={className}>
-      {symbol}{formattedAmount}
-      {showCurrency && (
-        <span className="text-xs ml-1 opacity-70">
-          {currency}
-        </span>
-      )}
-    </span>
-  );
+  return <span className={cn("font-bold", className)}>{formattedPrice}</span>;
 }
