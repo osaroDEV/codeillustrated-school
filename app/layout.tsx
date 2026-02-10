@@ -1,7 +1,7 @@
 import { ChatBot } from "@/components/chatbot/chat-bot";
 import { ContactFormPopup } from "@/components/contact-form-popup";
-import Footer from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
+import Footer from "@/components/site-footer";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
