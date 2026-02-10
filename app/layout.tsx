@@ -1,6 +1,5 @@
 import { ChatBot } from "@/components/chatbot/chat-bot";
 import { ContactFormPopup } from "@/components/contact-form-popup";
-// import { CurrencyProvider } from "@/components/currency-provider";
 import Footer from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
 import { Toaster } from "@/components/ui/sonner";
@@ -29,16 +28,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        {/* <CurrencyProvider> */}
-          <Navbar />
-          {children}
-          <Footer />
-          <ContactFormPopup />
-          <ChatBot />
-          <Toaster />
-          <Analytics />
-          <SpeedInsights />
-        {/* </CurrencyProvider> */}
+        <Navbar />
+        {children}
+        <Footer />
+        <ContactFormPopup />
+        <ChatBot />
+        <Toaster />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

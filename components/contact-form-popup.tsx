@@ -52,17 +52,12 @@ export function ContactFormPopup() {
   });
 
   useEffect(() => {
-    // Check if user has already seen the popup in this session
-    const hasSeenPopup = sessionStorage.getItem("contactPopupSeen");
+    // Timer to open popup after 30 seconds
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+    }, 30000);
 
-    if (!hasSeenPopup) {
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-        sessionStorage.setItem("contactPopupSeen", "true");
-      }, 30000); // 30 seconds
-
-      return () => clearTimeout(timer);
-    }
+    return () => clearTimeout(timer);
   }, []);
 
   const onSubmit = async (data: FormData) => {
@@ -92,7 +87,7 @@ export function ContactFormPopup() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
           />
 
           {/* Modal */}
@@ -101,7 +96,7 @@ export function ContactFormPopup() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", duration: 0.5 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 lg:p-8"
           >
             <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl">
               {/* Close Button */}
