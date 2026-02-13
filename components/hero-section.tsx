@@ -9,7 +9,7 @@ export function HeroSection() {
   const stats = [
     { icon: Users, label: "Students Enrolled", value: "300+" },
     { icon: Award, label: "Completion Rate", value: "97%" },
-    { icon: Clock, label: "Hours of Content", value: "500+" },
+    { icon: Clock, label: "Hours of Content", value: "14k+" },
   ];
 
   return (
