@@ -58,7 +58,7 @@ export const courses: Course[] = [
     ],
     duration: "24 Weeks",
     level: "Beginner",
-    price: "$399",
+    price: "$499",
   },
   {
     id: "game-dev-pro",
@@ -161,6 +161,6 @@ export const courses: Course[] = [
     ],
     duration: "12 Weeks",
     level: "Beginner",
-    price: "$349",
+    price: "$379",
   },
 ];
