@@ -98,7 +98,7 @@ export function ChatBot() {
           ];
           break;
         case "go_to_courses":
-          window.location.href = "academy/courses";
+          window.location.href = "/academy/courses";
           return;
         case "whatsapp":
           window.open("https://wa.me/447405786279", "_blank");

@@ -1,152 +1,35 @@
-"use client";
+import ResourcesPageClient from "@/components/ResourcesPageClient";
+import {
+  getCanonicalUrl,
+  getOpenGraphDefaults,
+  getTwitterDefaults,
+} from "@/lib/seo";
+import type { Metadata } from "next";
 
-import { ResourceCard } from "@/components/resource-card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { MOCKUP_RESOURCES, useResourcesStore } from "@/store/resources-store";
-import { motion } from "framer-motion";
-import { useState } from "react";
+export const metadata: Metadata = {
+  title: "Coding Resources & Study Materials",
+  description:
+    "Download coding resources, guides, and study materials. Perfect for beginners learning to code with Code Illustrated Online School.",
+  alternates: {
+    canonical: getCanonicalUrl("/resources"),
+  },
+  openGraph: getOpenGraphDefaults({
+    title: "Coding Resources | Code Illustrated",
+    description:
+      "Download coding resources, guides, and study materials. Perfect for beginners learning to code with Code Illustrated Online School.",
+    url: getCanonicalUrl("/resources"),
+  }),
+  twitter: getTwitterDefaults({
+    title: "Coding Resources | Code Illustrated",
+    description:
+      "Download coding resources, guides, and study materials. Perfect for beginners learning to code with Code Illustrated Online School.",
+  }),
+};
 
 export default function ResourcesPage() {
-  const { resources, getResourcesByCourse } = useResourcesStore();
-  const [selectedCourse, setSelectedCourse] = useState<string>("all");
-
-  const filteredResources =
-    selectedCourse === "all" ? resources : getResourcesByCourse(selectedCourse);
-
-  const courseIds = Array.from(new Set(resources.map((r) => r.courseId)));
-  const courses = courseIds.map((id) => {
-    const resource = resources.find((r) => r.courseId === id);
-    return { id, name: resource?.courseName || id };
-  });
-
   return (
     <main className="min-h-screen">
-      <section className="bg-gradient-to-br from-slate-900 via-accent-950 to-slate-900 py-20">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
-          >
-            <h1 className="text-4xl text-white sm:text-5xl font-bold mb-4">
-              Learning{" "}
-              <span className="bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
-                Resources
-              </span>
-            </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Download study materials, guides, and reference documents for all
-              our courses
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="flex flex-wrap gap-3 justify-center mb-12"
-          >
-            <Button
-              onClick={() => setSelectedCourse("all")}
-              variant={selectedCourse === "all" ? "default" : "outline"}
-              className={
-                selectedCourse === "all"
-                  ? "bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
-                  : "border-primary-200 hover:bg-primary-50"
-              }
-            >
-              All Resources
-            </Button>
-            {courses.map((course) => (
-              <Button
-                key={course.id}
-                onClick={() => setSelectedCourse(course.id)}
-                variant={selectedCourse === course.id ? "default" : "outline"}
-                size="sm"
-                className={
-                  selectedCourse === course.id
-                    ? "bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
-                    : "border-primary-200 hover:bg-primary-50"
-                }
-              >
-                {course.name}
-              </Button>
-            ))}
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mb-8"
-          >
-            <Badge variant="secondary" className="text-sm">
-              {filteredResources.length} resource
-              {filteredResources.length !== 1 ? "s" : ""} available
-            </Badge>
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredResources.map((resource, index) => (
-              <motion.div
-                key={resource.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <ResourceCard resource={resource} />
-              </motion.div>
-            ))}
-          </div>
-
-          {filteredResources.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-12"
-            >
-              <p className="text-muted-foreground text-lg">
-                No resources available for this course yet.
-              </p>
-            </motion.div>
-          )}
-        </div>
-      </section>
-
-      <section className="py-20 bg-slate-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-10"
-          >
-            <h2 className="text-3xl font-bold mb-4">HTML Mockups</h2>
-            <p className="text-muted-foreground max-w-2xl">
-              Reference designs and high-fidelity mockups for projects.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {MOCKUP_RESOURCES.map((resource, index) => (
-              <motion.div
-                key={resource.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <ResourceCard resource={resource} />
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <ResourcesPageClient />
     </main>
   );
 }

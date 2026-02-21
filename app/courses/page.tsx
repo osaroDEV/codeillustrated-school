@@ -1,63 +1,64 @@
-"use client";
-
+import CoursesPageClient from "@/components/CoursesPageClient";
 import { courses } from "@/lib/courses";
-import { motion } from "framer-motion";
-import Link from "next/link";
+import {
+  BASE_PATH,
+  getCanonicalUrl,
+  getOpenGraphDefaults,
+  getTwitterDefaults,
+  SITE_URL,
+} from "@/lib/seo";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Coding Courses for Beginners",
+  description:
+    "Browse all 1-on-1 coding courses at Code Illustrated. From web development to data science – beginner-friendly training with live mentors.",
+  alternates: {
+    canonical: getCanonicalUrl("/courses"),
+  },
+  openGraph: getOpenGraphDefaults({
+    title: "Coding Courses for Beginners | Code Illustrated",
+    description:
+      "Browse all 1-on-1 coding courses at Code Illustrated. From web development to data science – beginner-friendly training with live mentors.",
+    url: getCanonicalUrl("/courses"),
+  }),
+  twitter: getTwitterDefaults({
+    title: "Coding Courses for Beginners | Code Illustrated",
+    description:
+      "Browse all 1-on-1 coding courses at Code Illustrated. From web development to data science – beginner-friendly training with live mentors.",
+  }),
+};
+
+// JSON-LD ItemList schema for courses listing
+function CoursesListSchema() {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Coding Courses for Beginners",
+    description:
+      "All available 1-on-1 coding courses at Code Illustrated Online School.",
+    numberOfItems: courses.length,
+    itemListElement: courses.map((course, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${SITE_URL}${BASE_PATH}/courses/${course.id}`,
+      name: course.title,
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
 
 export default function CoursesPage() {
   return (
     <main className="min-h-screen bg-background pt-32 pb-24">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black mb-6">
-            Explore All Courses
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Discover the perfect learning path for you. From beginner basics to
-            advanced development, we have everything you need to start your tech
-            journey.
-          </p>
-        </div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {courses.map((course, idx) => (
-            <motion.div
-              key={course.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              className="group p-8 rounded-[2rem] bg-white border border-border hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 flex flex-col items-start h-full"
-            >
-              <div
-                className={`${course.bg} ${course.color} w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}
-              >
-                <course.icon className="w-8 h-8" />
-              </div>
-              <span className="inline-block px-3 py-1 rounded-full bg-slate-100 text-xs font-bold text-slate-600 mb-4 tracking-wider uppercase">
-                {course.age}
-              </span>
-              <h4 className="text-xl sm:text-2xl font-bold mb-4">
-                {course.title}
-              </h4>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-6 flex-1 line-clamp-3">
-                {course.description}
-              </p>
-              <div className="mt-auto w-full pt-4 border-t border-slate-100 flex items-center justify-between">
-                <span className="font-bold text-lg text-slate-900">
-                  {course.price}
-                </span>
-                <Link
-                  href={`/courses/${course.id}`}
-                  className="text-primary font-bold inline-flex items-center gap-2 group/btn hover:underline"
-                >
-                  Details
-                  <span className="block w-2 h-2 bg-primary rounded-full group-hover/btn:w-6 transition-all" />
-                </Link>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
+      <CoursesListSchema />
+      <CoursesPageClient />
     </main>
   );
 }

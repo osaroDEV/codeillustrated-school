@@ -37,12 +37,12 @@ export default function HowItWorks() {
 
       <div className="max-w-7xl mx-auto px-6 relative">
         <div className="text-center mb-20">
-          <h2 className="text-primary-400 font-bold tracking-widest uppercase text-sm mb-4">
+          <p className="text-primary-400 font-bold tracking-widest uppercase text-sm mb-4">
             The Process
-          </h2>
-          <h3 className="text-3xl sm:text-4xl lg:text-6xl font-heading font-black mb-6">
+          </p>
+          <h2 className="text-3xl sm:text-4xl lg:text-6xl font-heading font-black mb-6">
             Simple 4-Step Journey
-          </h3>
+          </h2>
           <p className="text-sm sm:text-base text-zinc-400 max-w-2xl mx-auto">
             We've streamlined the learning experience to make it as engaging as
             a game but as effective as a university degree.
@@ -71,9 +71,9 @@ export default function HowItWorks() {
                 <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-primary/20">
                   <step.icon className="w-7 h-7 text-white" />
                 </div>
-                <h4 className="text-xl sm:text-2xl font-bold mb-4">
+                <h3 className="text-xl sm:text-2xl font-bold mb-4">
                   {step.title}
-                </h4>
+                </h3>
                 <p className="text-sm sm:text-base text-zinc-400 leading-relaxed italic">
                   "{step.desc}"
                 </p>

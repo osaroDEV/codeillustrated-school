@@ -33,12 +33,12 @@ export default function Testimonials() {
     <section className="py-24 bg-muted/50 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <h2 className="text-primary font-bold tracking-widest uppercase text-sm mb-4">
+          <p className="text-primary font-bold tracking-widest uppercase text-sm mb-4">
             Reviews
-          </h2>
-          <h3 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black mb-0">
+          </p>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black mb-0">
             Loved by Students
-          </h3>
+          </h2>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
@@ -69,13 +69,14 @@ export default function Testimonials() {
                 <div className="relative w-14 h-14 shrink-0">
                   <Image
                     src={t.avatar}
-                    alt={t.name}
+                    alt={`Photo of ${t.name}, ${t.role} – Code Illustrated student testimonial`}
                     fill
+                    sizes="56px"
                     className="rounded-full border-4 border-slate-50 object-cover"
                   />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900">{t.name}</h4>
+                  <h3 className="font-bold text-slate-900">{t.name}</h3>
                   <p className="text-sm text-slate-500 uppercase tracking-wider">
                     {t.role}
                   </p>

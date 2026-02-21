@@ -10,12 +10,12 @@ export default function Courses() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
           <div className="max-w-2xl">
-            <h2 className="text-secondary-600 font-bold tracking-widest uppercase text-sm mb-4">
+            <p className="text-secondary-600 font-bold tracking-widest uppercase text-sm mb-4">
               Our Learning Paths
-            </h2>
-            <h3 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black mb-0">
+            </p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black mb-0">
               Curated Courses for Every Level
-            </h3>
+            </h2>
           </div>
           <p className="text-base sm:text-lg text-muted-foreground flex-1 max-w-sm">
             We follow a structured curriculum that grows with you, from basic
@@ -41,9 +41,9 @@ export default function Courses() {
               <span className="inline-block px-3 py-1 rounded-full bg-slate-100 text-xs font-bold text-slate-600 mb-4 tracking-wider uppercase">
                 {course.age}
               </span>
-              <h4 className="text-xl sm:text-2xl font-bold mb-4">
+              <h3 className="text-xl sm:text-2xl font-bold mb-4">
                 {course.title}
-              </h4>
+              </h3>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-6 flex-1">
                 {course.description}
               </p>

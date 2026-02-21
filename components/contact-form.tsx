@@ -91,7 +91,10 @@ export function ContactForm() {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-br from-slate-900 via-accent-900 to-slate-900">
+    <section
+      className="py-20 bg-gradient-to-br from-slate-900 via-accent-900 to-slate-900"
+      aria-label="Contact form"
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -99,15 +102,15 @@ export function ContactForm() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl text-white sm:text-4xl font-bold mb-4">
+          <h1 className="text-3xl text-white sm:text-4xl font-bold mb-4">
             Get in{" "}
             <span className="bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
               Touch
             </span>
-          </h2>
+          </h1>
           <p className="text-xl text-white max-w-2xl mx-auto">
-            Ready to start your coding journey? Contact us for more information
-            about our courses.
+            Ready to start your 1-on-1 coding journey? Contact us for more
+            information about our beginner-friendly courses.
           </p>
         </motion.div>
 

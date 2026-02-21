@@ -31,10 +31,11 @@ export function Navbar() {
           <Link href="/" className="flex items-center space-x-2">
             <Image
               src={codeillIcon}
-              alt="CodeIllustrated Online School"
+              alt="Code Illustrated Online School logo – beginner coding training"
               width={40}
               height={40}
               className="h-10 w-10"
+              priority
             />
             <span className="hidden sm:block lg:text-xl font-bold bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
               Code Illustrated Online School
@@ -45,7 +46,10 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav
+            className="hidden md:flex items-center space-x-8"
+            aria-label="Main navigation"
+          >
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -94,7 +98,7 @@ export function Navbar() {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden border-t"
           >
-            <div className="py-4 space-y-4">
+            <nav className="py-4 space-y-4" aria-label="Mobile navigation">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
@@ -113,7 +117,7 @@ export function Navbar() {
                   Get Started
                 </Link>
               </Button>
-            </div>
+            </nav>
           </motion.div>
         )}
       </div>

@@ -1,9 +1,17 @@
 "use client";
 
 import { courses } from "@/lib/courses";
-import { Code2, Facebook, Github, Linkedin, Mail, MapPin, Phone, Twitter } from "lucide-react";
-import Link from "next/link";
+import {
+  Facebook,
+  Github,
+  Linkedin,
+  Mail,
+  MapPin,
+  Phone,
+  Twitter,
+} from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import codeillIcon from "../public/code-ill.svg";
 
 export default function Footer() {
@@ -15,20 +23,20 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center space-x-2">
-            <Image
-              src={codeillIcon}
-              alt="CodeIllustrated Online School"
-              width={40}
-              height={40}
-              className="h-10 w-10"
-            />
-            <span className="hidden sm:block lg:text-xl font-bold bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
-              Code Illustrated Online School
-            </span>
-            <span className="sm:hidden text-xl font-bold bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
-              CodeIllustrated
-            </span>
-          </Link>
+              <Image
+                src={codeillIcon}
+                alt="Code Illustrated Online School logo – 1-on-1 beginner coding training"
+                width={40}
+                height={40}
+                className="h-10 w-10"
+              />
+              <span className="hidden sm:block lg:text-xl font-bold bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
+                Code Illustrated Online School
+              </span>
+              <span className="sm:hidden text-xl font-bold bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
+                CodeIllustrated
+              </span>
+            </Link>
             <p className="text-sm sm:text-base text-white/75 leading-relaxed mb-8">
               Empowering the next generation of builders through visual
               illustration and interactive mentorship.
@@ -46,7 +54,9 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="font-bold text-base text-white sm:text-lg mb-6">Learning</h4>
+            <h4 className="font-bold text-base text-white sm:text-lg mb-6">
+              Learning
+            </h4>
             <ul className="space-y-4">
               {[
                 ...courses.map((c) => ({
@@ -67,15 +77,27 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="font-bold text-base text-white sm:text-lg mb-6">Company</h4>
+            <h4 className="font-bold text-base text-white sm:text-lg mb-6">
+              Company
+            </h4>
             <ul className="space-y-4">
-             <li className="flex items-center space-x-3">
+              <li className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-red-400" />
-                <a href="mailto:admin@codeillustrated.com" className="text-white/75 hover:text-red-400 transition-colors">admin@codeillustrated.com</a>
+                <a
+                  href="mailto:admin@codeillustrated.com"
+                  className="text-white/75 hover:text-red-400 transition-colors"
+                >
+                  admin@codeillustrated.com
+                </a>
               </li>
               <li className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-red-400" />
-                <a href="https://wa.me/447405786279" className="text-white/75 hover:text-red-400 transition-colors">+44 7405 786 279</a>
+                <a
+                  href="https://wa.me/447405786279"
+                  className="text-white/75 hover:text-red-400 transition-colors"
+                >
+                  +44 7405 786 279
+                </a>
               </li>
               <li className="flex items-center space-x-3">
                 <MapPin className="h-5 w-5 text-red-400" />
@@ -85,7 +107,9 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="font-bold text-base text-white sm:text-lg mb-6">Newsletter</h4>
+            <h4 className="font-bold text-base text-white sm:text-lg mb-6">
+              Newsletter
+            </h4>
             <p className="text-white/75 mb-6">
               Get coding tips and school updates delivered to your inbox.
             </p>

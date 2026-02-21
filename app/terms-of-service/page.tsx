@@ -1,18 +1,44 @@
+import {
+  getCanonicalUrl,
+  getOpenGraphDefaults,
+  getTwitterDefaults,
+} from "@/lib/seo";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  description:
+    "Read the Code Illustrated Online School terms of service. Understand the terms governing use of our 1-on-1 coding training platform.",
+  alternates: {
+    canonical: getCanonicalUrl("/terms-of-service"),
+  },
+  openGraph: getOpenGraphDefaults({
+    title: "Terms of Service | Code Illustrated Online School",
+    description:
+      "Read the Code Illustrated Online School terms of service. Understand the terms governing use of our 1-on-1 coding training platform.",
+    url: getCanonicalUrl("/terms-of-service"),
+  }),
+  twitter: getTwitterDefaults({
+    title: "Terms of Service | Code Illustrated Online School",
+    description:
+      "Read the Code Illustrated Online School terms of service. Understand the terms governing use of our 1-on-1 coding training platform.",
+  }),
+};
+
 export default function TermsOfService() {
   return (
     <main className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-6 py-32">
+      <article className="max-w-4xl mx-auto px-6 py-32">
         <h1 className="text-4xl font-heading font-black mb-8">
           Terms of Service
         </h1>
         <div className="prose prose-blue max-w-none text-muted-foreground">
-          <p className="mb-4">
-            Last updated: {new Date().toLocaleDateString()}
-          </p>
+          <p className="mb-4">Last updated: February 21, 2026</p>
           <p className="mb-6">
-            Please read these Terms of Service ("Terms", "Terms of Service")
-            carefully before using the Code Illustrated Online School website
-            operated by Code Illustrated ("us", "we", or "our").
+            Please read these Terms of Service (&quot;Terms&quot;, &quot;Terms
+            of Service&quot;) carefully before using the Code Illustrated Online
+            School website operated by Code Illustrated (&quot;us&quot;,
+            &quot;we&quot;, or &quot;our&quot;).
           </p>
 
           <h2 className="text-2xl font-bold text-foreground mt-8 mb-4">
@@ -29,10 +55,11 @@ export default function TermsOfService() {
           </h2>
           <p className="mb-4">
             If you wish to purchase any product or service made available
-            through the Service ("Purchase"), you may be asked to supply certain
-            information relevant to your Purchase including, without limitation,
-            your credit card number, the expiration date of your credit card,
-            your billing address, and your shipping information.
+            through the Service (&quot;Purchase&quot;), you may be asked to
+            supply certain information relevant to your Purchase including,
+            without limitation, your credit card number, the expiration date of
+            your credit card, your billing address, and your shipping
+            information.
           </p>
 
           <h2 className="text-2xl font-bold text-foreground mt-8 mb-4">
@@ -62,7 +89,7 @@ export default function TermsOfService() {
             admin@codeillustrated.com.
           </p>
         </div>
-      </div>
+      </article>
     </main>
   );
 }

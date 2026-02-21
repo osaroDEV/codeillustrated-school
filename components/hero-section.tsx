@@ -51,9 +51,9 @@ export function HeroSection() {
                 transition={{ delay: 0.4 }}
                 className="text-xl text-white max-w-2xl"
               >
-                Join thousands of students learning to code through our
-                interactive online courses. From crash courses to comprehensive
-                programs, we've got you covered.
+                Join hundreds of students learning to code through personalized
+                1-on-1 live mentorship. From zero experience to software
+                engineer – we&apos;ve got you covered.
               </motion.p>
             </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Clock, Cpu, Heart, ShieldCheck, Zap } from "lucide-react";
+import { Clock, Cpu, ShieldCheck, Zap } from "lucide-react";
 import Link from "next/link";
 
 const benefits = [
@@ -41,13 +41,13 @@ export default function Benefits() {
       <div className="max-w-7xl mx-auto px-6 relative">
         <div className="grid lg:grid-cols-2 gap-20 items-center">
           <div>
-            <h2 className="text-white/70 font-bold tracking-widest uppercase text-sm mb-4">
+            <p className="text-white/70 font-bold tracking-widest uppercase text-sm mb-4">
               Why Choose Us?
-            </h2>
-            <h3 className="text-3xl sm:text-4xl lg:text-6xl font-heading font-black mb-8 leading-tight">
+            </p>
+            <h2 className="text-3xl sm:text-4xl lg:text-6xl font-heading font-black mb-8 leading-tight">
               Clear Tutoring, <br />
               Real Progress.
-            </h3>
+            </h2>
             <p className="text-base sm:text-lg lg:text-xl text-primary-100 mb-10 leading-relaxed max-w-lg">
               We bridge the gap between "hard science" and "playful discovery".
               Our students don't just "learn" – they thrive in a digital
@@ -74,9 +74,9 @@ export default function Benefits() {
                 <div className="bg-white text-primary w-12 h-12 rounded-xl flex items-center justify-center mb-6">
                   <benefit.icon className="w-6 h-6" />
                 </div>
-                <h4 className="text-lg sm:text-xl font-bold mb-4">
+                <h3 className="text-lg sm:text-xl font-bold mb-4">
                   {benefit.title}
-                </h4>
+                </h3>
                 <p className="text-sm sm:text-base text-primary-100 leading-relaxed">
                   {benefit.desc}
                 </p>

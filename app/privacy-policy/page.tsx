@@ -1,14 +1,39 @@
+import {
+  getCanonicalUrl,
+  getOpenGraphDefaults,
+  getTwitterDefaults,
+} from "@/lib/seo";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "Read the Code Illustrated Online School privacy policy. Learn how we collect, use, and protect your personal information.",
+  alternates: {
+    canonical: getCanonicalUrl("/privacy-policy"),
+  },
+  openGraph: getOpenGraphDefaults({
+    title: "Privacy Policy | Code Illustrated Online School",
+    description:
+      "Read the Code Illustrated Online School privacy policy. Learn how we collect, use, and protect your personal information.",
+    url: getCanonicalUrl("/privacy-policy"),
+  }),
+  twitter: getTwitterDefaults({
+    title: "Privacy Policy | Code Illustrated Online School",
+    description:
+      "Read the Code Illustrated Online School privacy policy. Learn how we collect, use, and protect your personal information.",
+  }),
+};
+
 export default function PrivacyPolicy() {
   return (
     <main className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-6 py-32">
+      <article className="max-w-4xl mx-auto px-6 py-32">
         <h1 className="text-4xl font-heading font-black mb-8">
           Privacy Policy
         </h1>
         <div className="prose prose-blue max-w-none text-muted-foreground">
-          <p className="mb-4">
-            Last updated: {new Date().toLocaleDateString()}
-          </p>
+          <p className="mb-4">Last updated: February 21, 2026</p>
           <p className="mb-6">
             At Code Illustrated Online School, accessible from
             codeillustrated.com, one of our main priorities is the privacy of
@@ -53,7 +78,7 @@ export default function PrivacyPolicy() {
           </ul>
 
           <h2 className="text-2xl font-bold text-foreground mt-8 mb-4">
-            Children's Information
+            Children&apos;s Information
           </h2>
           <p className="mb-4">
             Another part of our priority is adding protection for children while
@@ -69,7 +94,7 @@ export default function PrivacyPolicy() {
             do not hesitate to contact us at admin@codeillustrated.com.
           </p>
         </div>
-      </div>
+      </article>
     </main>
   );
 }
