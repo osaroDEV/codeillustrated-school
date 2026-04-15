@@ -10,13 +10,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
@@ -87,7 +80,7 @@ export function ContactFormPopup() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200]"
           />
 
           {/* Modal */}
@@ -96,9 +89,13 @@ export function ContactFormPopup() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", duration: 0.5 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 lg:p-8"
+            className="fixed inset-0 z-[201] flex items-center justify-center p-4 sm:p-6 lg:p-8"
+            onClick={handleClose}
           >
-            <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl">
+            <div
+              className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
               {/* Close Button */}
               <button
                 onClick={handleClose}
@@ -188,39 +185,19 @@ export function ContactFormPopup() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Course Interest</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a course" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="full-stack">
-                                Full Stack Web Development
-                              </SelectItem>
-                              <SelectItem value="ux">
-                                User Experience (UX) Masterclass
-                              </SelectItem>
-                              <SelectItem value="react">
-                                React Crash Course
-                              </SelectItem>
-                              <SelectItem value="mobile">
-                                Mobile App Development
-                              </SelectItem>
-                              <SelectItem value="devops">
-                                DevOps & Cloud Computing
-                              </SelectItem>
-                              <SelectItem value="javascript">
-                                JavaScript Fundamentals
-                              </SelectItem>
-                              <SelectItem value="other">
-                                Other/General Inquiry
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <FormControl>
+                            <select
+                              {...field}
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <option value="" disabled>Select a course</option>
+                              <option value="junior-web-creator">Junior Web Creator (Age 8–12)</option>
+                              <option value="game-dev-pro">Game Dev Pro (Age 13–17)</option>
+                              <option value="frontend-beginner">Frontend Beginner</option>
+                              <option value="data-science-intro">Data Science Intro</option>
+                              <option value="other">Other / General Inquiry</option>
+                            </select>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}

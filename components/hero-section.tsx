@@ -52,7 +52,7 @@ export function HeroSection() {
                 className="text-xl text-white max-w-2xl"
               >
                 Join hundreds of students learning to code through personalized
-                1-on-1 live mentorship. From zero experience to software
+                1-on-1 or group live mentorship. From zero experience to software
                 engineer – we&apos;ve got you covered.
               </motion.p>
             </div>
@@ -77,10 +77,12 @@ export function HeroSection() {
               <Button
                 variant="outline"
                 size="lg"
-                className="border-primary-200 hover:bg-primary-50 dark:border-primary-800 dark:hover:bg-primary-950/20"
+                className="border-primary-200 bg-gradient-to-br from-slate-900 via-accent-950 to-slate-900 text-white hover:text-primary-500 hover:bg-slate-900 dark:border-primary-800 dark:hover:bg-primary-950/20"
               >
-                <Play className="mr-2 h-4 w-4" />
-                Watch Demo
+                <Link href="/contact-us" className="flex items-center">
+                  Enroll Now
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
               </Button>
             </motion.div>
 

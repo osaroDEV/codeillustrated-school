@@ -75,7 +75,7 @@ export default function HowItWorks() {
                   {step.title}
                 </h3>
                 <p className="text-sm sm:text-base text-zinc-400 leading-relaxed italic">
-                  "{step.desc}"
+                  {step.desc}
                 </p>
               </div>
             </motion.div>

@@ -7,22 +7,22 @@ import {
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Coding Resources & Study Materials",
+  title: "Student Resource Hub – Guides, Tools & Downloads",
   description:
-    "Download coding resources, guides, and study materials. Perfect for beginners learning to code with Code Illustrated Online School.",
+    "Access coding guides, cheat sheets, tools, project showcases, and study materials. Everything Code Illustrated students and parents need in one place.",
   alternates: {
     canonical: getCanonicalUrl("/resources"),
   },
   openGraph: getOpenGraphDefaults({
-    title: "Coding Resources | Code Illustrated",
+    title: "Student Resource Hub | Code Illustrated",
     description:
-      "Download coding resources, guides, and study materials. Perfect for beginners learning to code with Code Illustrated Online School.",
+      "Access coding guides, cheat sheets, tools, project showcases, and study materials. Everything Code Illustrated students and parents need in one place.",
     url: getCanonicalUrl("/resources"),
   }),
   twitter: getTwitterDefaults({
-    title: "Coding Resources | Code Illustrated",
+    title: "Student Resource Hub | Code Illustrated",
     description:
-      "Download coding resources, guides, and study materials. Perfect for beginners learning to code with Code Illustrated Online School.",
+      "Access coding guides, cheat sheets, tools, project showcases, and study materials. Everything Code Illustrated students and parents need in one place.",
   }),
 };
 

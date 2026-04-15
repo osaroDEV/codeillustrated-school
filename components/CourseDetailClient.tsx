@@ -115,10 +115,10 @@ export default function CourseDetailClient({
               <p className="text-center text-sm text-slate-500">
                 Not ready yet?{" "}
                 <Link
-                  href="/contact-us"
+                  href="/resources"
                   className="text-primary font-bold hover:underline"
                 >
-                  Enroll Now
+                  Check out our resources
                 </Link>
               </p>
             </div>

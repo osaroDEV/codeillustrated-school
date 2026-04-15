@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import codeillIcon from "../public/code-ill.svg";
 
 export default function Footer() {
@@ -113,16 +114,7 @@ export default function Footer() {
             <p className="text-white/75 mb-6">
               Get coding tips and school updates delivered to your inbox.
             </p>
-            <form className="flex flex-col gap-3">
-              <input
-                type="email"
-                placeholder="parents@email.com"
-                className="border border-border px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-              />
-              <button className="bg-secondary-500 text-secondary-950 font-bold py-3 rounded-xl hover:bg-secondary-400 transition-all">
-                Subscribe
-              </button>
-            </form>
+            <NewsletterForm />
           </div>
         </div>
 
@@ -143,3 +135,79 @@ export default function Footer() {
     </footer>
   );
 }
+
+function NewsletterForm() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setStatus("loading");
+    setMessage("");
+
+    try {
+      const response = await fetch("/academy/api/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok) {
+        setStatus("success");
+        setMessage("Awesome! You're subscribed.");
+        setEmail("");
+      } else {
+        setStatus("error");
+        setMessage(data.error || data.message || "Something went wrong. Try again.");
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("error");
+      setMessage("Failed to subscribe. Check your connection.");
+    }
+  };
+
+
+  return (
+    <form className="flex flex-col gap-3 group" onSubmit={handleSubmit}>
+      <div className="relative">
+        <input
+          type="email"
+          placeholder="subscriber@email.com"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full bg-white/5 border border-white/10 px-4 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all text-white placeholder:text-white/30 disabled:opacity-50"
+          disabled={status === "loading" || status === "success"}
+        />
+        {status === "loading" && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+      </div>
+      <button
+        type="submit"
+        disabled={status === "loading" || status === "success"}
+        className="relative overflow-hidden bg-gradient-to-r from-primary-500 to-secondary-400 text-white font-bold py-3.5 rounded-xl hover:shadow-lg hover:shadow-primary-500/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+      >
+        <span className="relative z-10">
+          {status === "success" ? "Subscribed!" : status === "loading" ? "Joining..." : "Subscribe"}
+        </span>
+      </button>
+      {message && (
+        <p className={`text-sm font-medium mt-1 animate-in fade-in slide-in-from-top-1 ${status === "success" ? "text-secondary-400" : "text-red-400"}`}>
+          {message}
+        </p>
+      )}
+    </form>
+  );
+}
+

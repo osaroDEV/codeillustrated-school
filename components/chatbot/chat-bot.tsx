@@ -65,7 +65,7 @@ export function ChatBot() {
       switch (option.action) {
         case "browse_courses":
           botResponse.text =
-            "We have amazing courses! You can check out our React Crash Course, JavaScript for Beginners, and more. Would you like to see the full list?";
+            "We have amazing courses! You can check out our Junior Web Creator, Game Dev Pro, Frontend Beginner, and more. Would you like to see the full list?";
           botResponse.options = [
             { label: "View All Courses", action: "go_to_courses" },
             { label: "Back to main", action: "main_menu" },
