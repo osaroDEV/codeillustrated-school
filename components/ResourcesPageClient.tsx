@@ -44,11 +44,11 @@ import { useEffect, useState } from "react";
    ──────────────────────────────────────────────── */
 const SECTIONS = [
   { id: "start-here", label: "Start Here", icon: Rocket },
-  { id: "learning-materials", label: "Learning Materials", icon: BookOpen },
+  // { id: "learning-materials", label: "Learning Materials", icon: BookOpen },
   { id: "tools-software", label: "Tools & Software", icon: Wrench },
   { id: "external-resources", label: "External Resources", icon: LinkIcon },
   { id: "downloads", label: "Downloads", icon: Download },
-  { id: "project-showcase", label: "Project Showcase", icon: Trophy },
+  // { id: "project-showcase", label: "Project Showcase", icon: Trophy },
   { id: "guidelines", label: "Guidelines", icon: Shield },
   { id: "faqs", label: "FAQs", icon: HelpCircle },
   { id: "parent-resources", label: "For Parents", icon: Users },
@@ -441,16 +441,16 @@ export default function ResourcesPageClient() {
               </Section>
 
               {/* ─── 2. LEARNING MATERIALS ────────── */}
-              <Section id="learning-materials">
+              {/* <Section id="learning-materials">
                 <SectionHeader
                   id="learning-materials"
                   icon={BookOpen}
                   title="Learning Materials"
                   subtitle="Lesson notes, practice exercises, coding examples, and project files—organized by course."
-                />
+                /> */}
 
                 {/* Downloadable Resources from store */}
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+                {/* <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
                   {resources.map((resource, index) => (
                     <motion.div
                       key={resource.id}
@@ -462,10 +462,10 @@ export default function ResourcesPageClient() {
                       <ResourceCard resource={resource} />
                     </motion.div>
                   ))}
-                </div>
+                </div> */}
 
                 {/* Practice & Challenges */}
-                <motion.div
+                {/* <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -523,7 +523,7 @@ export default function ResourcesPageClient() {
                     ))}
                   </div>
                 </motion.div>
-              </Section>
+              </Section> */}
 
               {/* ─── 3. TOOLS & SOFTWARE ──────────── */}
               <Section id="tools-software">
@@ -601,26 +601,26 @@ export default function ResourcesPageClient() {
                       cta: "Visit MDN",
                       color: "accent" as const,
                     },
-                    {
-                      icon: Code2,
-                      title: "freeCodeCamp",
-                      description:
-                        "Free interactive coding lessons. Great for extra practice on HTML, CSS, and JavaScript fundamentals.",
-                      badge: "Best for Beginners",
-                      href: "https://www.freecodecamp.org",
-                      cta: "Start Practicing",
-                      color: "primary" as const,
-                    },
-                    {
-                      icon: Gamepad2,
-                      title: "CSS Battle",
-                      description:
-                        "Fun CSS challenges that test your styling skills. Compete and learn new CSS techniques at the same time.",
-                      badge: "Fun & Games",
-                      href: "https://cssbattle.dev",
-                      cta: "Play Now",
-                      color: "secondary" as const,
-                    },
+                    // {
+                    //   icon: Code2,
+                    //   title: "freeCodeCamp",
+                    //   description:
+                    //     "Free interactive coding lessons. Great for extra practice on HTML, CSS, and JavaScript fundamentals.",
+                    //   badge: "Best for Beginners",
+                    //   href: "https://www.freecodecamp.org",
+                    //   cta: "Start Practicing",
+                    //   color: "primary" as const,
+                    // },
+                    // {
+                    //   icon: Gamepad2,
+                    //   title: "CSS Battle",
+                    //   description:
+                    //     "Fun CSS challenges that test your styling skills. Compete and learn new CSS techniques at the same time.",
+                    //   badge: "Fun & Games",
+                    //   href: "https://cssbattle.dev",
+                    //   cta: "Play Now",
+                    //   color: "secondary" as const,
+                    // },
                     {
                       icon: Palette,
                       title: "Coolors",
@@ -641,16 +641,16 @@ export default function ResourcesPageClient() {
                       cta: "Open CodePen",
                       color: "accent" as const,
                     },
-                    {
-                      icon: BookOpen,
-                      title: "W3Schools",
-                      description:
-                        "Simple, beginner-friendly tutorials with interactive 'Try It Yourself' editors for every concept.",
-                      badge: "Tutorials",
-                      href: "https://www.w3schools.com",
-                      cta: "Browse Tutorials",
-                      color: "primary" as const,
-                    },
+                    // {
+                    //   icon: BookOpen,
+                    //   title: "W3Schools",
+                    //   description:
+                    //     "Simple, beginner-friendly tutorials with interactive 'Try It Yourself' editors for every concept.",
+                    //   badge: "Tutorials",
+                    //   href: "https://www.w3schools.com",
+                    //   cta: "Browse Tutorials",
+                    //   color: "primary" as const,
+                    // },
                   ].map((res, i) => (
                     <InfoCard key={i} {...res} delay={i * 0.05} />
                   ))}
@@ -754,7 +754,7 @@ export default function ResourcesPageClient() {
               </Section>
 
               {/* ─── 6. PROJECT SHOWCASE ──────────── */}
-              <Section id="project-showcase">
+              {/* <Section id="project-showcase">
                 <SectionHeader
                   id="project-showcase"
                   icon={Trophy}
@@ -842,9 +842,9 @@ export default function ResourcesPageClient() {
                         transition={{ delay: i * 0.05 }}
                         viewport={{ once: true }}
                         className="group bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 flex flex-col"
-                      >
+                      > */}
                         {/* Project preview placeholder */}
-                        <div className="h-40 bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center relative overflow-hidden">
+                        {/* <div className="h-40 bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center relative overflow-hidden">
                           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.03)_1px,transparent_1px)] [background-size:16px_16px]" />
                           <div className="relative text-center">
                             <Code2 className="w-8 h-8 text-slate-300 mx-auto mb-2" />
@@ -886,7 +886,7 @@ export default function ResourcesPageClient() {
                     );
                   })}
                 </div>
-              </Section>
+              </Section> */}
 
               {/* ─── 7. STUDENT GUIDELINES ────────── */}
               <Section id="guidelines">

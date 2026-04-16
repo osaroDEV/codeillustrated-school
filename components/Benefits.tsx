@@ -53,12 +53,15 @@ export default function Benefits() {
               Our students don't just "learn" – they thrive in a digital
               playground.
             </p>
-            <Link
-              href="#contact"
+            <a
+              href="/academy/files/Code_Illustrated_Prospectus_2026.pdf"
+              download
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-block bg-white text-primary px-8 py-4 rounded-2xl font-bold hover:bg-zinc-100 transition-all shadow-xl shadow-black/20 active:scale-95 text-center"
             >
               Download Prospectus
-            </Link>
+            </a>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-6">

@@ -78,6 +78,16 @@ const RESOURCES: Resource[] = [
     fileType: 'pdf',
     downloadCount: 523,
   },
+  {
+    id: '6',
+    courseId: 'html-intro',
+    courseName: 'Introduction to HTML',
+    title: 'HTML5 Elements Reference',
+    description: 'Complete list of HTML5 semantic elements',
+    fileUrl: 'https://example.com/html5-reference.pdf',
+    fileType: 'pdf',
+    downloadCount: 523,
+  },
 ]
 
 export const MOCKUP_RESOURCES: Resource[] = [
