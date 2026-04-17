@@ -1,6 +1,8 @@
 "use client";
 
 import ayinke from "@/public/team/ayinke.jpeg";
+import nosa from "@/public/team/skywalker.png";
+import osarodev from "@/public/team/osarodev.png";
 import sylvia from "@/public/team/sylvia..jpeg";
 import { motion, useInView } from "framer-motion";
 import {
@@ -103,7 +105,7 @@ const team = [
     name: "Osaro Onaiwu",
     role: "Founder & CEO",
     experience: "5+ years Software Engineer",
-    imageSrc: null as string | null,
+    imageSrc: osarodev,
     social: { twitter: "#", linkedin: "#" },
   },
   {
@@ -117,7 +119,7 @@ const team = [
     name: "Nosa Skywalker",
     role: "UI/UX Director",
     experience: "4+ years Mobile App Developer",
-    imageSrc: null as string | null,
+    imageSrc: nosa,
     social: { twitter: "#", linkedin: "#" },
   },
   {

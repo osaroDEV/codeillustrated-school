@@ -126,6 +126,8 @@ function InfoCard({
   cta,
   color = "primary",
   delay = 0,
+  target,
+  rel,
 }: {
   icon: React.ElementType;
   title: string;
@@ -135,6 +137,8 @@ function InfoCard({
   cta?: string;
   color?: "primary" | "secondary" | "accent";
   delay?: number;
+  target?: string;
+  rel?: string;
 }) {
   const colorMap = {
     primary: {
@@ -189,8 +193,8 @@ function InfoCard({
       {href && cta && (
         <Link
           href={href}
-          target={href.startsWith("http") ? "_blank" : undefined}
-          rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
+          target={target || (href.startsWith("http") ? "_blank" : undefined)}
+          rel={rel || (href.startsWith("http") ? "noopener noreferrer" : undefined)}
           className={`inline-flex items-center gap-2 text-sm font-bold ${c.text} group/link`}
         >
           {cta}
@@ -673,6 +677,7 @@ export default function ResourcesPageClient() {
                       description:
                         "All essential HTML tags on a single page. Perfect for quick reference while building websites.",
                       cta: "Download PDF",
+                      href: "/files/html-cheat-sheet.pdf",
                       color: "primary" as const,
                     },
                     {
@@ -681,6 +686,7 @@ export default function ResourcesPageClient() {
                       description:
                         "The most-used CSS properties with visual examples. Covers layout, colors, fonts, and responsive design.",
                       cta: "Download PDF",
+                      href: "/academy/files/html-cheat-sheet.pdf",
                       color: "secondary" as const,
                     },
                     {
@@ -689,6 +695,7 @@ export default function ResourcesPageClient() {
                       description:
                         "Variables, functions, loops, and DOM methods explained simply with code snippets you can copy and paste.",
                       cta: "Download PDF",
+                      href: "/academy/files/html-cheat-sheet.pdf",
                       color: "accent" as const,
                     },
                     {
@@ -697,6 +704,7 @@ export default function ResourcesPageClient() {
                       description:
                         "The complete Code Illustrated curriculum across all courses. See every module and learning outcome.",
                       cta: "Download PDF",
+                      href: "/academy/files/html-cheat-sheet.pdf",
                       color: "primary" as const,
                     },
                     {
@@ -705,6 +713,7 @@ export default function ResourcesPageClient() {
                       description:
                         "A visual roadmap from beginner to job-ready developer. Know exactly where you are and what's ahead.",
                       cta: "Download PDF",
+                      href: "/academy/files/html-cheat-sheet.pdf",
                       color: "secondary" as const,
                     },
                   ].map((asset, i) => (
@@ -714,8 +723,10 @@ export default function ResourcesPageClient() {
                       title={asset.title}
                       description={asset.description}
                       cta={asset.cta}
-                      href="#"
+                      href={asset.href}
                       color={asset.color}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       delay={i * 0.05}
                     />
                   ))}

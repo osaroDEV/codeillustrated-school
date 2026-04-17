@@ -35,7 +35,7 @@ export default function CTA() {
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               </Link>
               <Link
-                href="mailto:support@codeillustrated.com"
+                href="mailto:admin@codeillustrated.com"
                 className="group bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 hover:border-white/40 w-full sm:w-auto px-10 py-5 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all text-white"
               >
                 Contact Support

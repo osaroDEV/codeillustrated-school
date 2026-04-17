@@ -3,7 +3,7 @@ import Courses from "@/components/Courses";
 import CTA from "@/components/CTA";
 import { HeroSection } from "@/components/hero-section";
 import HowItWorks from "@/components/HowItWorks";
-import Testimonials from "@/components/Testimonials";
+import ReviewsSection from "@/components/ReviewsSection";
 import {
   BASE_PATH,
   getCanonicalUrl,
@@ -77,7 +77,7 @@ export default function Home() {
       <Courses />
       <HowItWorks />
       <Benefits />
-      <Testimonials />
+      <ReviewsSection />
       <CTA />
     </main>
   );
