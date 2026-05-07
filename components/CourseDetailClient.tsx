@@ -107,7 +107,7 @@ export default function CourseDetailClient({
                 </div>
                 <Link
                   href="/contact-us"
-                  className="bg-primary text-primary-foreground px-8 py-3 rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center justify-center text-center"
+                  className="bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500 px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 flex items-center justify-center text-center text-white border-none"
                 >
                   Enroll Now
                 </Link>

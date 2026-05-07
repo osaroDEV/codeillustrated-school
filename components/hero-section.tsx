@@ -77,10 +77,10 @@ export function HeroSection() {
               <Button
                 variant="outline"
                 size="lg"
-                className="border-primary-200 bg-gradient-to-br from-slate-900 via-accent-950 to-slate-900 text-white hover:text-primary-500 hover:bg-slate-900 dark:border-primary-800 dark:hover:bg-primary-950/20"
+                className="border-primary-200 bg-gradient-to-br from-slate-700 via-accent-800 to-slate-800 text-white hover:bg-slate-900 dark:border-primary-800 dark:hover:bg-primary-950/20"
               >
-                <Link href="/contact-us" className="flex items-center">
-                  Enroll Now
+                <Link href="https://wa.me/447405786279" target="_blank" rel="noopener noreferrer" className="flex items-center">
+                  Talk to Advisor
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
