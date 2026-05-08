@@ -2,6 +2,7 @@
 
 import { courses } from "@/lib/courses";
 import { motion } from "framer-motion";
+import { PriceDisplay } from "./price-display";
 import Link from "next/link";
 
 export default function Courses() {
@@ -31,7 +32,7 @@ export default function Courses() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               viewport={{ once: true }}
-              className="group p-8 rounded-[2rem] bg-white border border-border hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 flex flex-col items-start"
+              className="group p-8 rounded-[2rem] bg-white border border-border hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 flex flex-col items-start h-full"
             >
               <div
                 className={`${course.bg} ${course.color} w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}
@@ -47,13 +48,20 @@ export default function Courses() {
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-6 flex-1">
                 {course.description}
               </p>
-              <Link
-                href={`/courses/${course.id}`}
-                className="text-primary font-bold inline-flex items-center gap-2 group/btn"
-              >
-                Course Details
-                <span className="block w-2 h-2 bg-primary rounded-full group-hover/btn:w-8 transition-all" />
-              </Link>
+              
+              <div className="w-full pt-4 border-t border-slate-100 flex items-center justify-between mt-auto">
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Starts from</span>
+                  <PriceDisplay price={course.price.group} className="text-lg text-slate-900" />
+                </div>
+                <Link
+                  href={`/courses/${course.id}`}
+                  className="text-primary font-bold inline-flex items-center gap-2 group/btn"
+                >
+                  Details
+                  <span className="block w-2 h-2 bg-primary rounded-full group-hover/btn:w-8 transition-all" />
+                </Link>
+              </div>
             </motion.div>
           ))}
         </div>

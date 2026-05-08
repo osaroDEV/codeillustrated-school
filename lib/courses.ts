@@ -1,5 +1,10 @@
 import { Database, Gamepad2, Globe, Layout, LucideIcon } from "lucide-react";
 
+export interface PriceTier {
+  usd: number;
+  ngn: number;
+}
+
 export interface Course {
   id: string;
   title: string;
@@ -15,7 +20,10 @@ export interface Course {
   }[];
   duration: string;
   level: string;
-  price: string;
+  price: {
+    group: PriceTier;
+    oneOnOne: PriceTier;
+  };
 }
 
 export const courses: Course[] = [
@@ -58,7 +66,10 @@ export const courses: Course[] = [
     ],
     duration: "24 Weeks",
     level: "Beginner",
-    price: "$499",
+    price: {
+      group: { usd: 50, ngn: 75000 },
+      oneOnOne: { usd: 85, ngn: 120000 },
+    },
   },
   {
     id: "game-dev-pro",
@@ -95,11 +106,14 @@ export const courses: Course[] = [
     ],
     duration: "16 Weeks",
     level: "Intermediate",
-    price: "$399",
+    price: {
+      group: { usd: 60, ngn: 90000 },
+      oneOnOne: { usd: 100, ngn: 150000 },
+    },
   },
   {
     id: "frontend-beginner",
-    title: "Frontend Beginner",
+    title: "Frontend Developer",
     age: "Teens & Adults",
     description:
       "Learn React, Next.js, and how to build professional-grade applications.",
@@ -124,7 +138,10 @@ export const courses: Course[] = [
     ],
     duration: "24 Weeks",
     level: "Intermediate",
-    price: "$599",
+    price: {
+      group: { usd: 75, ngn: 100000 },
+      oneOnOne: { usd: 120, ngn: 180000 },
+    },
   },
   {
     id: "data-science-intro",
@@ -161,6 +178,9 @@ export const courses: Course[] = [
     ],
     duration: "12 Weeks",
     level: "Beginner",
-    price: "$379",
+    price: {
+      group: { usd: 65, ngn: 90000 },
+      oneOnOne: { usd: 90, ngn: 160000 },
+    },
   },
 ];

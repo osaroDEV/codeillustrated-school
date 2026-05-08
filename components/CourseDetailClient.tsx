@@ -8,8 +8,12 @@ import {
   Clock,
   GraduationCap,
   Send,
+  Users,
+  User,
 } from "lucide-react";
 import Link from "next/link";
+import { PriceDisplay } from "./price-display";
+import { useCurrency } from "@/hooks/use-currency";
 
 interface CourseDetailClientProps {
   courseId: string;
@@ -75,50 +79,67 @@ export default function CourseDetailClient({
               </div>
             </div>
 
-            <div className="bg-white p-8 rounded-4xl border border-border shadow-xl relative overflow-hidden">
+            <div className="bg-white p-8 rounded-4xl border border-border shadow-xl relative overflow-hidden flex flex-col h-full">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full translate-x-1/2 -translate-y-1/2" />
-              <h2 className="text-2xl font-bold mb-6">Course Quick Facts</h2>
-              <ul className="space-y-4 mb-8 text-slate-600">
+              <h2 className="text-2xl font-bold mb-6">Course Benefits</h2>
+              <ul className="space-y-4 mb-8 text-slate-600 flex-1">
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-accent-500 mt-0.5 shrink-0" />
-                  <span>48 Live instructor-led sessions</span>
+                  <span>Live instructor-led sessions</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-accent-500 mt-0.5 shrink-0" />
-                  <span>1-on-1 mentorship</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-accent-500 mt-0.5 shrink-0" />
-                  <span>Personalized feedback & mentorship</span>
+                  <span>Hands-on project-based learning</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-accent-500 mt-0.5 shrink-0" />
                   <span>Lifetime access to course materials</span>
                 </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-accent-500 mt-0.5 shrink-0" />
+                  <span>Certificate of Completion</span>
+                </li>
               </ul>
-              <div className="flex items-center justify-between p-6 bg-slate-50 rounded-2xl border border-slate-100 mb-8">
-                <div>
-                  <span className="text-sm font-medium text-slate-500 block">
-                    Total Investment
-                  </span>
-                  <span className="text-3xl font-black text-slate-900">
-                    {course.price}
-                  </span>
+              
+              <div className="space-y-4">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-primary/30 transition-colors">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="flex items-center gap-2 text-sm font-bold text-slate-900">
+                      <Users className="w-4 h-4 text-primary" />
+                      Group Classes
+                    </span>
+                    <PriceDisplay price={course.price.group} className="text-xl" />
+                  </div>
+                  <p className="text-xs text-slate-500">Collaborative learning with peers in small groups.</p>
                 </div>
+
+                <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 group hover:border-primary/30 transition-colors relative">
+                  <div className="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Recommended</div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="flex items-center gap-2 text-sm font-bold text-primary">
+                      <User className="w-4 h-4" />
+                      1-on-1 Classes
+                    </span>
+                    <PriceDisplay price={course.price.oneOnOne} className="text-xl text-primary" />
+                  </div>
+                  <p className="text-xs text-slate-500">Dedicated mentorship and personalized learning pace.</p>
+                </div>
+
                 <Link
                   href="/contact-us"
-                  className="bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500 px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 flex items-center justify-center text-center text-white border-none"
+                  className="w-full bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500 px-8 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-primary/20 flex items-center justify-center text-center text-white border-none mt-4"
                 >
                   Enroll Now
                 </Link>
               </div>
-              <p className="text-center text-sm text-slate-500">
+
+              <p className="text-center text-sm text-slate-500 mt-6">
                 Not ready yet?{" "}
                 <Link
                   href="/resources"
                   className="text-primary font-bold hover:underline"
                 >
-                  Check out our resources
+                  Check our free resources
                 </Link>
               </p>
             </div>
@@ -180,7 +201,7 @@ export default function CourseDetailClient({
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 relative z-10">
             <Link
               href="/contact-us"
-              className="bg-primary text-primary-foreground px-12 py-5 rounded-2xl font-black text-xl hover:bg-white hover:text-primary transition-all shadow-xl shadow-black/20 active:scale-95 text-center flex items-center justify-center"
+              className="bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500 px-12 py-5 rounded-2xl font-black text-xl hover:bg-white hover:text-primary transition-all shadow-xl shadow-black/20 active:scale-95 text-center flex items-center justify-center"
             >
               Enroll Now
             </Link>

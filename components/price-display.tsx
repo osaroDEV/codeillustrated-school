@@ -1,37 +1,35 @@
+"use client";
+
+import { useCurrency } from "@/hooks/use-currency";
+import { PriceTier } from "@/lib/courses";
 import { cn } from "@/lib/utils";
 
-interface PriceValue {
-  usd: number;
-  ngn: number;
-}
-
 interface PriceDisplayProps {
-  price: PriceValue | string | number;
+  price: PriceTier;
   className?: string;
-  showCurrency?: boolean;
+  showPeriod?: boolean;
 }
 
 export function PriceDisplay({
   price,
   className,
-  showCurrency = true,
+  showPeriod = true,
 }: PriceDisplayProps) {
-  let formattedPrice: string;
+  const { currency, symbol, isLoading } = useCurrency();
 
-  if (typeof price === "object" && price !== null && "usd" in price) {
-    // Default to USD for now, or handle currency selection if context existed
-    formattedPrice = new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(price.usd);
-  } else if (typeof price === "number") {
-    formattedPrice = new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(price);
-  } else {
-    formattedPrice = String(price);
+  const amount = currency === "NGN" ? price.ngn : price.usd;
+
+  if (isLoading) {
+    return (
+      <span className={cn("animate-pulse bg-slate-200 rounded h-8 w-24 inline-block", className)} />
+    );
   }
 
-  return <span className={cn("font-bold", className)}>{formattedPrice}</span>;
+  return (
+    <span className={cn("font-black", className)}>
+      {symbol}
+      {amount.toLocaleString()}
+      {showPeriod && <span className="text-sm font-medium text-slate-500 ml-1">/mo</span>}
+    </span>
+  );
 }

@@ -16,6 +16,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { CurrencyProvider } from "@/components/currency-provider";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
@@ -38,6 +39,8 @@ export const metadata: Metadata = {
     "personalized coding lessons",
     "become a software engineer",
     "code illustrated",
+    "coding academy Nigeria",
+    "coding training in dollars",
   ],
   authors: [{ name: SITE_NAME, url: SITE_URL }],
   creator: SITE_NAME,
@@ -78,14 +81,16 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <Navbar />
-        {children}
-        <Footer />
-        <ContactFormPopup />
-        <ChatBot />
-        <Toaster />
-        <Analytics />
-        <SpeedInsights />
+        <CurrencyProvider>
+          <Navbar />
+          {children}
+          <Footer />
+          <ContactFormPopup />
+          <ChatBot />
+          <Toaster />
+          <Analytics />
+          <SpeedInsights />
+        </CurrencyProvider>
       </body>
     </html>
   );

@@ -2,6 +2,7 @@
 
 import { courses } from "@/lib/courses";
 import { motion } from "framer-motion";
+import { PriceDisplay } from "./price-display";
 import Link from "next/link";
 
 export default function CoursesPageClient() {
@@ -42,9 +43,10 @@ export default function CoursesPageClient() {
               {course.description}
             </p>
             <div className="mt-auto w-full pt-4 border-t border-slate-100 flex items-center justify-between">
-              <span className="font-bold text-lg text-slate-900">
-                {course.price}
-              </span>
+              <div className="flex flex-col">
+                <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Starts from</span>
+                <PriceDisplay price={course.price.group} className="text-lg text-slate-900" />
+              </div>
               <Link
                 href={`/courses/${course.id}`}
                 className="text-primary font-bold inline-flex items-center gap-2 group/btn hover:underline"

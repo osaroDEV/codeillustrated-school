@@ -7,9 +7,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import codeillIcon from "../public/code-ill.svg";
+import { useCurrency } from "@/hooks/use-currency";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { currency, setCurrency } = useCurrency();
 
   const navItems = [
     { href: "/", label: "Home" },
@@ -63,7 +65,28 @@ export function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* <ThemeToggle /> */}
+            <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-full p-1 border border-slate-200">
+              <button
+                onClick={() => setCurrency("USD")}
+                className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all ${
+                  currency === "USD"
+                    ? "bg-white text-primary shadow-sm"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                USD
+              </button>
+              <button
+                onClick={() => setCurrency("NGN")}
+                className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all ${
+                  currency === "NGN"
+                    ? "bg-white text-primary shadow-sm"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                NGN
+              </button>
+            </div>
             <Button
               asChild
               className="bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
@@ -117,6 +140,29 @@ export function Navbar() {
                   Get Started
                 </Link>
               </Button>
+
+              <div className="flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 mt-4">
+                <button
+                  onClick={() => setCurrency("USD")}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                    currency === "USD"
+                      ? "bg-white text-primary shadow-sm"
+                      : "text-slate-500"
+                  }`}
+                >
+                  US Dollars ($)
+                </button>
+                <button
+                  onClick={() => setCurrency("NGN")}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                    currency === "NGN"
+                      ? "bg-white text-primary shadow-sm"
+                      : "text-slate-500"
+                  }`}
+                >
+                  Naira (₦)
+                </button>
+              </div>
             </nav>
           </motion.div>
         )}

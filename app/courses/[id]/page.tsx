@@ -73,7 +73,7 @@ function CourseSchema({ course }: { course: (typeof courses)[number] }) {
     timeRequired: course.duration,
     offers: {
       "@type": "Offer",
-      price: course.price.replace("$", ""),
+      price: course.price.group.usd.toString(),
       priceCurrency: "USD",
       availability: "https://schema.org/InStock",
       url: `${SITE_URL}${BASE_PATH}/contact-us`,
