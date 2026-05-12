@@ -144,6 +144,38 @@ export const courses: Course[] = [
     },
   },
   {
+    id: "frontend-advanced",
+    title: "Frontend Architect",
+    age: "Teens & Adults",
+    description:
+      "Master React, Next.js, and advanced architecture patterns.",
+    icon: Layout,
+    color: "text-primary-500",
+    bg: "bg-primary-500/10",
+    fullDescription:
+      "Perfect for older students and adults looking to start a career or build their own products. This course covers everything from the user interface to the database, ensuring a complete understanding of modern application development.",
+    curriculum: [
+      {
+        module: "Module 1: Frontend Architecture",
+        lessons: ["Advanced React Patterns", "State Management", "Component Architecture"],
+      },
+      {
+        module: "Module 2: Next.js & Scalability",
+        lessons: ["Advanced Next.js Features", "API Design", "Authentication"],
+      },
+      {
+        module: "Module 3: Advanced Deployment",
+        lessons: ["Advanced PostgreSQL/MongoDB", "Advanced Cloud Hosting", "Advanced CI/CD Pipelines"],
+      },
+    ],
+    duration: "24 Weeks",
+    level: "Advanced",
+    price: {
+      group: { usd: 100, ngn: 150000 },
+      oneOnOne: { usd: 150, ngn: 220000 },
+    },
+  },
+  {
     id: "data-science-intro",
     title: "Data Science Intro",
     age: "Teens & Adults",

@@ -259,19 +259,22 @@ export function ContactForm() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="full-stack">
-                                Full Stack Web Development
+                              <SelectItem value="junior-web-creator">
+                                Junior Web Creator
                               </SelectItem>
-                              <SelectItem value="ux">
-                                User Experience (UX) Masterclass
+                              <SelectItem value="game-dev-pro">
+                                Game Dev Pro
                               </SelectItem>
-                              <SelectItem value="react">
-                                React Crash Course
+                              <SelectItem value="frontend-developer">
+                                Frontend Developer
                               </SelectItem>
-                              <SelectItem value="mobile">
-                                Mobile App Development
+                              <SelectItem value="frontend-architect">
+                                Frontend Architect
                               </SelectItem>
-                              <SelectItem value="devops">
+                              <SelectItem value="data-science-intro">
+                                Data Science Intro
+                              </SelectItem>
+                              <SelectItem value="devops-cloud">
                                 DevOps & Cloud Computing
                               </SelectItem>
                               <SelectItem value="javascript">
