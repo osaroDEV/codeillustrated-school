@@ -1,4 +1,4 @@
-import { Database, Gamepad2, Globe, Layout, LucideIcon } from "lucide-react";
+import { Database, Gamepad2, Globe, Layout, LucideIcon, Sparkles } from "lucide-react";
 
 export interface PriceTier {
   usd: number;
@@ -213,6 +213,50 @@ export const courses: Course[] = [
     price: {
       group: { usd: 65, ngn: 90000 },
       oneOnOne: { usd: 90, ngn: 160000 },
+    },
+  },
+  {
+    id: "generative-ai-mastery",
+    title: "Generative AI Mastery",
+    age: "Age 8-20",
+    description:
+      "Explore the world of AI — from talking to chatbots to building your own AI-powered projects. No coding experience needed!",
+    icon: Sparkles,
+    color: "text-violet-500",
+    bg: "bg-violet-500/10",
+    fullDescription:
+      "Generative AI Mastery for Beginners is a fun, hands-on course that demystifies artificial intelligence for young learners aged 8 to 20. Students will discover how AI models think, learn to craft powerful prompts, and use tools like ChatGPT, image generators, and AI coding assistants to build real creative projects — all without needing prior programming experience.",
+    curriculum: [
+      {
+        module: "Module 1: Understanding AI",
+        lessons: [
+          "What is Artificial Intelligence?",
+          "How Generative AI works",
+          "AI in everyday life",
+        ],
+      },
+      {
+        module: "Module 2: Prompt Engineering",
+        lessons: [
+          "Talking to AI: Basics of Prompting",
+          "Advanced Prompt Techniques",
+          "Using AI for Writing & Storytelling",
+        ],
+      },
+      {
+        module: "Module 3: AI-Powered Projects",
+        lessons: [
+          "Creating Art with AI Image Generators",
+          "Building a Chatbot with AI Tools",
+          "Your Personal AI Project Showcase",
+        ],
+      },
+    ],
+    duration: "10 Weeks",
+    level: "Beginner",
+    price: {
+      group: { usd: 55, ngn: 80000 },
+      oneOnOne: { usd: 90, ngn: 130000 },
     },
   },
 ];
