@@ -1,0 +1,221 @@
+import { cookies } from "next/headers";
+import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase";
+import { courses } from "@/lib/courses";
+import {
+  BookOpen, TrendingUp, Calendar, Megaphone,
+  Clock, ChevronRight, Zap,
+} from "lucide-react";
+import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Dashboard Overview | Code Illustrated",
+};
+
+async function getDashboardData() {
+  try {
+    const cookieStore = await cookies();
+    const allCookies = cookieStore.getAll();
+    const cookieHeader = allCookies.map((c) => `${c.name}=${c.value}`).join("; ");
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { global: { headers: { cookie: cookieHeader } } }
+    );
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const admin = createAdminClient();
+
+    const [profileRes, enrollmentsRes, announcementsRes] = await Promise.all([
+      admin.from("profiles").select("full_name").eq("id", user.id).single(),
+      admin.from("enrollments").select("*").eq("user_id", user.id),
+      admin.from("announcements").select("*").order("created_at", { ascending: false }).limit(3),
+    ]);
+
+    return {
+      profile: profileRes.data,
+      enrollments: enrollmentsRes.data || [],
+      announcements: announcementsRes.data || [],
+    };
+  } catch {
+    return null;
+  }
+}
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+export default async function DashboardPage() {
+  const data = await getDashboardData();
+  const firstName = data?.profile?.full_name?.split(" ")[0] || "Learner";
+  const enrollments = data?.enrollments || [];
+  const announcements = data?.announcements || [];
+
+  return (
+    <div className="p-6 lg:p-8 max-w-6xl mx-auto">
+      {/* Header */}
+      <div className="mb-8">
+        <p className="text-white/40 text-sm mb-1">{getGreeting()},</p>
+        <h1 className="text-3xl font-bold text-white">
+          {firstName} 👋
+        </h1>
+        <p className="text-white/40 text-sm mt-1">Here&apos;s your learning progress at a glance</p>
+      </div>
+
+      {/* Stats row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 bg-[#c31d24]/15 rounded-xl flex items-center justify-center">
+              <BookOpen className="w-4 h-4 text-[#c31d24]" />
+            </div>
+            <span className="text-white/50 text-sm">Enrolled</span>
+          </div>
+          <p className="text-3xl font-bold text-white">{enrollments.length}</p>
+          <p className="text-white/30 text-xs mt-1">
+            {enrollments.length === 1 ? "course" : "courses"}
+          </p>
+        </div>
+
+        <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 bg-[#1a596c]/20 rounded-xl flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-[#3da3bc]" />
+            </div>
+            <span className="text-white/50 text-sm">Avg. Progress</span>
+          </div>
+          <p className="text-3xl font-bold text-white">
+            {enrollments.length > 0
+              ? Math.round(enrollments.reduce((a, e) => a + (e.progress || 0), 0) / enrollments.length)
+              : 0}%
+          </p>
+          <p className="text-white/30 text-xs mt-1">across all courses</p>
+        </div>
+
+        <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 bg-[#ffbd59]/10 rounded-xl flex items-center justify-center">
+              <Megaphone className="w-4 h-4 text-[#ffbd59]" />
+            </div>
+            <span className="text-white/50 text-sm">Announcements</span>
+          </div>
+          <p className="text-3xl font-bold text-white">{announcements.length}</p>
+          <p className="text-white/30 text-xs mt-1">from your school</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Enrolled courses */}
+        <div className="lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white">My Courses</h2>
+            <Link href="/dashboard/courses" className="text-white/40 hover:text-white text-xs flex items-center gap-1 transition-colors">
+              View all <ChevronRight className="w-3 h-3" />
+            </Link>
+          </div>
+
+          {enrollments.length === 0 ? (
+            <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-8 text-center">
+              <Zap className="w-8 h-8 text-white/20 mx-auto mb-3" />
+              <p className="text-white/40 text-sm">No courses enrolled yet</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {enrollments.map((enrollment) => {
+                const course = courses.find((c) => c.id === enrollment.course_id);
+                const CourseIcon = course?.icon;
+                return (
+                  <div
+                    key={enrollment.id}
+                    className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-5 hover:border-white/[0.15] transition-all group"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className={`w-11 h-11 ${course?.bg || "bg-white/10"} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                        {CourseIcon && <CourseIcon className={`w-5 h-5 ${course?.color || "text-white"}`} />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="text-white font-semibold text-sm">{course?.title || enrollment.course_id}</h3>
+                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                            enrollment.status === "active"
+                              ? "bg-green-500/15 text-green-400"
+                              : enrollment.status === "completed"
+                              ? "bg-blue-500/15 text-blue-400"
+                              : "bg-yellow-500/15 text-yellow-400"
+                          }`}>
+                            {enrollment.status}
+                          </span>
+                        </div>
+                        <p className="text-white/40 text-xs mt-0.5">{course?.duration} · {course?.level}</p>
+
+                        {/* Progress bar */}
+                        <div className="mt-3">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-white/40 text-xs">Progress</span>
+                            <span className="text-white font-medium text-xs">{enrollment.progress || 0}%</span>
+                          </div>
+                          <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-[#c31d24] to-[#e53535] rounded-full transition-all"
+                              style={{ width: `${enrollment.progress || 0}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Next session */}
+                        {enrollment.next_session && (
+                          <div className="mt-3 flex items-center gap-2 text-xs text-white/40">
+                            <Calendar className="w-3 h-3 text-[#ffbd59]" />
+                            <span>Next session: <span className="text-[#ffbd59]">{new Date(enrollment.next_session).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span></span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Announcements sidebar */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white">Latest Updates</h2>
+            <Link href="/dashboard/announcements" className="text-white/40 hover:text-white text-xs flex items-center gap-1 transition-colors">
+              All <ChevronRight className="w-3 h-3" />
+            </Link>
+          </div>
+
+          {announcements.length === 0 ? (
+            <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-6 text-center">
+              <Megaphone className="w-6 h-6 text-white/20 mx-auto mb-2" />
+              <p className="text-white/40 text-xs">No announcements yet</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {announcements.map((ann) => (
+                <div key={ann.id} className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-4 hover:border-white/15 transition-all">
+                  <h3 className="text-white text-sm font-medium mb-1">{ann.title}</h3>
+                  <p className="text-white/40 text-xs line-clamp-2">{ann.body}</p>
+                  <div className="flex items-center gap-1.5 mt-2 text-white/25 text-[10px]">
+                    <Clock className="w-3 h-3" />
+                    {new Date(ann.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

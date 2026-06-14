@@ -17,6 +17,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { CurrencyProvider } from "@/components/currency-provider";
+import { SiteLayoutWrapper } from "@/components/site-layout-wrapper";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
@@ -82,11 +83,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <CurrencyProvider>
-          <Navbar />
-          {children}
-          <Footer />
-          <ContactFormPopup />
-          <ChatBot />
+          <SiteLayoutWrapper>
+            {children}
+          </SiteLayoutWrapper>
           <Toaster />
           <Analytics />
           <SpeedInsights />

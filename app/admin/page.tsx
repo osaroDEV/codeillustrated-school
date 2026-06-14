@@ -1,0 +1,671 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { courses } from "@/lib/courses";
+import {
+  Key, Users, Megaphone, Copy, Check, Trash2, Plus,
+  Loader2, LogOut, GraduationCap, ShieldCheck, RefreshCw,
+  BookOpen, Calendar, ChevronDown, ChevronUp, Send,
+} from "lucide-react";
+
+type Tab = "invites" | "learners" | "announcements";
+
+interface InviteCode {
+  id: string;
+  code: string;
+  course_id: string;
+  used_by: string | null;
+  used_at: string | null;
+  expires_at: string | null;
+  created_at: string;
+  profiles?: { full_name: string } | null;
+}
+
+interface Enrollment {
+  id: string;
+  course_id: string;
+  progress: number;
+  status: string;
+  next_session: string | null;
+  enrolled_at: string;
+}
+
+interface Learner {
+  id: string;
+  full_name: string | null;
+  created_at: string;
+  enrollments: Enrollment[];
+}
+
+interface Announcement {
+  id: string;
+  title: string;
+  body: string;
+  course_id: string | null;
+  created_at: string;
+}
+
+const adminSecret =
+  typeof window !== "undefined"
+    ? sessionStorage.getItem("admin_secret") || ""
+    : "";
+
+function useAdminSecret() {
+  const [secret, setSecret] = useState<string | null>(null);
+  useEffect(() => {
+    setSecret(sessionStorage.getItem("admin_secret") || "");
+  }, []);
+  return secret;
+}
+
+export default function AdminPage() {
+  const router = useRouter();
+  const secret = useAdminSecret();
+  const [tab, setTab] = useState<Tab>("invites");
+
+  // Invites state
+  const [invites, setInvites] = useState<InviteCode[]>([]);
+  const [loadingInvites, setLoadingInvites] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(courses[0].id);
+  const [expiresDays, setExpiresDays] = useState("30");
+  const [generating, setGenerating] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [inviteError, setInviteError] = useState("");
+
+  // Learners state
+  const [learners, setLearners] = useState<Learner[]>([]);
+  const [loadingLearners, setLoadingLearners] = useState(false);
+  const [expandedLearner, setExpandedLearner] = useState<string | null>(null);
+  const [editingEnrollment, setEditingEnrollment] = useState<string | null>(null);
+  const [progressEdit, setProgressEdit] = useState(0);
+  const [nextSessionEdit, setNextSessionEdit] = useState("");
+  const [notesEdit, setNotesEdit] = useState("");
+  const [savingEnrollment, setSavingEnrollment] = useState(false);
+
+  // Announcements state
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
+  const [annTitle, setAnnTitle] = useState("");
+  const [annBody, setAnnBody] = useState("");
+  const [annCourseId, setAnnCourseId] = useState("");
+  const [postingAnn, setPostingAnn] = useState(false);
+
+  const fetchInvites = useCallback(async () => {
+    if (!secret) return;
+    setLoadingInvites(true);
+    const res = await fetch("/academy/api/admin/invite", { headers: { "x-admin-secret": secret || "" } });
+    if (res.ok) setInvites(await res.json());
+    setLoadingInvites(false);
+  }, [secret]);
+
+  const fetchLearners = useCallback(async () => {
+    if (!secret) return;
+    setLoadingLearners(true);
+    const res = await fetch("/academy/api/admin/learners", { headers: { "x-admin-secret": secret || "" } });
+    if (res.ok) setLearners(await res.json());
+    setLoadingLearners(false);
+  }, [secret]);
+
+  const fetchAnnouncements = useCallback(async () => {
+    if (!secret) return;
+    setLoadingAnnouncements(true);
+    const res = await fetch("/academy/api/admin/announcements", { headers: { "x-admin-secret": secret || "" } });
+    if (res.ok) setAnnouncements(await res.json());
+    setLoadingAnnouncements(false);
+  }, [secret]);
+
+  useEffect(() => {
+    if (secret === null) return;
+    if (!secret) {
+      router.push("/admin/login");
+      return;
+    }
+    if (tab === "invites") fetchInvites();
+    if (tab === "learners") fetchLearners();
+    if (tab === "announcements") fetchAnnouncements();
+  }, [tab, secret, fetchInvites, fetchLearners, fetchAnnouncements, router]);
+
+  async function generateInvite() {
+    setGenerating(true);
+    setInviteError("");
+    try {
+      const res = await fetch("/academy/api/admin/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-secret": secret || "" },
+        body: JSON.stringify({ course_id: selectedCourse, expires_days: expiresDays ? parseInt(expiresDays) : null }),
+      });
+      if (res.ok) {
+        const newCode = await res.json();
+        setInvites((prev) => [newCode, ...prev]);
+      } else {
+        const data = await res.json();
+        setInviteError(data.error || "Failed to generate invite code.");
+      }
+    } catch {
+      setInviteError("Network error. Please check your database settings or try again.");
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  async function deleteInvite(id: string) {
+    setInviteError("");
+    try {
+      const res = await fetch("/academy/api/admin/invite", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", "x-admin-secret": secret || "" },
+        body: JSON.stringify({ id }),
+      });
+      if (res.ok) {
+        setInvites((prev) => prev.filter((inv) => inv.id !== id));
+      } else {
+        const data = await res.json();
+        setInviteError(data.error || "Failed to delete invite code.");
+      }
+    } catch {
+      setInviteError("Network error. Failed to delete invite code.");
+    }
+  }
+
+  function copyCode(code: string, id: string) {
+    navigator.clipboard.writeText(code);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  }
+
+  async function saveEnrollment(enrollmentId: string) {
+    setSavingEnrollment(true);
+    await fetch("/academy/api/admin/learners", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "x-admin-secret": secret || "" },
+      body: JSON.stringify({
+        enrollment_id: enrollmentId,
+        progress: progressEdit,
+        next_session: nextSessionEdit || null,
+        notes: notesEdit || null,
+      }),
+    });
+    setSavingEnrollment(false);
+    setEditingEnrollment(null);
+    fetchLearners();
+  }
+
+  async function postAnnouncement() {
+    if (!annTitle || !annBody) return;
+    setPostingAnn(true);
+    await fetch("/academy/api/admin/announcements", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-secret": secret || "" },
+      body: JSON.stringify({ title: annTitle, body: annBody, course_id: annCourseId || null }),
+    });
+    setAnnTitle("");
+    setAnnBody("");
+    setAnnCourseId("");
+    setPostingAnn(false);
+    fetchAnnouncements();
+  }
+
+  async function deleteAnnouncement(id: string) {
+    await fetch("/academy/api/admin/announcements", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", "x-admin-secret": secret || "" },
+      body: JSON.stringify({ id }),
+    });
+    setAnnouncements((prev) => prev.filter((a) => a.id !== id));
+  }
+
+  function handleSignOut() {
+    sessionStorage.removeItem("admin_secret");
+    document.cookie = "admin_auth=; max-age=0; path=/";
+    router.push("/admin/login");
+  }
+
+  const tabs = [
+    { key: "invites" as Tab, label: "Invite Codes", icon: Key, count: invites.filter((i) => !i.used_by).length },
+    { key: "learners" as Tab, label: "Learners", icon: Users, count: learners.length },
+    { key: "announcements" as Tab, label: "Announcements", icon: Megaphone, count: announcements.length },
+  ];
+
+  return (
+    <div className="min-h-screen">
+      {/* Header */}
+      <header className="border-b border-white/[0.08] bg-[#0d0d14]/80 backdrop-blur sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-gradient-to-br from-[#1a596c] to-[#0f2e38] rounded-xl flex items-center justify-center shadow-md shadow-[#1a596c]/30">
+              <ShieldCheck className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <p className="text-white font-bold text-sm leading-tight">Admin Panel</p>
+              <div className="flex items-center gap-1.5">
+                <GraduationCap className="w-3 h-3 text-white/30" />
+                <p className="text-white/30 text-[10px]">Code Illustrated</p>
+              </div>
+            </div>
+          </div>
+          <button
+            id="admin-signout-btn"
+            onClick={handleSignOut}
+            className="flex items-center gap-2 text-white/40 hover:text-red-400 text-sm transition-colors"
+          >
+            <LogOut className="w-4 h-4" /> Sign out
+          </button>
+        </div>
+      </header>
+
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        {/* Tabs */}
+        <div className="flex items-center gap-1 bg-white/[0.04] border border-white/[0.08] rounded-2xl p-1 mb-8 w-fit">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              id={`admin-tab-${t.key}`}
+              onClick={() => setTab(t.key)}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                tab === t.key
+                  ? "bg-white/10 text-white shadow-sm"
+                  : "text-white/40 hover:text-white"
+              }`}
+            >
+              <t.icon className="w-4 h-4" />
+              {t.label}
+              {t.count > 0 && (
+                <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                  tab === t.key ? "bg-[#c31d24]/30 text-[#c31d24]" : "bg-white/10 text-white/40"
+                }`}>
+                  {t.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* ─── INVITE CODES TAB ─── */}
+        {tab === "invites" && (
+          <div>
+            {/* Generator */}
+            <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-6 mb-6">
+              <h2 className="text-white font-semibold mb-5 flex items-center gap-2">
+                <Plus className="w-4 h-4 text-[#ffbd59]" /> Generate New Invite Code
+              </h2>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="block text-white/50 text-xs mb-2 uppercase tracking-wider">Course</label>
+                  <select
+                    id="invite-course-select"
+                    value={selectedCourse}
+                    onChange={(e) => setSelectedCourse(e.target.value)}
+                    className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#1a596c]/60 transition-all"
+                  >
+                    {courses.map((c) => (
+                      <option key={c.id} value={c.id} className="bg-[#0d0d14]">
+                        {c.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="sm:w-40">
+                  <label className="block text-white/50 text-xs mb-2 uppercase tracking-wider">Expires in (days)</label>
+                  <input
+                    id="invite-expires-input"
+                    type="number"
+                    value={expiresDays}
+                    onChange={(e) => setExpiresDays(e.target.value)}
+                    placeholder="30"
+                    min="1"
+                    className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#1a596c]/60 transition-all"
+                  />
+                </div>
+                <div className="sm:self-end">
+                  <button
+                    id="generate-invite-btn"
+                    onClick={generateInvite}
+                    disabled={generating}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-[#1a596c] to-[#3da3bc] hover:from-[#174f60] hover:to-[#1a596c] text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg shadow-[#1a596c]/25 disabled:opacity-60 whitespace-nowrap"
+                  >
+                    {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Key className="w-4 h-4" />}
+                    Generate Code
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Codes list */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-white font-semibold">All Invite Codes</h2>
+              <button onClick={fetchInvites} className="text-white/40 hover:text-white transition-colors">
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </div>
+
+            {loadingInvites ? (
+              <div className="flex items-center justify-center py-12 text-white/30">
+                <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading...
+              </div>
+            ) : invites.length === 0 ? (
+              <div className="text-center py-12 text-white/30 text-sm border border-white/[0.08] rounded-2xl">
+                No invite codes yet. Generate one above.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {invites.map((inv) => {
+                  const course = courses.find((c) => c.id === inv.course_id);
+                  const isUsed = !!inv.used_by;
+                  const isExpired = inv.expires_at && new Date(inv.expires_at) < new Date();
+                  return (
+                    <div key={inv.id} className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+                      isUsed
+                        ? "bg-white/[0.02] border-white/[0.05] opacity-60"
+                        : isExpired
+                        ? "bg-yellow-500/[0.03] border-yellow-500/10"
+                        : "bg-white/[0.04] border-white/[0.08] hover:border-white/[0.15]"
+                    }`}>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <code className="text-white font-mono font-bold tracking-wider text-sm">{inv.code}</code>
+                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                            isUsed
+                              ? "bg-white/10 text-white/40"
+                              : isExpired
+                              ? "bg-yellow-500/15 text-yellow-400"
+                              : "bg-green-500/15 text-green-400"
+                          }`}>
+                            {isUsed ? "Used" : isExpired ? "Expired" : "Active"}
+                          </span>
+                        </div>
+                        <p className="text-white/40 text-xs mt-1">
+                          {course?.title || inv.course_id}
+                          {inv.used_by && inv.profiles?.full_name && ` · Used by ${inv.profiles.full_name}`}
+                          {inv.expires_at && !isUsed && ` · Expires ${new Date(inv.expires_at).toLocaleDateString("en-GB")}`}
+                          {isUsed && inv.used_at && ` on ${new Date(inv.used_at).toLocaleDateString("en-GB")}`}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {!isUsed && (
+                          <button
+                            onClick={() => copyCode(inv.code, inv.id)}
+                            className="p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white/50 hover:text-white transition-all"
+                            title="Copy code"
+                          >
+                            {copiedId === inv.id ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => deleteInvite(inv.id)}
+                          className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400/50 hover:text-red-400 transition-all"
+                          title="Delete code"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── LEARNERS TAB ─── */}
+        {tab === "learners" && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-white font-semibold">Registered Learners ({learners.length})</h2>
+              <button onClick={fetchLearners} className="text-white/40 hover:text-white transition-colors">
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </div>
+
+            {loadingLearners ? (
+              <div className="flex items-center justify-center py-12 text-white/30">
+                <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading...
+              </div>
+            ) : learners.length === 0 ? (
+              <div className="text-center py-12 text-white/30 text-sm border border-white/[0.08] rounded-2xl">
+                No learners registered yet
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {learners.map((learner) => {
+                  const isExpanded = expandedLearner === learner.id;
+                  return (
+                    <div key={learner.id} className="bg-white/[0.04] border border-white/[0.08] rounded-2xl overflow-hidden">
+                      {/* Learner header */}
+                      <button
+                        className="w-full flex items-center gap-4 p-5 text-left hover:bg-white/[0.02] transition-colors"
+                        onClick={() => setExpandedLearner(isExpanded ? null : learner.id)}
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#1a596c] to-[#0f2e38] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                          {(learner.full_name || "?").slice(0, 2).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white font-semibold">{learner.full_name || "—"}</p>
+                          <p className="text-white/40 text-xs">
+                            {learner.enrollments?.length || 0} course{(learner.enrollments?.length || 0) !== 1 ? "s" : ""} ·{" "}
+                            Joined {new Date(learner.created_at).toLocaleDateString("en-GB")}
+                          </p>
+                        </div>
+                        {isExpanded ? <ChevronUp className="w-4 h-4 text-white/30" /> : <ChevronDown className="w-4 h-4 text-white/30" />}
+                      </button>
+
+                      {/* Expanded enrollments */}
+                      {isExpanded && (
+                        <div className="border-t border-white/[0.06] px-5 pb-5">
+                          {(learner.enrollments || []).length === 0 ? (
+                            <p className="text-white/30 text-sm py-4">No enrollments</p>
+                          ) : (
+                            <div className="space-y-4 pt-4">
+                              {learner.enrollments.map((enr) => {
+                                const course = courses.find((c) => c.id === enr.course_id);
+                                const isEditing = editingEnrollment === enr.id;
+                                return (
+                                  <div key={enr.id} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
+                                    <div className="flex items-center justify-between mb-3">
+                                      <div className="flex items-center gap-2">
+                                        <BookOpen className="w-4 h-4 text-[#c31d24]" />
+                                        <span className="text-white text-sm font-medium">{course?.title || enr.course_id}</span>
+                                      </div>
+                                      <button
+                                        onClick={() => {
+                                          if (isEditing) {
+                                            setEditingEnrollment(null);
+                                          } else {
+                                            setEditingEnrollment(enr.id);
+                                            setProgressEdit(enr.progress || 0);
+                                            setNextSessionEdit(enr.next_session ? enr.next_session.slice(0, 16) : "");
+                                            setNotesEdit("");
+                                          }
+                                        }}
+                                        className="text-xs text-white/40 hover:text-white border border-white/10 px-3 py-1 rounded-lg hover:border-white/20 transition-all"
+                                      >
+                                        {isEditing ? "Cancel" : "Edit"}
+                                      </button>
+                                    </div>
+
+                                    {isEditing ? (
+                                      <div className="space-y-3">
+                                        <div>
+                                          <label className="text-white/40 text-xs mb-1 block">Progress: {progressEdit}%</label>
+                                          <input
+                                            type="range" min="0" max="100" value={progressEdit}
+                                            onChange={(e) => setProgressEdit(parseInt(e.target.value))}
+                                            className="w-full accent-[#c31d24]"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="text-white/40 text-xs mb-1 block">Next session (date & time)</label>
+                                          <div className="relative">
+                                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                                            <input
+                                              type="datetime-local"
+                                              value={nextSessionEdit}
+                                              onChange={(e) => setNextSessionEdit(e.target.value)}
+                                              className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-2.5 pl-10 text-white text-sm focus:outline-none focus:border-[#c31d24]/50"
+                                            />
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <label className="text-white/40 text-xs mb-1 block">Instructor notes (optional)</label>
+                                          <textarea
+                                            value={notesEdit}
+                                            onChange={(e) => setNotesEdit(e.target.value)}
+                                            rows={2}
+                                            placeholder="e.g. Great progress on Module 2..."
+                                            className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#c31d24]/50 resize-none placeholder-white/20"
+                                          />
+                                        </div>
+                                        <button
+                                          onClick={() => saveEnrollment(enr.id)}
+                                          disabled={savingEnrollment}
+                                          className="flex items-center gap-2 bg-[#c31d24] hover:bg-[#b01a20] text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-60"
+                                        >
+                                          {savingEnrollment ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                                          Save changes
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-white/40 text-xs">Progress</span>
+                                          <span className="text-white text-xs font-medium">{enr.progress || 0}%</span>
+                                        </div>
+                                        <div className="w-full h-1.5 bg-white/[0.08] rounded-full overflow-hidden">
+                                          <div className="h-full bg-gradient-to-r from-[#c31d24] to-[#f5a623] rounded-full" style={{ width: `${enr.progress || 0}%` }} />
+                                        </div>
+                                        {enr.next_session && (
+                                          <div className="flex items-center gap-2 text-white/40 text-xs pt-1">
+                                            <Calendar className="w-3.5 h-3.5 text-[#ffbd59]" />
+                                            Next: {new Date(enr.next_session).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── ANNOUNCEMENTS TAB ─── */}
+        {tab === "announcements" && (
+          <div>
+            {/* Post form */}
+            <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-6 mb-6">
+              <h2 className="text-white font-semibold mb-5 flex items-center gap-2">
+                <Send className="w-4 h-4 text-[#ffbd59]" /> Post Announcement
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-white/50 text-xs mb-2 uppercase tracking-wider">Title</label>
+                  <input
+                    id="announcement-title"
+                    type="text"
+                    value={annTitle}
+                    onChange={(e) => setAnnTitle(e.target.value)}
+                    placeholder="e.g. New resources added for Frontend learners"
+                    className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 text-sm focus:outline-none focus:border-[#ffbd59]/50 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/50 text-xs mb-2 uppercase tracking-wider">Message</label>
+                  <textarea
+                    id="announcement-body"
+                    value={annBody}
+                    onChange={(e) => setAnnBody(e.target.value)}
+                    rows={3}
+                    placeholder="Write your announcement here..."
+                    className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 text-sm focus:outline-none focus:border-[#ffbd59]/50 transition-all resize-none"
+                  />
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <label className="block text-white/50 text-xs mb-2 uppercase tracking-wider">Target audience</label>
+                    <select
+                      id="announcement-course"
+                      value={annCourseId}
+                      onChange={(e) => setAnnCourseId(e.target.value)}
+                      className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#ffbd59]/50 transition-all"
+                    >
+                      <option value="" className="bg-[#0d0d14]">All learners (global)</option>
+                      {courses.map((c) => (
+                        <option key={c.id} value={c.id} className="bg-[#0d0d14]">{c.title} only</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="sm:self-end">
+                    <button
+                      id="post-announcement-btn"
+                      onClick={postAnnouncement}
+                      disabled={postingAnn || !annTitle || !annBody}
+                      className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-[#ffbd59] to-[#f5a623] hover:from-[#f5a623] hover:to-[#d9890a] text-black font-semibold px-6 py-3 rounded-xl transition-all shadow-lg shadow-[#ffbd59]/20 disabled:opacity-60 whitespace-nowrap"
+                    >
+                      {postingAnn ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      Post
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Announcements list */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-white font-semibold">Posted Announcements</h2>
+              <button onClick={fetchAnnouncements} className="text-white/40 hover:text-white transition-colors">
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </div>
+
+            {loadingAnnouncements ? (
+              <div className="flex items-center justify-center py-12 text-white/30">
+                <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading...
+              </div>
+            ) : announcements.length === 0 ? (
+              <div className="text-center py-12 text-white/30 text-sm border border-white/[0.08] rounded-2xl">
+                No announcements posted yet
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {announcements.map((ann) => {
+                  const course = courses.find((c) => c.id === ann.course_id);
+                  return (
+                    <div key={ann.id} className="flex items-start gap-4 p-5 bg-white/[0.04] border border-white/[0.08] rounded-2xl hover:border-white/[0.12] transition-all">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <h3 className="text-white font-semibold text-sm">{ann.title}</h3>
+                          <span className="text-[10px] bg-white/[0.06] text-white/40 px-2 py-0.5 rounded-full">
+                            {course ? course.title : "All Learners"}
+                          </span>
+                        </div>
+                        <p className="text-white/50 text-sm">{ann.body}</p>
+                        <p className="text-white/25 text-xs mt-2">
+                          {new Date(ann.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => deleteAnnouncement(ann.id)}
+                        className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400/50 hover:text-red-400 transition-all flex-shrink-0"
+                        title="Delete announcement"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
