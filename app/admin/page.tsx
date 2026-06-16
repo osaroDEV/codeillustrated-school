@@ -82,6 +82,9 @@ export default function AdminPage() {
   const [nextSessionEdit, setNextSessionEdit] = useState("");
   const [notesEdit, setNotesEdit] = useState("");
   const [savingEnrollment, setSavingEnrollment] = useState(false);
+  const [enrollingLearnerId, setEnrollingLearnerId] = useState<string | null>(null);
+  const [enrollCourseId, setEnrollCourseId] = useState(courses[0].id);
+  const [creatingEnrollment, setCreatingEnrollment] = useState(false);
 
   // Announcements state
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -90,6 +93,8 @@ export default function AdminPage() {
   const [annBody, setAnnBody] = useState("");
   const [annCourseId, setAnnCourseId] = useState("");
   const [postingAnn, setPostingAnn] = useState(false);
+  const [annError, setAnnError] = useState("");
+  const [learnersError, setLearnersError] = useState("");
 
   const fetchInvites = useCallback(async () => {
     if (!secret) return;
@@ -102,8 +107,14 @@ export default function AdminPage() {
   const fetchLearners = useCallback(async () => {
     if (!secret) return;
     setLoadingLearners(true);
+    setLearnersError("");
     const res = await fetch("/academy/api/admin/learners", { headers: { "x-admin-secret": secret || "" } });
-    if (res.ok) setLearners(await res.json());
+    if (res.ok) {
+      setLearners(await res.json());
+    } else {
+      const d = await res.json().catch(() => ({}));
+      setLearnersError(d.error || "Failed to load learners.");
+    }
     setLoadingLearners(false);
   }, [secret]);
 
@@ -194,16 +205,34 @@ export default function AdminPage() {
   async function postAnnouncement() {
     if (!annTitle || !annBody) return;
     setPostingAnn(true);
-    await fetch("/academy/api/admin/announcements", {
+    setAnnError("");
+    const res = await fetch("/academy/api/admin/announcements", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-admin-secret": secret || "" },
       body: JSON.stringify({ title: annTitle, body: annBody, course_id: annCourseId || null }),
     });
-    setAnnTitle("");
-    setAnnBody("");
-    setAnnCourseId("");
+    if (res.ok) {
+      setAnnTitle("");
+      setAnnBody("");
+      setAnnCourseId("");
+      fetchAnnouncements();
+    } else {
+      const d = await res.json().catch(() => ({}));
+      setAnnError(d.error || "Failed to post announcement.");
+    }
     setPostingAnn(false);
-    fetchAnnouncements();
+  }
+
+  async function createEnrollment(userId: string) {
+    setCreatingEnrollment(true);
+    const res = await fetch("/academy/api/admin/learners", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-secret": secret || "" },
+      body: JSON.stringify({ user_id: userId, course_id: enrollCourseId }),
+    });
+    setCreatingEnrollment(false);
+    setEnrollingLearnerId(null);
+    if (res.ok) fetchLearners();
   }
 
   async function deleteAnnouncement(id: string) {
@@ -331,6 +360,12 @@ export default function AdminPage() {
               </div>
             </div>
 
+            {inviteError && (
+              <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                {inviteError}
+              </div>
+            )}
+
             {/* Codes list */}
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-white font-semibold">All Invite Codes</h2>
@@ -417,6 +452,12 @@ export default function AdminPage() {
               </button>
             </div>
 
+            {learnersError && (
+              <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                {learnersError}
+              </div>
+            )}
+
             {loadingLearners ? (
               <div className="flex items-center justify-center py-12 text-white/30">
                 <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading...
@@ -452,10 +493,48 @@ export default function AdminPage() {
                       {/* Expanded enrollments */}
                       {isExpanded && (
                         <div className="border-t border-white/[0.06] px-5 pb-5">
+                          {/* Enroll in course */}
+                          <div className="pt-4 pb-2">
+                            {enrollingLearnerId === learner.id ? (
+                              <div className="flex items-center gap-2">
+                                <select
+                                  value={enrollCourseId}
+                                  onChange={(e) => setEnrollCourseId(e.target.value)}
+                                  className="flex-1 bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#1a596c]/60"
+                                >
+                                  {courses.map((c) => (
+                                    <option key={c.id} value={c.id} className="bg-[#0d0d14]">{c.title}</option>
+                                  ))}
+                                </select>
+                                <button
+                                  onClick={() => createEnrollment(learner.id)}
+                                  disabled={creatingEnrollment}
+                                  className="flex items-center gap-1.5 bg-[#1a596c] hover:bg-[#174f60] text-white text-xs font-medium px-3 py-2 rounded-xl transition-colors disabled:opacity-60"
+                                >
+                                  {creatingEnrollment ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                                  Confirm
+                                </button>
+                                <button
+                                  onClick={() => setEnrollingLearnerId(null)}
+                                  className="text-white/30 hover:text-white text-xs px-3 py-2 rounded-xl border border-white/10 transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => { setEnrollingLearnerId(learner.id); setEnrollCourseId(courses[0].id); }}
+                                className="flex items-center gap-1.5 text-white/40 hover:text-white border border-white/10 hover:border-white/20 text-xs px-3 py-2 rounded-xl transition-all"
+                              >
+                                <Plus className="w-3.5 h-3.5" /> Enroll in course
+                              </button>
+                            )}
+                          </div>
+
                           {(learner.enrollments || []).length === 0 ? (
-                            <p className="text-white/30 text-sm py-4">No enrollments</p>
+                            <p className="text-white/30 text-sm py-2">No enrollments yet</p>
                           ) : (
-                            <div className="space-y-4 pt-4">
+                            <div className="space-y-4 pt-2">
                               {learner.enrollments.map((enr) => {
                                 const course = courses.find((c) => c.id === enr.course_id);
                                 const isEditing = editingEnrollment === enr.id;
@@ -616,6 +695,12 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
+
+            {annError && (
+              <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                {annError}
+              </div>
+            )}
 
             {/* Announcements list */}
             <div className="flex items-center justify-between mb-4">

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import {
   Eye, EyeOff, Loader2, GraduationCap,
   CheckCircle2, ArrowRight, Key, User, Mail, Lock,
@@ -72,25 +71,12 @@ export default function SignupPage() {
     setError("");
 
     try {
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: fullName } },
-      });
-
-      if (authError || !authData.user) {
-        setError(authError?.message || "Failed to create account.");
-        setLoading(false);
-        return;
-      }
-
-      // Mark invite code as used + create enrollment via API
       const res = await fetch("/academy/api/auth/complete-signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: authData.user.id,
+          email,
+          password,
           fullName,
           inviteId: inviteData!.id,
           courseId: inviteData!.course_id,
@@ -98,7 +84,8 @@ export default function SignupPage() {
       });
 
       if (!res.ok) {
-        setError("Account created but enrollment failed. Contact support.");
+        const errData = await res.json().catch(() => ({}));
+        setError(errData.error || "Failed to create account. Please try again.");
         setLoading(false);
         return;
       }
@@ -228,7 +215,7 @@ export default function SignupPage() {
 
               <p className="text-center text-white/30 text-xs mt-6">
                 Don&apos;t have a code?{" "}
-                <a href="https://codeillustrated.com" className="text-white/50 hover:text-white underline transition-colors">
+                <a href="https://codeillustrated.com/academy/courses" className="text-white/50 hover:text-white underline transition-colors">
                   Enroll in a course
                 </a>
               </p>

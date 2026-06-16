@@ -24,7 +24,12 @@ function LoginForm() {
 
     const { error: signInError } = await signIn(email, password);
     if (signInError) {
-      setError("Invalid email or password. Please try again.");
+      const msg = signInError.message.toLowerCase();
+      if (msg.includes("email not confirmed")) {
+        setError("Please check your email and click the confirmation link before signing in.");
+      } else {
+        setError("Invalid email or password. Please try again.");
+      }
       setLoading(false);
       return;
     }

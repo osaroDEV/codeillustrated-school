@@ -1,29 +1,38 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  let response = NextResponse.next({ request });
 
   // Protect /dashboard routes — require authenticated learner
   if (pathname.startsWith("/dashboard")) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: {
-          cookie: request.headers.get("cookie") ?? "",
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              request.cookies.set(name, value)
+            );
+            response = NextResponse.next({ request });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options)
+            );
+          },
         },
-      },
-    });
+      }
+    );
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
-      const loginUrl = new URL("/auth/login", request.url);
+      const loginUrl = new URL("/academy/auth/login", request.url);
       loginUrl.searchParams.set("redirectTo", pathname);
       return NextResponse.redirect(loginUrl);
     }
@@ -36,12 +45,12 @@ export async function middleware(request: NextRequest) {
     const adminSecret = process.env.ADMIN_SECRET;
 
     if (!adminAuth || adminAuth !== adminSecret) {
-      const adminLoginUrl = new URL("/admin/login", request.url);
+      const adminLoginUrl = new URL("/academy/admin/login", request.url);
       return NextResponse.redirect(adminLoginUrl);
     }
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {

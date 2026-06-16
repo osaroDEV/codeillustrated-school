@@ -1,10 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-// Browser client — uses anon key, respects Row Level Security
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Browser client — cookie-based session so middleware can read it
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 // Server-side admin client — uses service role key, bypasses RLS
 // Only call this from API routes / server components, NEVER expose to client

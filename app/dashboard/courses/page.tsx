@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
 import { createAdminClient } from "@/lib/supabase";
 import { courses } from "@/lib/courses";
 import { Calendar, CheckCircle2, Clock, BookOpen } from "lucide-react";
@@ -12,13 +12,15 @@ export const metadata: Metadata = {
 async function getEnrollments() {
   try {
     const cookieStore = await cookies();
-    const allCookies = cookieStore.getAll();
-    const cookieHeader = allCookies.map((c) => `${c.name}=${c.value}`).join("; ");
-
-    const supabase = createClient(
+    const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { global: { headers: { cookie: cookieHeader } } }
+      {
+        cookies: {
+          getAll() { return cookieStore.getAll(); },
+          setAll() {},
+        },
+      }
     );
 
     const { data: { user } } = await supabase.auth.getUser();

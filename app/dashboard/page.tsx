@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
 import { createAdminClient } from "@/lib/supabase";
 import { courses } from "@/lib/courses";
 import {
@@ -16,13 +16,15 @@ export const metadata: Metadata = {
 async function getDashboardData() {
   try {
     const cookieStore = await cookies();
-    const allCookies = cookieStore.getAll();
-    const cookieHeader = allCookies.map((c) => `${c.name}=${c.value}`).join("; ");
-
-    const supabase = createClient(
+    const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { global: { headers: { cookie: cookieHeader } } }
+      {
+        cookies: {
+          getAll() { return cookieStore.getAll(); },
+          setAll() {},
+        },
+      }
     );
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -37,9 +39,10 @@ async function getDashboardData() {
     ]);
 
     return {
-      profile: profileRes.data,
-      enrollments: enrollmentsRes.data || [],
-      announcements: announcementsRes.data || [],
+      user,
+      profile: profileRes.data ?? null,
+      enrollments: enrollmentsRes.error ? [] : (enrollmentsRes.data ?? []),
+      announcements: announcementsRes.error ? [] : (announcementsRes.data ?? []),
     };
   } catch {
     return null;
@@ -55,7 +58,11 @@ function getGreeting() {
 
 export default async function DashboardPage() {
   const data = await getDashboardData();
-  const firstName = data?.profile?.full_name?.split(" ")[0] || "Learner";
+  const firstName =
+    data?.profile?.full_name?.split(" ")[0] ||
+    (data?.user?.user_metadata?.full_name as string | undefined)?.split(" ")[0] ||
+    data?.user?.email?.split("@")[0] ||
+    "Learner";
   const enrollments = data?.enrollments || [];
   const announcements = data?.announcements || [];
 
