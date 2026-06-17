@@ -26,9 +26,11 @@ function LoginForm() {
     if (signInError) {
       const msg = signInError.message.toLowerCase();
       if (msg.includes("email not confirmed")) {
-        setError("Please check your email and click the confirmation link before signing in.");
-      } else {
+        setError("Your account email is not confirmed. Contact your instructor to activate your account.");
+      } else if (msg.includes("invalid login credentials")) {
         setError("Invalid email or password. Please try again.");
+      } else {
+        setError(signInError.message);
       }
       setLoading(false);
       return;

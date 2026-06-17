@@ -43,6 +43,25 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(data, { status: 201 });
 }
 
+// DELETE — remove an enrollment
+export async function DELETE(req: NextRequest) {
+  const adminSecret = process.env.ADMIN_SECRET;
+  const authHeader = req.headers.get("x-admin-secret");
+  if (authHeader !== adminSecret) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { enrollment_id } = await req.json();
+  if (!enrollment_id) {
+    return NextResponse.json({ error: "enrollment_id is required" }, { status: 400 });
+  }
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("enrollments").delete().eq("id", enrollment_id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true });
+}
+
 // PATCH — update a learner's enrollment (progress, next_session, notes, status)
 export async function PATCH(req: NextRequest) {
   const adminSecret = process.env.ADMIN_SECRET;

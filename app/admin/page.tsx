@@ -46,10 +46,6 @@ interface Announcement {
   created_at: string;
 }
 
-const adminSecret =
-  typeof window !== "undefined"
-    ? sessionStorage.getItem("admin_secret") || ""
-    : "";
 
 function useAdminSecret() {
   const [secret, setSecret] = useState<string | null>(null);
@@ -221,6 +217,15 @@ export default function AdminPage() {
       setAnnError(d.error || "Failed to post announcement.");
     }
     setPostingAnn(false);
+  }
+
+  async function deleteEnrollment(enrollmentId: string) {
+    await fetch("/academy/api/admin/learners", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", "x-admin-secret": secret || "" },
+      body: JSON.stringify({ enrollment_id: enrollmentId }),
+    });
+    fetchLearners();
   }
 
   async function createEnrollment(userId: string) {
@@ -560,6 +565,15 @@ export default function AdminPage() {
                                       >
                                         {isEditing ? "Cancel" : "Edit"}
                                       </button>
+                                      {!isEditing && (
+                                        <button
+                                          onClick={() => deleteEnrollment(enr.id)}
+                                          className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400/50 hover:text-red-400 transition-all"
+                                          title="Remove course"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      )}
                                     </div>
 
                                     {isEditing ? (
