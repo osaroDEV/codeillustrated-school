@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase";
 import { courses } from "@/lib/courses";
 import {
   BookOpen, TrendingUp, Calendar, Megaphone,
-  Clock, ChevronRight, Zap,
+  Clock, ChevronRight, Zap, FileText,
 } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -32,10 +32,11 @@ async function getDashboardData() {
 
     const admin = createAdminClient();
 
-    const [profileRes, enrollmentsRes, announcementsRes] = await Promise.all([
+    const [profileRes, enrollmentsRes, announcementsRes, notesRes] = await Promise.all([
       admin.from("profiles").select("full_name").eq("id", user.id).single(),
       admin.from("enrollments").select("*").eq("user_id", user.id),
       admin.from("announcements").select("*").order("created_at", { ascending: false }).limit(3),
+      admin.from("learner_notes").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
     ]);
 
     return {
@@ -43,6 +44,7 @@ async function getDashboardData() {
       profile: profileRes.data ?? null,
       enrollments: enrollmentsRes.error ? [] : (enrollmentsRes.data ?? []),
       announcements: announcementsRes.error ? [] : (announcementsRes.data ?? []),
+      notes: notesRes.error ? [] : (notesRes.data ?? []),
     };
   } catch {
     return null;
@@ -65,6 +67,7 @@ export default async function DashboardPage() {
     "Learner";
   const enrollments = data?.enrollments || [];
   const announcements = data?.announcements || [];
+  const notes = data?.notes || [];
 
   return (
     <div className="p-6 lg:p-8 max-w-6xl mx-auto">
@@ -223,6 +226,32 @@ export default async function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Notes from instructor */}
+      {notes.length > 0 && (
+        <div className="mt-8">
+          <div className="flex items-center gap-2 mb-4">
+            <FileText className="w-4 h-4 text-[#ffbd59]" />
+            <h2 className="text-lg font-semibold text-white">Notes from Your Instructor</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {notes.map((note: { id: string; title: string | null; body: string; updated_at: string }) => (
+              <div
+                key={note.id}
+                className="bg-[#ffbd59]/5 border border-[#ffbd59]/15 rounded-2xl p-5 hover:border-[#ffbd59]/25 transition-all"
+              >
+                {note.title && (
+                  <p className="text-[#ffbd59] text-sm font-semibold mb-2">{note.title}</p>
+                )}
+                <p className="text-white/60 text-sm leading-relaxed whitespace-pre-wrap">{note.body}</p>
+                <p className="text-white/20 text-[10px] mt-3">
+                  {new Date(note.updated_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { courses } from "@/lib/courses";
 import {
   Key, Users, Megaphone, Copy, Check, Trash2, Plus,
   Loader2, LogOut, GraduationCap, ShieldCheck, RefreshCw,
-  BookOpen, Calendar, ChevronDown, ChevronUp, Send,
+  BookOpen, Calendar, ChevronDown, ChevronUp, Send, FileText, Pencil,
 } from "lucide-react";
 
 type Tab = "invites" | "learners" | "announcements";
@@ -44,6 +44,15 @@ interface Announcement {
   body: string;
   course_id: string | null;
   created_at: string;
+}
+
+interface LearnerNote {
+  id: string;
+  user_id: string;
+  title: string | null;
+  body: string;
+  created_at: string;
+  updated_at: string;
 }
 
 
@@ -91,6 +100,15 @@ export default function AdminPage() {
   const [postingAnn, setPostingAnn] = useState(false);
   const [annError, setAnnError] = useState("");
   const [learnersError, setLearnersError] = useState("");
+
+  // Notes state
+  const [notesByUser, setNotesByUser] = useState<Record<string, LearnerNote[]>>({});
+  const [newNoteTitle, setNewNoteTitle] = useState<Record<string, string>>({});
+  const [newNoteBody, setNewNoteBody] = useState<Record<string, string>>({});
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editingNoteTitle, setEditingNoteTitle] = useState("");
+  const [editingNoteBody, setEditingNoteBody] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
 
   const fetchInvites = useCallback(async () => {
     if (!secret) return;
@@ -226,6 +244,57 @@ export default function AdminPage() {
       body: JSON.stringify({ enrollment_id: enrollmentId }),
     });
     fetchLearners();
+  }
+
+  async function fetchNotes(userId: string) {
+    const res = await fetch(`/academy/api/admin/notes?user_id=${userId}`, {
+      headers: { "x-admin-secret": secret || "" },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setNotesByUser((prev) => ({ ...prev, [userId]: data }));
+    }
+  }
+
+  async function addNote(userId: string) {
+    const body = newNoteBody[userId]?.trim();
+    if (!body) return;
+    setSavingNote(true);
+    const res = await fetch("/academy/api/admin/notes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-secret": secret || "" },
+      body: JSON.stringify({ user_id: userId, title: newNoteTitle[userId]?.trim() || null, body }),
+    });
+    if (res.ok) {
+      setNewNoteTitle((p) => ({ ...p, [userId]: "" }));
+      setNewNoteBody((p) => ({ ...p, [userId]: "" }));
+      fetchNotes(userId);
+    }
+    setSavingNote(false);
+  }
+
+  async function saveNoteEdit(userId: string) {
+    if (!editingNoteId || !editingNoteBody.trim()) return;
+    setSavingNote(true);
+    const res = await fetch("/academy/api/admin/notes", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "x-admin-secret": secret || "" },
+      body: JSON.stringify({ id: editingNoteId, title: editingNoteTitle || null, body: editingNoteBody }),
+    });
+    if (res.ok) {
+      setEditingNoteId(null);
+      fetchNotes(userId);
+    }
+    setSavingNote(false);
+  }
+
+  async function deleteNote(userId: string, noteId: string) {
+    await fetch("/academy/api/admin/notes", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", "x-admin-secret": secret || "" },
+      body: JSON.stringify({ id: noteId }),
+    });
+    fetchNotes(userId);
   }
 
   async function createEnrollment(userId: string) {
@@ -480,7 +549,11 @@ export default function AdminPage() {
                       {/* Learner header */}
                       <button
                         className="w-full flex items-center gap-4 p-5 text-left hover:bg-white/[0.02] transition-colors"
-                        onClick={() => setExpandedLearner(isExpanded ? null : learner.id)}
+                        onClick={() => {
+                          const next = isExpanded ? null : learner.id;
+                          setExpandedLearner(next);
+                          if (next && !notesByUser[next]) fetchNotes(next);
+                        }}
                       >
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#1a596c] to-[#0f2e38] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                           {(learner.full_name || "?").slice(0, 2).toUpperCase()}
@@ -639,6 +712,109 @@ export default function AdminPage() {
                               })}
                             </div>
                           )}
+
+                          {/* ── Notes section ── */}
+                          <div className="mt-5 pt-4 border-t border-white/[0.06]">
+                            <div className="flex items-center gap-2 mb-3">
+                              <FileText className="w-3.5 h-3.5 text-[#ffbd59]" />
+                              <span className="text-white/60 text-xs font-medium uppercase tracking-wider">Instructor Notes</span>
+                            </div>
+
+                            {/* Existing notes */}
+                            {(notesByUser[learner.id] || []).length > 0 && (
+                              <div className="space-y-2 mb-3">
+                                {(notesByUser[learner.id] || []).map((note) => (
+                                  <div key={note.id} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
+                                    {editingNoteId === note.id ? (
+                                      <div className="space-y-2">
+                                        <input
+                                          type="text"
+                                          value={editingNoteTitle}
+                                          onChange={(e) => setEditingNoteTitle(e.target.value)}
+                                          placeholder="Note title (optional)"
+                                          className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-1.5 text-white text-xs focus:outline-none focus:border-[#ffbd59]/50"
+                                        />
+                                        <textarea
+                                          value={editingNoteBody}
+                                          onChange={(e) => setEditingNoteBody(e.target.value)}
+                                          rows={3}
+                                          className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-1.5 text-white text-xs focus:outline-none focus:border-[#ffbd59]/50 resize-none"
+                                        />
+                                        <div className="flex gap-2">
+                                          <button
+                                            onClick={() => saveNoteEdit(learner.id)}
+                                            disabled={savingNote}
+                                            className="flex items-center gap-1.5 bg-[#ffbd59]/20 hover:bg-[#ffbd59]/30 text-[#ffbd59] text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-60"
+                                          >
+                                            {savingNote ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                                            Save
+                                          </button>
+                                          <button
+                                            onClick={() => setEditingNoteId(null)}
+                                            className="text-white/30 hover:text-white text-xs px-3 py-1.5 rounded-lg border border-white/10 transition-colors"
+                                          >
+                                            Cancel
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div>
+                                        {note.title && <p className="text-white/70 text-xs font-medium mb-1">{note.title}</p>}
+                                        <p className="text-white/50 text-xs leading-relaxed whitespace-pre-wrap">{note.body}</p>
+                                        <div className="flex items-center justify-between mt-2">
+                                          <span className="text-white/20 text-[10px]">
+                                            {new Date(note.updated_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                                          </span>
+                                          <div className="flex gap-1.5">
+                                            <button
+                                              onClick={() => { setEditingNoteId(note.id); setEditingNoteTitle(note.title || ""); setEditingNoteBody(note.body); }}
+                                              className="p-1 rounded-lg text-white/30 hover:text-[#ffbd59] hover:bg-[#ffbd59]/10 transition-all"
+                                              title="Edit note"
+                                            >
+                                              <Pencil className="w-3 h-3" />
+                                            </button>
+                                            <button
+                                              onClick={() => deleteNote(learner.id, note.id)}
+                                              className="p-1 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                              title="Delete note"
+                                            >
+                                              <Trash2 className="w-3 h-3" />
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Add new note */}
+                            <div className="space-y-2">
+                              <input
+                                type="text"
+                                value={newNoteTitle[learner.id] || ""}
+                                onChange={(e) => setNewNoteTitle((p) => ({ ...p, [learner.id]: e.target.value }))}
+                                placeholder="Title (optional)"
+                                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-white placeholder-white/20 text-xs focus:outline-none focus:border-[#ffbd59]/40 transition-all"
+                              />
+                              <textarea
+                                value={newNoteBody[learner.id] || ""}
+                                onChange={(e) => setNewNoteBody((p) => ({ ...p, [learner.id]: e.target.value }))}
+                                rows={2}
+                                placeholder="Write a note for this learner..."
+                                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-white placeholder-white/20 text-xs focus:outline-none focus:border-[#ffbd59]/40 transition-all resize-none"
+                              />
+                              <button
+                                onClick={() => addNote(learner.id)}
+                                disabled={savingNote || !newNoteBody[learner.id]?.trim()}
+                                className="flex items-center gap-1.5 bg-[#ffbd59]/15 hover:bg-[#ffbd59]/25 text-[#ffbd59] text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
+                              >
+                                {savingNote ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
+                                Add note
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
