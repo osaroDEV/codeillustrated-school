@@ -8,12 +8,11 @@ import {
   Clock,
   GraduationCap,
   Send,
-  Users,
   User,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { PriceDisplay } from "./price-display";
-import { useCurrency } from "@/hooks/use-currency";
 
 interface CourseDetailClientProps {
   courseId: string;
@@ -100,7 +99,7 @@ export default function CourseDetailClient({
                   <span>Certificate of Completion</span>
                 </li>
               </ul>
-              
+
               <div className="space-y-4">
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-primary/30 transition-colors">
                   <div className="flex items-center justify-between mb-2">
@@ -108,29 +107,43 @@ export default function CourseDetailClient({
                       <Users className="w-4 h-4 text-primary" />
                       Group Classes
                     </span>
-                    <PriceDisplay price={course.price.group} className="text-xl" />
+                    <PriceDisplay
+                      price={course.price.group}
+                      className="text-xl"
+                    />
                   </div>
-                  <p className="text-xs text-slate-500">Collaborative learning with peers in small groups.</p>
+                  <p className="text-xs text-slate-500">
+                    Collaborative learning with peers in small groups.
+                  </p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 group hover:border-primary/30 transition-colors relative">
-                  <div className="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Recommended</div>
+                  <div className="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    Recommended
+                  </div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="flex items-center gap-2 text-sm font-bold text-primary">
                       <User className="w-4 h-4" />
                       1-on-1 Classes
                     </span>
-                    <PriceDisplay price={course.price.oneOnOne} className="text-xl text-primary" />
+                    <PriceDisplay
+                      price={course.price.oneOnOne}
+                      className="text-xl text-primary"
+                    />
                   </div>
-                  <p className="text-xs text-slate-500">Dedicated mentorship and personalized learning pace.</p>
+                  <p className="text-xs text-slate-500">
+                    Dedicated mentorship and personalized learning pace.
+                  </p>
                 </div>
 
-                <Link
-                  href="/contact-us"
+                <a
+                  href="https://wa.me/447405786279"
+                  target="_blank"
+                  rel="noreferrer"
                   className="w-full bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500 px-8 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-primary/20 flex items-center justify-center text-center text-white border-none mt-4"
                 >
                   Enroll Now
-                </Link>
+                </a>
               </div>
 
               <p className="text-center text-sm text-slate-500 mt-6">
@@ -199,12 +212,14 @@ export default function CourseDetailClient({
             {course.title}
           </h2>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 relative z-10">
-            <Link
-              href="/contact-us"
+            <a
+              href="https://wa.me/447405786279"
+              target="_blank"
+              rel="noreferrer"
               className="bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500 px-12 py-5 rounded-2xl font-black text-xl hover:bg-white hover:text-primary transition-all shadow-xl shadow-black/20 active:scale-95 text-center flex items-center justify-center"
             >
               Enroll Now
-            </Link>
+            </a>
             <Link
               href="mailto:info@codeillustrated.com"
               className="bg-transparent border border-white/30 hover:bg-white/10 px-12 py-5 rounded-2xl font-bold transition-all text-center flex items-center justify-center text-white gap-3"

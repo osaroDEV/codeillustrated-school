@@ -1,15 +1,7 @@
 "use client";
 
 import { courses } from "@/lib/courses";
-import {
-  Facebook,
-  Github,
-  Linkedin,
-  Mail,
-  MapPin,
-  Phone,
-  Twitter,
-} from "lucide-react";
+import { Instagram, Mail, MapPin, Phone, Twitter } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -43,13 +35,28 @@ export default function Footer() {
               illustration and interactive mentorship.
             </p>
             <div className="flex gap-4">
-              {[Twitter, Github, Linkedin, Facebook].map((Icon, i) => (
-                <button
-                  key={i}
+              {[
+                {
+                  href: "https://x.com/codeillustrated",
+                  label: "X @codeillustrated",
+                  Icon: Twitter,
+                },
+                {
+                  href: "https://www.instagram.com/code_illustrated_online_school",
+                  label: "Instagram @code_illustrated_online_school",
+                  Icon: Instagram,
+                },
+              ].map(({ href, label, Icon }) => (
+                <a
+                  key={href}
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={label}
                   className="w-10 h-10 rounded-full border border-white flex items-center justify-center text-white hover:text-primary hover:border-primary transition-all"
                 >
                   <Icon className="w-5 h-5" />
-                </button>
+                </a>
               ))}
             </div>
           </div>
@@ -138,7 +145,9 @@ export default function Footer() {
 
 function NewsletterForm() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [message, setMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -165,7 +174,9 @@ function NewsletterForm() {
         setEmail("");
       } else {
         setStatus("error");
-        setMessage(data.error || data.message || "Something went wrong. Try again.");
+        setMessage(
+          data.error || data.message || "Something went wrong. Try again.",
+        );
       }
     } catch (err) {
       console.error(err);
@@ -173,7 +184,6 @@ function NewsletterForm() {
       setMessage("Failed to subscribe. Check your connection.");
     }
   };
-
 
   return (
     <form className="flex flex-col gap-3 group" onSubmit={handleSubmit}>
@@ -199,15 +209,20 @@ function NewsletterForm() {
         className="relative overflow-hidden bg-gradient-to-r from-primary-500 to-secondary-400 text-white font-bold py-3.5 rounded-xl hover:shadow-lg hover:shadow-primary-500/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
       >
         <span className="relative z-10">
-          {status === "success" ? "Subscribed!" : status === "loading" ? "Joining..." : "Subscribe"}
+          {status === "success"
+            ? "Subscribed!"
+            : status === "loading"
+              ? "Joining..."
+              : "Subscribe"}
         </span>
       </button>
       {message && (
-        <p className={`text-sm font-medium mt-1 animate-in fade-in slide-in-from-top-1 ${status === "success" ? "text-secondary-400" : "text-red-400"}`}>
+        <p
+          className={`text-sm font-medium mt-1 animate-in fade-in slide-in-from-top-1 ${status === "success" ? "text-secondary-400" : "text-red-400"}`}
+        >
           {message}
         </p>
       )}
     </form>
   );
 }
-

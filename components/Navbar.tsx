@@ -67,7 +67,13 @@ export function Navbar() {
               asChild
               className="bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
             >
-              <Link href="/contact-us">Get Started</Link>
+              <a
+                href="https://wa.me/447405786279"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Get Started
+              </a>
             </Button>
           </div>
 
@@ -112,9 +118,14 @@ export function Navbar() {
                 asChild
                 className="w-full bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
               >
-                <Link href="/contact-us" onClick={() => setIsMenuOpen(false)}>
+                <a
+                  href="https://wa.me/447405786279"
+                  onClick={() => setIsMenuOpen(false)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   Get Started
-                </Link>
+                </a>
               </Button>
             </nav>
           </motion.div>
