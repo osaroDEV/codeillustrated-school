@@ -26,7 +26,7 @@ export default function CoursesPageClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
-            className="group p-8 rounded-[2rem] bg-white border border-border hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 flex flex-col items-start h-full"
+            className="group relative p-8 rounded-[2rem] bg-white border border-border hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 flex flex-col items-start h-full"
           >
             <div
               className={`${course.bg} ${course.color} w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}
@@ -49,7 +49,7 @@ export default function CoursesPageClient() {
               </div>
               <Link
                 href={`/courses/${course.id}`}
-                className="text-primary font-bold inline-flex items-center gap-2 group/btn hover:underline"
+                className="text-primary font-bold inline-flex items-center gap-2 group/btn hover:underline after:absolute after:inset-0"
               >
                 Details
                 <span className="block w-2 h-2 bg-primary rounded-full group-hover/btn:w-6 transition-all" />
