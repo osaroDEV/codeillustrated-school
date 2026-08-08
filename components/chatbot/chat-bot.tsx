@@ -193,7 +193,7 @@ export function ChatBot() {
                 </div>
                 <div>
                   <h3 className="font-bold text-sm">
-                    CodeIllustrated Assistant
+                    Code Illustrated Assistant
                   </h3>
                   <div className="flex items-center space-x-1">
                     <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />

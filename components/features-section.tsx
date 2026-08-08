@@ -54,7 +54,7 @@ export function FeaturesSection() {
           <h2 className="text-3xl text-white sm:text-4xl font-bold mb-4">
             Why Choose{" "}
             <span className="bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
-              CodeIllustrated
+              Code Illustrated
             </span>
           </h2>
           <p className="text-xl text-white max-w-2xl mx-auto">

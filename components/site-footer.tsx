@@ -27,7 +27,7 @@ export default function Footer() {
                 Code Illustrated Online School
               </span>
               <span className="sm:hidden text-xl font-bold bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
-                CodeIllustrated
+                Code Illustrated
               </span>
             </Link>
             <p className="text-sm sm:text-base text-white/75 leading-relaxed mb-8">
