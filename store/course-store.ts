@@ -290,6 +290,8 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
   setSelectedCourse: (course) => set({ selectedCourse: course }),
 
   getCourseById: (id) => {
+    // Note: this is a getter with a side effect — a miss writes to the
+    // store's error state, so calling it during render can trigger a re-render.
     const course = get().courses.find((course) => course.id === id)
     if (!course) {
       set({ error: `Course with id ${id} not found` })
@@ -334,6 +336,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
   },
 
   getPopularCourses: (limit = 3) => {
+    // "Popular" is ranked purely by enrollment count, not by rating.
     const { courses } = get()
     return [...courses].sort((a, b) => b.students - a.students).slice(0, limit)
   },
