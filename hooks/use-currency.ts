@@ -17,6 +17,8 @@ export const useCurrency = create<CurrencyState>()(
     (set) => ({
       currency: "USD",
       symbol: "$",
+      // Starts true so callers can show a loading state until geolocation
+      // resolves, even though the persisted currency may already be known.
       isLoading: true,
       setCurrency: (currency: Currency) =>
         set({
@@ -36,6 +38,8 @@ export const useCurrency = create<CurrencyState>()(
             isLoading: false,
           });
         } catch (error) {
+          // Detection failure should never leave the UI stuck loading —
+          // fall back to USD rather than surfacing an error to the user.
           set({ currency: "USD", symbol: "$", isLoading: false });
         }
       },
