@@ -1,5 +1,9 @@
 import { supabase } from "./supabase";
 
+// Convention throughout this file: Supabase errors are swallowed and mapped
+// to null (or []), not thrown — callers can't distinguish "not found" from
+// a real fetch failure, so treat any falsy/empty return as "unavailable".
+
 export async function getSession() {
   const { data, error } = await supabase.auth.getSession();
   if (error) return null;
@@ -50,6 +54,7 @@ export async function getAnnouncements(courseId?: string) {
     .order("created_at", { ascending: false });
 
   if (courseId) {
+    // Course-scoped announcements always include global ones (course_id IS NULL).
     query = query.or(`course_id.eq.${courseId},course_id.is.null`);
   }
 
