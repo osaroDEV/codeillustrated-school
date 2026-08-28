@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
 import { nanoid } from "nanoid";
 
+// All handlers below gate on a single shared ADMIN_SECRET header rather than
+// per-user auth, so anyone holding that secret has full invite-code control.
 // GET — list all invite codes
 export async function GET(req: NextRequest) {
   const adminSecret = process.env.ADMIN_SECRET;
@@ -36,6 +38,8 @@ export async function POST(req: NextRequest) {
   // Generate a readable code: CILEARN-XXXXXX
   const code = `CILEARN-${nanoid(6).toUpperCase()}`;
 
+  // Omitting expires_days yields a null expires_at, i.e. a code that never expires —
+  // callers relying on expiry checks elsewhere must treat null as "no expiry", not "expired".
   const expires_at = expires_days
     ? new Date(Date.now() + expires_days * 24 * 60 * 60 * 1000).toISOString()
     : null;
