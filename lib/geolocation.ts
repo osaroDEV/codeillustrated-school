@@ -6,6 +6,8 @@ export interface LocationData {
 
 export async function detectUserLocation(): Promise<LocationData> {
   try {
+    // ipapi.co is free/keyless but rate-limited; failures here should
+    // degrade gracefully rather than block pricing/currency logic.
     const response = await fetch("https://ipapi.co/json/");
     if (!response.ok) {
       throw new Error("Failed to fetch location data");
@@ -26,6 +28,7 @@ export async function detectUserLocation(): Promise<LocationData> {
   }
 }
 
+// Sole source of truth for the USD/NGN currency split — see hooks/use-currency.ts.
 export function isNigeria(countryCode: string | undefined): boolean {
   return countryCode === "NG";
 }
