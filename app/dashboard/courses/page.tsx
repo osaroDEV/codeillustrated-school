@@ -1,7 +1,8 @@
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { getCurrentUser } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase";
-import { courses } from "@/lib/courses";
+import { getCourses } from "@/lib/courses";
+import { CourseIcon } from "@/components/course-icon";
+import { RedeemCodeCard } from "@/components/dashboard/redeem-code-card";
 import { Calendar, CheckCircle2, Clock, BookOpen } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -11,19 +12,7 @@ export const metadata: Metadata = {
 
 async function getEnrollments() {
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return cookieStore.getAll(); },
-          setAll() {},
-        },
-      }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) return [];
 
     const admin = createAdminClient();
@@ -35,7 +24,7 @@ async function getEnrollments() {
 }
 
 export default async function CoursesPage() {
-  const enrollments = await getEnrollments();
+  const [enrollments, courses] = await Promise.all([getEnrollments(), getCourses()]);
 
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto">
@@ -48,13 +37,12 @@ export default async function CoursesPage() {
         <div className="text-center py-16 bg-white/[0.03] border border-white/[0.08] rounded-2xl">
           <BookOpen className="w-12 h-12 text-white/15 mx-auto mb-4" />
           <p className="text-white/40 font-medium">No courses enrolled yet</p>
-          <p className="text-white/25 text-sm mt-1">Contact your instructor to get started</p>
+          <p className="text-white/25 text-sm mt-1">Browse our courses, or redeem an invite code below</p>
         </div>
       ) : (
         <div className="space-y-6">
           {enrollments.map((enrollment) => {
             const course = courses.find((c) => c.id === enrollment.course_id);
-            const CourseIcon = course?.icon;
             const modules = course?.curriculum || [];
 
             return (
@@ -66,7 +54,7 @@ export default async function CoursesPage() {
                 <div className="p-6 border-b border-white/[0.06]">
                   <div className="flex items-start gap-4">
                     <div className={`w-14 h-14 ${course?.bg || "bg-white/10"} rounded-2xl flex items-center justify-center flex-shrink-0`}>
-                      {CourseIcon && <CourseIcon className={`w-7 h-7 ${course?.color || "text-white"}`} />}
+                      {course && <CourseIcon icon={course.icon} className={`w-7 h-7 ${course.color}`} />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 flex-wrap">
@@ -176,6 +164,10 @@ export default async function CoursesPage() {
           })}
         </div>
       )}
+
+      <div className="mt-8">
+        <RedeemCodeCard />
+      </div>
     </div>
   );
 }

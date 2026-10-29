@@ -1,6 +1,7 @@
 "use client";
 
-import { courses } from "@/lib/courses";
+import { CourseIcon } from "@/components/course-icon";
+import type { Course } from "@/lib/course-types";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -15,27 +16,12 @@ import Link from "next/link";
 import { PriceDisplay } from "./price-display";
 
 interface CourseDetailClientProps {
-  courseId: string;
+  course: Course;
 }
 
 export default function CourseDetailClient({
-  courseId,
+  course,
 }: CourseDetailClientProps) {
-  const course = courses.find((c) => c.id === courseId);
-
-  if (!course) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Course Not Found</h1>
-          <Link href="/" className="text-primary hover:underline">
-            Go back to home
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <>
       {/* Hero Section */}
@@ -54,7 +40,7 @@ export default function CourseDetailClient({
               <div
                 className={`${course.bg} ${course.color} w-16 h-16 rounded-2xl flex items-center justify-center mb-6`}
               >
-                <course.icon className="w-8 h-8" />
+                <CourseIcon icon={course.icon} className="w-8 h-8" />
               </div>
               <h1 className="text-4xl lg:text-6xl font-heading font-black mb-6">
                 {course.title}

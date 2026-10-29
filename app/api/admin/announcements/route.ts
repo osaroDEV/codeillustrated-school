@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { rejectNonAdmin } from "@/lib/supabase-server";
 
-export async function GET(req: NextRequest) {
-  const adminSecret = process.env.ADMIN_SECRET;
-  const authHeader = req.headers.get("x-admin-secret");
-  if (authHeader !== adminSecret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function GET() {
+  const denied = await rejectNonAdmin();
+  if (denied) return denied;
 
   const supabase = createAdminClient();
   const { data, error } = await supabase
@@ -19,11 +17,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const adminSecret = process.env.ADMIN_SECRET;
-  const authHeader = req.headers.get("x-admin-secret");
-  if (authHeader !== adminSecret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = await rejectNonAdmin();
+  if (denied) return denied;
 
   const { title, body, course_id } = await req.json();
   if (!title || !body) {
@@ -42,11 +37,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const adminSecret = process.env.ADMIN_SECRET;
-  const authHeader = req.headers.get("x-admin-secret");
-  if (authHeader !== adminSecret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = await rejectNonAdmin();
+  if (denied) return denied;
 
   const { id } = await req.json();
   if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });

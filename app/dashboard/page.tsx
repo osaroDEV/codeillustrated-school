@@ -1,7 +1,8 @@
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { getCurrentUser } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase";
-import { courses } from "@/lib/courses";
+import { getCourses } from "@/lib/courses";
+import { CourseIcon } from "@/components/course-icon";
+import { RedeemCodeCard } from "@/components/dashboard/redeem-code-card";
 import {
   BookOpen, TrendingUp, Calendar, Megaphone,
   Clock, ChevronRight, Zap, FileText,
@@ -15,19 +16,7 @@ export const metadata: Metadata = {
 
 async function getDashboardData() {
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return cookieStore.getAll(); },
-          setAll() {},
-        },
-      }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) return null;
 
     const admin = createAdminClient();
@@ -59,7 +48,7 @@ function getGreeting() {
 }
 
 export default async function DashboardPage() {
-  const data = await getDashboardData();
+  const [data, courses] = await Promise.all([getDashboardData(), getCourses()]);
   const firstName =
     data?.profile?.full_name?.split(" ")[0] ||
     (data?.user?.user_metadata?.full_name as string | undefined)?.split(" ")[0] ||
@@ -136,12 +125,14 @@ export default async function DashboardPage() {
             <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-8 text-center">
               <Zap className="w-8 h-8 text-white/20 mx-auto mb-3" />
               <p className="text-white/40 text-sm">No courses enrolled yet</p>
+              <Link href="/courses" className="inline-block mt-3 text-[#ffbd59] hover:text-[#f5a623] text-xs font-medium transition-colors">
+                Browse courses →
+              </Link>
             </div>
           ) : (
             <div className="space-y-4">
               {enrollments.map((enrollment) => {
                 const course = courses.find((c) => c.id === enrollment.course_id);
-                const CourseIcon = course?.icon;
                 return (
                   <div
                     key={enrollment.id}
@@ -149,7 +140,7 @@ export default async function DashboardPage() {
                   >
                     <div className="flex items-start gap-4">
                       <div className={`w-11 h-11 ${course?.bg || "bg-white/10"} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                        {CourseIcon && <CourseIcon className={`w-5 h-5 ${course?.color || "text-white"}`} />}
+                        {course && <CourseIcon icon={course.icon} className={`w-5 h-5 ${course.color}`} />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -252,6 +243,10 @@ export default async function DashboardPage() {
           </div>
         </div>
       )}
+
+      <div className="mt-8 max-w-md">
+        <RedeemCodeCard />
+      </div>
     </div>
   );
 }

@@ -1,5 +1,4 @@
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { getCurrentUser } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase";
 import { Clock, Megaphone } from "lucide-react";
 import type { Metadata } from "next";
@@ -31,19 +30,7 @@ async function getAnnouncements(userId: string) {
 
 async function getCurrentUserId() {
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return cookieStore.getAll(); },
-          setAll() {},
-        },
-      }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     return user?.id || null;
   } catch {
     return null;

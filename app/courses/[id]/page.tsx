@@ -1,5 +1,5 @@
 import CourseDetailClient from "@/components/CourseDetailClient";
-import { courses } from "@/lib/courses";
+import { getCourseBySlug, getCourses, type Course } from "@/lib/courses";
 import {
   BASE_PATH,
   getCanonicalUrl,
@@ -19,7 +19,7 @@ export async function generateMetadata({
   params,
 }: CoursePageProps): Promise<Metadata> {
   const { id } = await params;
-  const course = courses.find((c) => c.id === id);
+  const course = await getCourseBySlug(id);
 
   if (!course) {
     return {
@@ -50,13 +50,14 @@ export async function generateMetadata({
 
 // Generate static params for all known courses
 export async function generateStaticParams() {
+  const courses = await getCourses();
   return courses.map((course) => ({
     id: course.id,
   }));
 }
 
 // JSON-LD Course schema
-function CourseSchema({ course }: { course: (typeof courses)[number] }) {
+function CourseSchema({ course }: { course: Course }) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "Course",
@@ -99,7 +100,7 @@ function CourseSchema({ course }: { course: (typeof courses)[number] }) {
 
 export default async function CoursePage({ params }: CoursePageProps) {
   const { id } = await params;
-  const course = courses.find((c) => c.id === id);
+  const course = await getCourseBySlug(id);
 
   if (!course) {
     notFound();
@@ -108,7 +109,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
   return (
     <main className="min-h-screen bg-slate-50">
       <CourseSchema course={course} />
-      <CourseDetailClient courseId={course.id} />
+      <CourseDetailClient course={course} />
     </main>
   );
 }

@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { rejectNonAdmin } from "@/lib/supabase-server";
 import { nanoid } from "nanoid";
 
-// All handlers below gate on a single shared ADMIN_SECRET header rather than
-// per-user auth, so anyone holding that secret has full invite-code control.
 // GET — list all invite codes
-export async function GET(req: NextRequest) {
-  const adminSecret = process.env.ADMIN_SECRET;
-  const authHeader = req.headers.get("x-admin-secret");
-  if (authHeader !== adminSecret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function GET() {
+  const denied = await rejectNonAdmin();
+  if (denied) return denied;
 
   const supabase = createAdminClient();
   const { data, error } = await supabase
@@ -24,11 +20,8 @@ export async function GET(req: NextRequest) {
 
 // POST — generate a new invite code
 export async function POST(req: NextRequest) {
-  const adminSecret = process.env.ADMIN_SECRET;
-  const authHeader = req.headers.get("x-admin-secret");
-  if (authHeader !== adminSecret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = await rejectNonAdmin();
+  if (denied) return denied;
 
   const { course_id, expires_days } = await req.json();
   if (!course_id) {
@@ -57,11 +50,8 @@ export async function POST(req: NextRequest) {
 
 // DELETE — revoke an invite code
 export async function DELETE(req: NextRequest) {
-  const adminSecret = process.env.ADMIN_SECRET;
-  const authHeader = req.headers.get("x-admin-secret");
-  if (authHeader !== adminSecret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = await rejectNonAdmin();
+  if (denied) return denied;
 
   const { id } = await req.json();
   if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });
