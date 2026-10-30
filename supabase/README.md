@@ -37,6 +37,7 @@ Every account must click an emailed link before it can sign in:
    - Site URL: `https://codeillustrated.com/academy`. Add `https://codeillustrated.com/academy/auth/confirm` to the redirect URLs.
    - Set up custom SMTP first (Brevo: `smtp-relay.brevo.com:587`, using your Brevo SMTP login and key). Supabase's built-in mailer only sends to project team members, and free-plan projects can't edit email templates until custom SMTP is on.
    - Set the "Confirm signup" template to the contents of `templates/confirmation.html`. If you skip this, the default link still verifies the account, but `/auth/confirm` can't sign the learner in, so they're sent to the login page instead.
+   - Set the "Reset password" template to the contents of `templates/recovery.html`. Its link signs the learner in through `/auth/confirm` and opens `/auth/reset-password`; the default template's link can't, so "Forgot password?" wouldn't work without it.
    - Raise Rate Limits → "emails sent per hour" from the default (2) to something like 30.
 2. **Deploy the code.**
 3. **Apply the migrations:** `pnpm exec supabase link --project-ref <ref>`, then `pnpm db:push`.
