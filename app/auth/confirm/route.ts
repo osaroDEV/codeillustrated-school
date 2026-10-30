@@ -5,9 +5,9 @@ import { BASE_PATH } from "@/lib/seo";
 
 const OTP_TYPES: EmailOtpType[] = ["email", "signup", "magiclink", "recovery", "invite", "email_change"];
 
-// Target of the verification link in supabase/templates/confirmation.html.
-// Verifying the token_hash also signs the learner in, so a successful click
-// lands them straight on their dashboard.
+// Target of the links in supabase/templates/. Verifying the token_hash also
+// signs the learner in, so a verification link lands them straight on their
+// dashboard and a password-reset link on the page that sets a new password.
 export async function GET(req: NextRequest) {
   const tokenHash = req.nextUrl.searchParams.get("token_hash");
   const type = req.nextUrl.searchParams.get("type") as EmailOtpType | null;
@@ -16,9 +16,13 @@ export async function GET(req: NextRequest) {
   // either a PKCE code or nothing readable (tokens in the URL #fragment).
   const code = req.nextUrl.searchParams.get("code");
 
-  // Route handlers don't apply next.config basePath to redirect URLs (and
-  // req.nextUrl.clone() doesn't carry it here), so prefix it explicitly.
-  const redirectTo = (path: string) => NextResponse.redirect(new URL(`${BASE_PATH}${path}`, req.url));
+  // Redirect with a relative Location. In production codeillustrated.com/academy
+  // is proxied to the Vercel deployment, so req.url carries the deployment's
+  // own *.vercel.app host; an absolute URL built from it would move the learner
+  // off the domain their new session cookie was set on. Route handlers also
+  // don't apply next.config basePath to redirects, so it's prefixed here.
+  const redirectTo = (path: string) =>
+    new NextResponse(null, { status: 307, headers: { Location: `${BASE_PATH}${path}` } });
 
   if (!tokenHash && !code) return redirectTo("/auth/login?notice=verified");
 
@@ -35,5 +39,6 @@ export async function GET(req: NextRequest) {
     if (error) console.error("exchangeCodeForSession error:", error.message);
   }
 
-  return redirectTo(failed ? "/auth/login?error=link_invalid" : "/dashboard");
+  if (failed) return redirectTo("/auth/login?error=link_invalid");
+  return redirectTo(type === "recovery" ? "/auth/reset-password" : "/dashboard");
 }

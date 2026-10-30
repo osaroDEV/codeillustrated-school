@@ -264,6 +264,12 @@ otp_expiry = 3600
 subject = "Verify your email for Code Illustrated"
 content_path = "./supabase/templates/confirmation.html"
 
+# Lands on /auth/confirm, which signs the learner in and sends them to
+# /auth/reset-password to choose a new password.
+[auth.email.template.recovery]
+subject = "Reset your Code Illustrated password"
+content_path = "./supabase/templates/recovery.html"
+
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
 # enabled = true
