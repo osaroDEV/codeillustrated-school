@@ -1,262 +1,127 @@
-import { Database, Gamepad2, Globe, Layout, LucideIcon, Sparkles } from "lucide-react";
+import { cache } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { STATIC_COURSES } from "./course-catalog";
+import type { Course, OfferingKind, PriceTier } from "./course-types";
 
-export interface PriceTier {
-  usd: number;
-  ngn: number;
-}
+export type { Course, CourseSummary, OfferingKind, PriceTier } from "./course-types";
 
-export interface Course {
+// Server-only data access for the course catalogue. Reads go through the anon
+// key: RLS exposes published courses, their curriculum outline and active
+// offerings to everyone, so no session is needed and pages stay cacheable.
+
+const COURSE_SELECT = `
+  id, title, description, full_description, age, level, duration,
+  icon, color, bg, position,
+  course_modules ( title, position, lessons ( title, position, is_published ) ),
+  offerings ( kind, price_usd, price_ngn, is_active )
+`;
+
+export interface CourseRow {
   id: string;
   title: string;
-  age: string;
   description: string;
-  icon: LucideIcon;
+  full_description: string;
+  age: string;
+  level: string;
+  duration: string;
+  icon: string;
   color: string;
   bg: string;
-  fullDescription: string;
-  curriculum: {
-    module: string;
-    lessons: string[];
-  }[];
-  duration: string;
-  level: string;
-  price: {
-    group: PriceTier;
-    oneOnOne: PriceTier;
+  position: number;
+  course_modules:
+    | {
+        title: string;
+        position: number;
+        lessons: { title: string; position: number; is_published: boolean }[] | null;
+      }[]
+    | null;
+  offerings:
+    | {
+        kind: OfferingKind;
+        price_usd: number | string;
+        price_ngn: number | string;
+        is_active: boolean;
+      }[]
+    | null;
+}
+
+const byPosition = (a: { position: number }, b: { position: number }) =>
+  a.position - b.position;
+
+export function mapCourseRow(row: CourseRow): Course {
+  const offerings = (row.offerings ?? [])
+    .filter((o) => o.is_active)
+    .map((o) => ({
+      kind: o.kind,
+      price: { usd: Number(o.price_usd), ngn: Number(o.price_ngn) } as PriceTier,
+    }));
+
+  const priceFor = (kind: OfferingKind) => offerings.find((o) => o.kind === kind)?.price;
+  // "Starts from" on the marketing cards shows the group price; fall back to
+  // the cheapest active offering for courses that aren't sold as a group cohort.
+  const cheapest = [...offerings].sort((a, b) => a.price.usd - b.price.usd)[0]?.price;
+  const group = priceFor("cohort_group") ?? cheapest ?? { usd: 0, ngn: 0 };
+
+  return {
+    id: row.id,
+    title: row.title,
+    age: row.age,
+    description: row.description,
+    icon: row.icon,
+    color: row.color,
+    bg: row.bg,
+    fullDescription: row.full_description,
+    duration: row.duration,
+    level: row.level,
+    curriculum: [...(row.course_modules ?? [])].sort(byPosition).map((m) => ({
+      module: m.title,
+      lessons: [...(m.lessons ?? [])]
+        .filter((l) => l.is_published)
+        .sort(byPosition)
+        .map((l) => l.title),
+    })),
+    price: {
+      group,
+      oneOnOne: priceFor("cohort_1on1") ?? group,
+    },
   };
 }
 
-export const courses: Course[] = [
-  {
-    id: "junior-web-creator",
-    title: "Junior Web Creator",
-    age: "Age 8-12",
-    description:
-      "Master HTML, CSS, and basic JavaScript by building interactive websites and mini-games.",
-    icon: Globe,
-    color: "text-accent-500",
-    bg: "bg-accent-500/10",
-    fullDescription:
-      "Our Junior Web Creator course is designed specifically for young minds to explore the world of web development. We move beyond theory, focusing on visual learning and immediate results. Students will learn how to structure content with HTML, style it with CSS, and add interactive elements with JavaScript.",
-    curriculum: [
-      {
-        module: "Module 1: Web Foundation",
-        lessons: [
-          "How the Internet works",
-          "Introduction to HTML tags",
-          "Building your first page",
-        ],
-      },
-      {
-        module: "Module 2: Creative Styling",
-        lessons: [
-          "Colors and Layouts with CSS",
-          "Working with Images",
-          "Responsive Design Basics",
-        ],
-      },
-      {
-        module: "Module 3: Interaction",
-        lessons: [
-          "Intro to JavaScript",
-          "Button clicks and Alerts",
-          "Small Games",
-        ],
-      },
-    ],
-    duration: "24 Weeks",
-    level: "Beginner",
-    price: {
-      group: { usd: 50, ngn: 75000 },
-      oneOnOne: { usd: 85, ngn: 120000 },
-    },
-  },
-  {
-    id: "game-dev-pro",
-    title: "Game Dev Pro",
-    age: "Age 13-17",
-    description:
-      "Dive into logic and physics using Python and JavaScript to create your own playable games.",
-    icon: Gamepad2,
-    color: "text-secondary-500",
-    bg: "bg-secondary-500/10",
-    fullDescription:
-      "Game Dev Pro takes teenagers on a journey through the mechanics of game creation. From character movement to complex physics systems, students will use professional tools and languages to bring their ideas to life.",
-    curriculum: [
-      {
-        module: "Module 1: Game Logic",
-        lessons: [
-          "Variables and Loops in Game Dev",
-          "Collision Detection",
-          "Score Systems",
-        ],
-      },
-      {
-        module: "Module 2: Graphics & Assets",
-        lessons: ["Sprites and Animations", "Sound Effects", "Level Design"],
-      },
-      {
-        module: "Module 3: Project Phase",
-        lessons: [
-          "Building a Platformer",
-          "Multiplayer Basics",
-          "Publishing Your Game",
-        ],
-      },
-    ],
-    duration: "16 Weeks",
-    level: "Intermediate",
-    price: {
-      group: { usd: 60, ngn: 90000 },
-      oneOnOne: { usd: 100, ngn: 150000 },
-    },
-  },
-  {
-    id: "frontend-beginner",
-    title: "Frontend Developer",
-    age: "Teens & Adults",
-    description:
-      "Learn React, Next.js, and how to build professional-grade applications.",
-    icon: Layout,
-    color: "text-primary-500",
-    bg: "bg-primary-500/10",
-    fullDescription:
-      "Perfect for older students and adults looking to start a career or build their own products. This course covers everything from the user interface to the database, ensuring a complete understanding of modern application development.",
-    curriculum: [
-      {
-        module: "Module 1: Frontend Mastery",
-        lessons: ["React Basics", "State Management", "Component Architecture"],
-      },
-      {
-        module: "Module 2: Next.js",
-        lessons: ["Next.js Basics", "API Design", "Authentication"],
-      },
-      {
-        module: "Module 3: Deployment",
-        lessons: ["PostgreSQL/MongoDB", "Cloud Hosting", "CI/CD Pipelines"],
-      },
-    ],
-    duration: "24 Weeks",
-    level: "Intermediate",
-    price: {
-      group: { usd: 75, ngn: 100000 },
-      oneOnOne: { usd: 120, ngn: 180000 },
-    },
-  },
-  {
-    id: "frontend-advanced",
-    title: "Frontend Architect",
-    age: "Teens & Adults",
-    description:
-      "Master React, Next.js, and advanced architecture patterns.",
-    icon: Layout,
-    color: "text-primary-500",
-    bg: "bg-primary-500/10",
-    fullDescription:
-      "Perfect for older students and adults looking to start a career or build their own products. This course covers everything from the user interface to the database, ensuring a complete understanding of modern application development.",
-    curriculum: [
-      {
-        module: "Module 1: Frontend Architecture",
-        lessons: ["Advanced React Patterns", "State Management", "Component Architecture"],
-      },
-      {
-        module: "Module 2: Next.js & Scalability",
-        lessons: ["Advanced Next.js Features", "API Design", "Authentication"],
-      },
-      {
-        module: "Module 3: Advanced Deployment",
-        lessons: ["Advanced PostgreSQL/MongoDB", "Advanced Cloud Hosting", "Advanced CI/CD Pipelines"],
-      },
-    ],
-    duration: "24 Weeks",
-    level: "Advanced",
-    price: {
-      group: { usd: 100, ngn: 150000 },
-      oneOnOne: { usd: 150, ngn: 220000 },
-    },
-  },
-  {
-    id: "data-science-intro",
-    title: "Data Science Intro",
-    age: "Teens & Adults",
-    description:
-      "Understand data visualization and automation with Python. Perfect for curious minds.",
-    icon: Database,
-    color: "text-accent-600",
-    bg: "bg-accent-600/10",
-    fullDescription:
-      "Learn how to turn raw data into insights. This course introduces Python libraries like Pandas, NumPy, and Matplotlib to help students automate boring tasks and visualize complex information.",
-    curriculum: [
-      {
-        module: "Module 1: Python for Data",
-        lessons: [
-          "Data Types and Structures",
-          "Working with Arrays",
-          "Scripting Basics",
-        ],
-      },
-      {
-        module: "Module 2: Visualization",
-        lessons: [
-          "Charts and Graphs",
-          "Dashboarding",
-          "Storytelling with Data",
-        ],
-      },
-      {
-        module: "Module 3: Machine Learning Intro",
-        lessons: ["Regression Models", "Classification", "AI Tools for Data"],
-      },
-    ],
-    duration: "12 Weeks",
-    level: "Beginner",
-    price: {
-      group: { usd: 65, ngn: 90000 },
-      oneOnOne: { usd: 90, ngn: 160000 },
-    },
-  },
-  {
-    id: "generative-ai-mastery",
-    title: "Generative AI Mastery",
-    age: "Age 8-20",
-    description:
-      "Explore the world of AI — from talking to chatbots to building your own AI-powered projects. No coding experience needed!",
-    icon: Sparkles,
-    color: "text-violet-500",
-    bg: "bg-violet-500/10",
-    fullDescription:
-      "Generative AI Mastery for Beginners is a fun, hands-on course that demystifies artificial intelligence for young learners aged 8 to 20. Students will discover how AI models think, learn to craft powerful prompts, and use tools like ChatGPT, image generators, and AI coding assistants to build real creative projects — all without needing prior programming experience.",
-    curriculum: [
-      {
-        module: "Module 1: Understanding AI",
-        lessons: [
-          "What is Artificial Intelligence?",
-          "How Generative AI works",
-          "AI in everyday life",
-        ],
-      },
-      {
-        module: "Module 2: Prompt Engineering",
-        lessons: [
-          "Talking to AI: Basics of Prompting",
-          "Advanced Prompt Techniques",
-          "Using AI for Writing & Storytelling",
-        ],
-      },
-      {
-        module: "Module 3: AI-Powered Projects",
-        lessons: [
-          "Creating Art with AI Image Generators",
-          "Building a Chatbot with AI Tools",
-          "Your Personal AI Project Showcase",
-        ],
-      },
-    ],
-    duration: "10 Weeks",
-    level: "Beginner",
-    price: {
-      group: { usd: 55, ngn: 80000 },
-      oneOnOne: { usd: 90, ngn: 130000 },
-    },
-  },
-];
+function createPublicClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) return null;
+  return createClient(url, anonKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
+// Unlike lib/auth.ts, a failed fetch here doesn't map to an empty result: it
+// falls back to the bundled STATIC_COURSES so marketing pages keep rendering
+// (e.g. before the catalogue migrations have been applied).
+export const getCourses = cache(async (): Promise<Course[]> => {
+  const client = createPublicClient();
+  if (!client) return STATIC_COURSES;
+
+  try {
+    const { data, error } = await client
+      .from("courses")
+      .select(COURSE_SELECT)
+      .eq("is_published", true)
+      .order("position");
+
+    if (error || !data) {
+      console.warn("getCourses: falling back to static catalogue:", error?.message);
+      return STATIC_COURSES;
+    }
+    return (data as unknown as CourseRow[]).map(mapCourseRow);
+  } catch (err) {
+    console.warn("getCourses: falling back to static catalogue:", err);
+    return STATIC_COURSES;
+  }
+});
+
+export async function getCourseBySlug(id: string): Promise<Course | null> {
+  const courses = await getCourses();
+  return courses.find((c) => c.id === id) ?? null;
+}

@@ -6,48 +6,37 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   let response = NextResponse.next({ request });
 
-  // Protect /dashboard routes — require authenticated learner
-  if (pathname.startsWith("/dashboard")) {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              request.cookies.set(name, value)
-            );
-            response = NextResponse.next({ request });
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options)
-            );
-          },
+  // /dashboard and /admin both require a signed-in user. Middleware only
+  // checks that a session cookie exists; the admin role itself is verified
+  // server-side by requireAdmin() in app/admin/layout.tsx and rejectNonAdmin()
+  // in every /api/admin route.
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
         },
-      }
-    );
-
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session) {
-      const loginUrl = new URL("/academy/auth/login", request.url);
-      loginUrl.searchParams.set("redirectTo", pathname);
-      return NextResponse.redirect(loginUrl);
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          response = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          );
+        },
+      },
     }
-  }
+  );
 
-  // Protect /admin routes — require admin secret cookie
-  // But allow /admin/login itself to pass through
-  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
-    const adminAuth = request.cookies.get("admin_auth")?.value;
-    const adminSecret = process.env.ADMIN_SECRET;
+  const { data: { session } } = await supabase.auth.getSession();
 
-    if (!adminAuth || adminAuth !== adminSecret) {
-      const adminLoginUrl = new URL("/academy/admin/login", request.url);
-      return NextResponse.redirect(adminLoginUrl);
-    }
+  if (!session) {
+    const loginUrl = new URL("/academy/auth/login", request.url);
+    loginUrl.searchParams.set("redirectTo", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return response;

@@ -1,11 +1,12 @@
 "use client";
 
-import { courses } from "@/lib/courses";
+import { CourseIcon } from "@/components/course-icon";
+import type { Course } from "@/lib/course-types";
 import { motion } from "framer-motion";
 import { PriceDisplay } from "./price-display";
 import Link from "next/link";
 
-export default function CoursesPageClient() {
+export default function CoursesPageClient({ courses }: { courses: Course[] }) {
   return (
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
@@ -31,7 +32,7 @@ export default function CoursesPageClient() {
             <div
               className={`${course.bg} ${course.color} w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}
             >
-              <course.icon className="w-8 h-8" />
+              <CourseIcon icon={course.icon} className="w-8 h-8" />
             </div>
             <span className="inline-block px-3 py-1 rounded-full bg-slate-100 text-xs font-bold text-slate-600 mb-4 tracking-wider uppercase">
               {course.age}

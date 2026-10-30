@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
-
-function auth(req: NextRequest) {
-  return req.headers.get("x-admin-secret") === process.env.ADMIN_SECRET;
-}
+import { rejectNonAdmin } from "@/lib/supabase-server";
 
 // GET — fetch notes for a specific learner
 export async function GET(req: NextRequest) {
-  if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const denied = await rejectNonAdmin();
+  if (denied) return denied;
 
   const userId = req.nextUrl.searchParams.get("user_id");
   if (!userId) return NextResponse.json({ error: "user_id is required" }, { status: 400 });
@@ -25,7 +23,8 @@ export async function GET(req: NextRequest) {
 
 // POST — create a note for a learner
 export async function POST(req: NextRequest) {
-  if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const denied = await rejectNonAdmin();
+  if (denied) return denied;
 
   const { user_id, title, body } = await req.json();
   if (!user_id || !body) return NextResponse.json({ error: "user_id and body are required" }, { status: 400 });
@@ -43,7 +42,8 @@ export async function POST(req: NextRequest) {
 
 // PATCH — edit an existing note
 export async function PATCH(req: NextRequest) {
-  if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const denied = await rejectNonAdmin();
+  if (denied) return denied;
 
   const { id, title, body } = await req.json();
   if (!id || !body) return NextResponse.json({ error: "id and body are required" }, { status: 400 });
@@ -62,7 +62,8 @@ export async function PATCH(req: NextRequest) {
 
 // DELETE — remove a note
 export async function DELETE(req: NextRequest) {
-  if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const denied = await rejectNonAdmin();
+  if (denied) return denied;
 
   const { id } = await req.json();
   if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });

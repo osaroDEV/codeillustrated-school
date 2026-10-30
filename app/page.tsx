@@ -1,5 +1,6 @@
 import Benefits from "@/components/Benefits";
 import Courses from "@/components/Courses";
+import { getCourses } from "@/lib/courses";
 import CTA from "@/components/CTA";
 import { HeroSection } from "@/components/hero-section";
 import HowItWorks from "@/components/HowItWorks";
@@ -69,12 +70,14 @@ function OrganizationSchema() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const courses = await getCourses();
+
   return (
     <main className="min-h-screen">
       <OrganizationSchema />
       <HeroSection />
-      <Courses />
+      <Courses courses={courses} />
       <HowItWorks />
       <Benefits />
       <ReviewsSection />

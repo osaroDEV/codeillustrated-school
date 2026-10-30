@@ -1,5 +1,5 @@
 import CoursesPageClient from "@/components/CoursesPageClient";
-import { courses } from "@/lib/courses";
+import { getCourses, type Course } from "@/lib/courses";
 import {
   BASE_PATH,
   getCanonicalUrl,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 };
 
 // JSON-LD ItemList schema for courses listing
-function CoursesListSchema() {
+function CoursesListSchema({ courses }: { courses: Course[] }) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -54,11 +54,13 @@ function CoursesListSchema() {
   );
 }
 
-export default function CoursesPage() {
+export default async function CoursesPage() {
+  const courses = await getCourses();
+
   return (
     <main className="min-h-screen bg-background pt-32 pb-24">
-      <CoursesListSchema />
-      <CoursesPageClient />
+      <CoursesListSchema courses={courses} />
+      <CoursesPageClient courses={courses} />
     </main>
   );
 }

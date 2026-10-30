@@ -4,6 +4,7 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "@/lib/auth";
+import { ResendVerification } from "@/components/auth/resend-verification";
 import { Eye, EyeOff, Loader2, GraduationCap } from "lucide-react";
 
 function LoginForm() {
@@ -15,18 +16,29 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(
+    searchParams.get("error") === "link_invalid"
+      ? "That verification link is invalid or has expired. Sign in to request a new one."
+      : ""
+  );
+  const [unverified, setUnverified] = useState(false);
+  const notice =
+    searchParams.get("notice") === "verified"
+      ? "If you just clicked a verification link, your email is verified. Sign in to continue."
+      : "";
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setUnverified(false);
 
     const { error: signInError } = await signIn(email, password);
     if (signInError) {
       const msg = signInError.message.toLowerCase();
       if (msg.includes("email not confirmed")) {
-        setError("Your account email is not confirmed. Contact your instructor to activate your account.");
+        setError("Please verify your email first. Check your inbox for the link, or send a new one below.");
+        setUnverified(true);
       } else if (msg.includes("invalid login credentials")) {
         setError("Invalid email or password. Please try again.");
       } else {
@@ -74,9 +86,19 @@ function LoginForm() {
           <h1 className="text-2xl font-bold text-white mb-1">Welcome back</h1>
           <p className="text-white/50 text-sm mb-8">Sign in to access your learner dashboard</p>
 
+          {notice && !error && (
+            <div className="mb-6 px-4 py-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-sm">
+              {notice}
+            </div>
+          )}
           {error && (
             <div className="mb-6 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
               {error}
+            </div>
+          )}
+          {unverified && (
+            <div className="mb-6">
+              <ResendVerification email={email.trim()} />
             </div>
           )}
 
@@ -138,7 +160,7 @@ function LoginForm() {
           </form>
 
           <p className="text-center text-white/40 text-sm mt-6">
-            Have an invite code?{" "}
+            New to Code Illustrated?{" "}
             <Link href="/auth/signup" className="text-[#ffbd59] hover:text-[#f5a623] font-medium transition-colors">
               Create your account
             </Link>

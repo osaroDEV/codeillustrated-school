@@ -19,9 +19,14 @@ import Script from "next/script";
 import { Inter } from "next/font/google";
 import { CurrencyProvider } from "@/components/currency-provider";
 import { SiteLayoutWrapper } from "@/components/site-layout-wrapper";
+import { getCourses } from "@/lib/courses";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
+
+// Catalogue edits made in the admin panel show up on statically rendered
+// marketing pages within five minutes.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -75,11 +80,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const courses = await getCourses();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -118,7 +125,7 @@ export default function RootLayout({
           />
         </noscript>
         <CurrencyProvider>
-          <SiteLayoutWrapper>
+          <SiteLayoutWrapper footerCourses={courses.map(({ id, title }) => ({ id, title }))}>
             {children}
           </SiteLayoutWrapper>
           <Toaster />

@@ -1,13 +1,13 @@
 "use client";
 
-import { courses } from "@/lib/courses";
+import type { CourseSummary } from "@/lib/course-types";
 import { Instagram, Mail, MapPin, Phone, Twitter } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import codeillIcon from "../public/code-ill.svg";
 
-export default function Footer() {
+export default function Footer({ courses }: { courses: CourseSummary[] }) {
   const currentYear = new Date().getFullYear();
 
   return (

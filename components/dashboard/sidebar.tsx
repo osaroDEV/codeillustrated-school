@@ -12,6 +12,7 @@ import {
   GraduationCap,
   Menu,
   X,
+  ShieldCheck,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -26,9 +27,10 @@ interface SidebarProps {
   userName?: string;
   userEmail?: string;
   avatarUrl?: string | null;
+  isAdmin?: boolean;
 }
 
-export function DashboardSidebar({ userName, userEmail, avatarUrl }: SidebarProps) {
+export function DashboardSidebar({ userName, userEmail, avatarUrl, isAdmin }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -81,6 +83,16 @@ export function DashboardSidebar({ userName, userEmail, avatarUrl }: SidebarProp
             </Link>
           );
         })}
+        {isAdmin && (
+          <Link
+            href="/admin"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-white/50 hover:text-white hover:bg-white/[0.06]"
+          >
+            <ShieldCheck className="w-4 h-4 flex-shrink-0" />
+            Admin panel
+          </Link>
+        )}
       </nav>
 
       {/* User section */}

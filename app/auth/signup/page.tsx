@@ -2,20 +2,22 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ResendVerification } from "@/components/auth/resend-verification";
 import Link from "next/link";
 import {
   Eye, EyeOff, Loader2, GraduationCap,
   CheckCircle2, ArrowRight, Key, User, Mail, Lock,
 } from "lucide-react";
 
-type Step = "invite" | "register" | "success";
+type Step = "register" | "success";
 
 export default function SignupPage() {
   const router = useRouter();
 
-  const [step, setStep] = useState<Step>("invite");
+  const [step, setStep] = useState<Step>("register");
   const [inviteCode, setInviteCode] = useState("");
-  const [inviteData, setInviteData] = useState<{ course_id: string; id: string } | null>(null);
+  const [showInvite, setShowInvite] = useState(false);
+  const [enrolled, setEnrolled] = useState(false);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -26,37 +28,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Step 1: Validate invite code
-  async function handleValidateInvite(e: React.FormEvent) {
-    e.preventDefault();
-    if (!inviteCode.trim()) return;
-    setLoading(true);
-    setError("");
-
-    try {
-      const res = await fetch("/academy/api/auth/validate-invite", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: inviteCode.trim().toUpperCase() }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Invalid invite code.");
-        setLoading(false);
-        return;
-      }
-
-      setInviteData({ course_id: data.course_id, id: data.id });
-      setStep("register");
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // Step 2: Register account
+  // Register account (an invite code is optional)
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     if (password !== confirmPassword) {
@@ -78,8 +50,7 @@ export default function SignupPage() {
           email,
           password,
           fullName,
-          inviteId: inviteData!.id,
-          courseId: inviteData!.course_id,
+          inviteCode: inviteCode.trim() || undefined,
         }),
       });
 
@@ -90,6 +61,8 @@ export default function SignupPage() {
         return;
       }
 
+      const data = await res.json().catch(() => ({}));
+      setEnrolled(!!data.enrolled);
       setStep("success");
     } catch {
       setError("Something went wrong. Please try again.");
@@ -127,102 +100,9 @@ export default function SignupPage() {
           </Link>
         </div>
 
-        {/* Progress steps */}
-        <div className="flex items-center gap-2 mb-6 justify-center">
-          {[
-            { key: "invite", label: "Invite Code" },
-            { key: "register", label: "Create Account" },
-            { key: "success", label: "Done" },
-          ].map((s, i, arr) => (
-            <div key={s.key} className="flex items-center gap-2">
-              <div className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${
-                step === s.key ? "text-white" :
-                (step === "register" && s.key === "invite") || step === "success"
-                  ? "text-[#ffbd59]" : "text-white/30"
-              }`}>
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors ${
-                  (step === "register" && s.key === "invite") || step === "success"
-                    ? "bg-[#ffbd59] text-black"
-                    : step === s.key
-                    ? "bg-white text-black"
-                    : "bg-white/10 text-white/30"
-                }`}>
-                  {(step === "register" && s.key === "invite") || step === "success" ? (
-                    <CheckCircle2 className="w-3 h-3" />
-                  ) : (i + 1)}
-                </div>
-                <span className="hidden sm:block">{s.label}</span>
-              </div>
-              {i < arr.length - 1 && (
-                <div className={`w-8 h-px transition-colors ${
-                  (step === "register" && s.key === "invite") || step === "success"
-                    ? "bg-[#ffbd59]/50" : "bg-white/10"
-                }`} />
-              )}
-            </div>
-          ))}
-        </div>
-
         {/* Card */}
         <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-8 backdrop-blur-sm shadow-2xl">
-          {/* STEP 1: Invite Code */}
-          {step === "invite" && (
-            <>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-[#ffbd59]/15 rounded-xl flex items-center justify-center">
-                  <Key className="w-5 h-5 text-[#ffbd59]" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-white">Enter your invite code</h1>
-                  <p className="text-white/40 text-xs">This is provided by Code Illustrated after payment</p>
-                </div>
-              </div>
-
-              {error && (
-                <div className="mb-5 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
-                  {error}
-                </div>
-              )}
-
-              <form onSubmit={handleValidateInvite} className="space-y-5">
-                <div>
-                  <label className="block text-white/70 text-sm font-medium mb-2">Invite Code</label>
-                  <input
-                    id="invite-code-input"
-                    type="text"
-                    value={inviteCode}
-                    onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                    required
-                    placeholder="e.g. CILEARN-A1B2C3"
-                    maxLength={20}
-                    className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/25 text-sm tracking-widest font-mono focus:outline-none focus:border-[#ffbd59]/50 focus:bg-white/[0.08] transition-all uppercase"
-                  />
-                </div>
-
-                <button
-                  id="validate-invite-btn"
-                  type="submit"
-                  disabled={loading || !inviteCode.trim()}
-                  className="w-full bg-gradient-to-r from-[#ffbd59] to-[#f5a623] hover:from-[#f5a623] hover:to-[#d9890a] text-black font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-[#ffbd59]/20 disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {loading ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /> Validating...</>
-                  ) : (
-                    <><span>Continue</span><ArrowRight className="w-4 h-4" /></>
-                  )}
-                </button>
-              </form>
-
-              <p className="text-center text-white/30 text-xs mt-6">
-                Don&apos;t have a code?{" "}
-                <a href="https://codeillustrated.com/academy/courses" className="text-white/50 hover:text-white underline transition-colors">
-                  Enroll in a course
-                </a>
-              </p>
-            </>
-          )}
-
-          {/* STEP 2: Register */}
+          {/* Register */}
           {step === "register" && (
             <>
               <div className="flex items-center gap-3 mb-6">
@@ -231,7 +111,7 @@ export default function SignupPage() {
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-white">Create your account</h1>
-                  <p className="text-white/40 text-xs">Invite code verified ✓ — almost there!</p>
+                  <p className="text-white/40 text-xs">Start learning with Code Illustrated</p>
                 </div>
               </div>
 
@@ -313,6 +193,32 @@ export default function SignupPage() {
                   </div>
                 </div>
 
+                {showInvite ? (
+                  <div>
+                    <label className="block text-white/70 text-sm font-medium mb-2">Invite code (optional)</label>
+                    <div className="relative">
+                      <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                      <input
+                        id="invite-code-input"
+                        type="text"
+                        value={inviteCode}
+                        onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                        placeholder="e.g. CILEARN-A1B2C3"
+                        maxLength={20}
+                        className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 pl-11 text-white placeholder-white/25 text-sm tracking-widest font-mono focus:outline-none focus:border-[#ffbd59]/50 focus:bg-white/[0.08] transition-all uppercase"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowInvite(true)}
+                    className="text-[#ffbd59] hover:text-[#f5a623] text-xs font-medium transition-colors"
+                  >
+                    Have an invite or scholarship code?
+                  </button>
+                )}
+
                 <button
                   id="signup-submit"
                   type="submit"
@@ -329,17 +235,22 @@ export default function SignupPage() {
             </>
           )}
 
-          {/* STEP 3: Success */}
+          {/* Success */}
           {step === "success" && (
             <div className="text-center py-4">
               <div className="w-20 h-20 bg-green-500/15 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle2 className="w-10 h-10 text-green-400" />
               </div>
-              <h1 className="text-2xl font-bold text-white mb-2">You&apos;re in! 🎉</h1>
-              <p className="text-white/50 text-sm mb-8">
-                Your account has been created and you&apos;ve been enrolled in your course.
-                <br />Check your email to verify your account.
+              <h1 className="text-2xl font-bold text-white mb-2">Check your inbox</h1>
+              <p className="text-white/50 text-sm mb-2">
+                Your account has been created
+                {enrolled ? " and you’ve been enrolled in your course" : ""}. We&apos;ve sent a
+                verification link to <span className="text-white">{email}</span>.
               </p>
+              <p className="text-white/50 text-sm mb-6">Click it to activate your account and sign in.</p>
+              <div className="mb-4">
+                <ResendVerification email={email.trim()} />
+              </div>
               <button
                 id="go-to-dashboard-btn"
                 onClick={() => router.push("/auth/login")}

@@ -30,12 +30,15 @@ export type Database = {
           id: string;
           full_name: string | null;
           avatar_url: string | null;
+          role: "student" | "admin";
+          email: string | null;
           created_at: string;
         };
         Insert: {
           id: string;
           full_name?: string | null;
           avatar_url?: string | null;
+          email?: string | null;
         };
         Update: {
           full_name?: string | null;

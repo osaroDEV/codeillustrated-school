@@ -1,8 +1,8 @@
-import { courses } from "@/lib/courses";
+import { getCourses } from "@/lib/courses";
 import { BASE_PATH, SITE_URL } from "@/lib/seo";
 import type { MetadataRoute } from "next";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = `${SITE_URL}${BASE_PATH}`;
 
   // Static pages
@@ -52,6 +52,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // Dynamic course pages
+  const courses = await getCourses();
   const coursePages: MetadataRoute.Sitemap = courses.map((course) => ({
     url: `${baseUrl}/courses/${course.id}`,
     lastModified: new Date(),

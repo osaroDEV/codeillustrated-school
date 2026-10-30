@@ -1,7 +1,7 @@
 "use client";
 
 import { useCurrency } from "@/hooks/use-currency";
-import { PriceTier } from "@/lib/courses";
+import type { PriceTier } from "@/lib/course-types";
 import { cn } from "@/lib/utils";
 
 interface PriceDisplayProps {

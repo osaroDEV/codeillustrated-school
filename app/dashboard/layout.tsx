@@ -1,7 +1,6 @@
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { createAdminClient } from "@/lib/supabase";
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { requireUser } from "@/lib/supabase-server";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -9,31 +8,14 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-async function getCurrentUser() {
+async function getProfile(userId: string) {
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return cookieStore.getAll(); },
-          setAll() {},
-        },
-      }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
-
-    const admin = createAdminClient();
-    const { data: profile } = await admin
+    const { data } = await createAdminClient()
       .from("profiles")
-      .select("full_name, avatar_url")
-      .eq("id", user.id)
+      .select("full_name, avatar_url, role")
+      .eq("id", userId)
       .single();
-
-    return { user, profile };
+    return data;
   } catch {
     return null;
   }
@@ -44,14 +26,17 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const current = await getCurrentUser();
+  // Signed-in and email-verified, or redirected to login / verify-email.
+  const user = await requireUser();
+  const profile = await getProfile(user.id);
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white antialiased">
       <DashboardSidebar
-        userName={current?.profile?.full_name || current?.user?.email?.split("@")[0]}
-        userEmail={current?.user?.email}
-        avatarUrl={current?.profile?.avatar_url}
+        userName={profile?.full_name || user.email?.split("@")[0]}
+        userEmail={user.email}
+        avatarUrl={profile?.avatar_url}
+        isAdmin={profile?.role === "admin"}
       />
       <main className="lg:pl-64">
         <div className="pt-16 lg:pt-0 min-h-screen">
