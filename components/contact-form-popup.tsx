@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
+import type { CourseLink } from "@/lib/course-types";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -29,7 +30,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export function ContactFormPopup() {
+export function ContactFormPopup({ courses }: { courses: CourseLink[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -191,10 +192,11 @@ export function ContactFormPopup() {
                               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                               <option value="" disabled>Select a course</option>
-                              <option value="junior-web-creator">Junior Web Creator (Age 8–12)</option>
-                              <option value="game-dev-pro">Game Dev Pro (Age 13–17)</option>
-                              <option value="frontend-beginner">Frontend Beginner</option>
-                              <option value="data-science-intro">Data Science Intro</option>
+                              {courses.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                  {c.title}
+                                </option>
+                              ))}
                               <option value="other">Other / General Inquiry</option>
                             </select>
                           </FormControl>

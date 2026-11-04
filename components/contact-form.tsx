@@ -32,6 +32,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
+import type { CourseLink } from "@/lib/course-types";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -43,7 +44,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export function ContactForm() {
+export function ContactForm({ courses }: { courses: CourseLink[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormData>({
@@ -259,27 +260,11 @@ export function ContactForm() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="junior-web-creator">
-                                Junior Web Creator
-                              </SelectItem>
-                              <SelectItem value="game-dev-pro">
-                                Game Dev Pro
-                              </SelectItem>
-                              <SelectItem value="frontend-developer">
-                                Frontend Developer
-                              </SelectItem>
-                              <SelectItem value="frontend-architect">
-                                Frontend Architect
-                              </SelectItem>
-                              <SelectItem value="data-science-intro">
-                                Data Science Intro
-                              </SelectItem>
-                              <SelectItem value="devops-cloud">
-                                DevOps & Cloud Computing
-                              </SelectItem>
-                              <SelectItem value="javascript">
-                                JavaScript Fundamentals
-                              </SelectItem>
+                              {courses.map((c) => (
+                                <SelectItem key={c.id} value={c.id}>
+                                  {c.title}
+                                </SelectItem>
+                              ))}
                               <SelectItem value="other">
                                 Other/General Inquiry
                               </SelectItem>

@@ -5,7 +5,7 @@ import type { Course } from "./course-types";
 // scripts/generate-course-seed.mjs) is now the source of truth; this copy is
 // the fallback lib/courses.ts serves when Supabase is unreachable or not yet
 // migrated, so the marketing site never renders an empty catalogue.
-export const STATIC_COURSES: Course[] = [
+const CATALOGUE: Omit<Course, "slug">[] = [
   {
     id: "junior-web-creator",
     title: "Junior Web Creator",
@@ -239,3 +239,6 @@ export const STATIC_COURSES: Course[] = [
     },
   },
 ];
+
+// Before the database existed, each course's address was its ID.
+export const STATIC_COURSES: Course[] = CATALOGUE.map((course) => ({ ...course, slug: course.id }));

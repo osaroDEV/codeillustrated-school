@@ -19,7 +19,7 @@ interface Sub {
   amount: number;
   current_period_end: string;
   created_at: string;
-  courses: { title: string } | null;
+  courses: { title: string; slug: string } | null;
 }
 
 interface Order {
@@ -39,7 +39,7 @@ export default async function BillingPage() {
   const [{ data: subs }, { data: orders }] = await Promise.all([
     admin
       .from("subscriptions")
-      .select("id, course_id, status, currency, amount, current_period_end, created_at, courses(title)")
+      .select("id, course_id, status, currency, amount, current_period_end, created_at, courses(title, slug)")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
     admin
@@ -114,7 +114,7 @@ export default async function BillingPage() {
                     {live && <CancelSubscriptionButton id={s.id} />}
                     {!live && (
                       <Link
-                        href={`/courses/${s.course_id}#enroll`}
+                        href={`/courses/${s.courses?.slug ?? s.course_id}#enroll`}
                         className="text-sm font-medium text-[#ffbd59] hover:text-[#f5a623]"
                       >
                         Subscribe again →

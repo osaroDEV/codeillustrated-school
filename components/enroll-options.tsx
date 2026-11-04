@@ -41,7 +41,7 @@ export function EnrollOptions({ course }: { course: Course }) {
       });
       const data = await res.json().catch(() => ({}));
       if (res.status === 401) {
-        window.location.href = `/academy/auth/login?redirectTo=${encodeURIComponent(`/courses/${course.id}#enroll`)}`;
+        window.location.href = `/academy/auth/login?redirectTo=${encodeURIComponent(`/courses/${course.slug}#enroll`)}`;
         return;
       }
       if (!res.ok || !data.link) throw new Error(data.error || "Couldn't start the payment. Please try again.");

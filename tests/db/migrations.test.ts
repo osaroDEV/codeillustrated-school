@@ -542,3 +542,67 @@ describe("billing", () => {
     ).rejects.toThrow(/permission denied/);
   });
 });
+
+describe("course addresses", () => {
+  const redirects = async (id: string) =>
+    (
+      await sql<{ slug: string }>(`select slug from public.course_slug_redirects where course_id = '${id}' order by slug`)
+    ).map((r) => r.slug);
+
+  it("start out as the course ID", async () => {
+    const rows = await sql<{ n: number }>("select count(*)::int as n from public.courses where slug <> id");
+    expect(rows[0].n).toBe(0);
+  });
+
+  it("keep the old address as a redirect when one changes", async () => {
+    await sql(`update public.courses set slug = '${c1}-new' where id = '${c1}'`);
+    const [course] = await sql<{ id: string; slug: string }>(`select id, slug from public.courses where id = '${c1}'`);
+    expect(course).toEqual({ id: c1, slug: `${c1}-new` });
+    expect(await redirects(c1)).toEqual([c1]);
+
+    await sql(`update public.courses set slug = '${c1}-newer' where id = '${c1}'`);
+    expect(await redirects(c1)).toEqual([c1, `${c1}-new`]);
+  });
+
+  it("stop redirecting an address that is live again", async () => {
+    await sql(`update public.courses set slug = '${c1}' where id = '${c1}'`);
+    expect(await redirects(c1)).toEqual([`${c1}-new`, `${c1}-newer`]);
+
+    // A new course taking another course's old address gets it outright.
+    await sql(`insert into public.courses (id, slug, title) values ('fresh', '${c1}-new', 'Fresh')`);
+    expect(await redirects(c1)).toEqual([`${c1}-newer`]);
+    await sql(`delete from public.courses where id = 'fresh'`);
+  });
+
+  it("refuse an address another course has, or a badly formed one", async () => {
+    await expect(sql(`update public.courses set slug = '${c2}' where id = '${c1}'`)).rejects.toThrow(/courses_slug_key/);
+    await expect(sql(`update public.courses set slug = 'Has Spaces' where id = '${c1}'`)).rejects.toThrow(
+      /courses_slug_format/
+    );
+  });
+
+  it("don't touch enrolments, which keep the internal ID", async () => {
+    const before = await sql<{ n: number }>(`select count(*)::int as n from public.enrollments where course_id = '${c1}'`);
+    await sql(`update public.courses set slug = '${c1}-moved' where id = '${c1}'`);
+    const after = await sql<{ n: number }>(`select count(*)::int as n from public.enrollments where course_id = '${c1}'`);
+    expect(after[0].n).toBe(before[0].n);
+    await sql(`update public.courses set slug = '${c1}' where id = '${c1}'`);
+  });
+
+  it("are readable by anyone for published courses only, and written only by the trigger", async () => {
+    await sql(`update public.courses set is_published = true where id = '${c1}'`);
+    const anon = await sql<{ slug: string }>("select slug from public.course_slug_redirects", as("anon"));
+    expect(anon.map((r) => r.slug)).toContain(`${c1}-moved`);
+
+    await sql(`update public.courses set is_published = false where id = '${c1}'`);
+    const hidden = await sql<{ slug: string }>("select slug from public.course_slug_redirects", as("anon"));
+    expect(hidden.map((r) => r.slug)).not.toContain(`${c1}-moved`);
+    const admin = await sql<{ slug: string }>("select slug from public.course_slug_redirects", as("authenticated", U.admin));
+    expect(admin.map((r) => r.slug)).toContain(`${c1}-moved`);
+    await sql(`update public.courses set is_published = true where id = '${c1}'`);
+
+    await expect(
+      sql(`insert into public.course_slug_redirects (slug, course_id) values ('hijack', '${c2}')`, as("authenticated", U.admin))
+    ).rejects.toThrow(/row-level security/);
+  });
+});

@@ -5,14 +5,14 @@ import { Navbar } from "@/components/Navbar";
 import Footer from "@/components/site-footer";
 import { ContactFormPopup } from "@/components/contact-form-popup";
 import { ChatBot } from "@/components/chatbot/chat-bot";
-import type { CourseSummary } from "@/lib/course-types";
+import type { CourseLink } from "@/lib/course-types";
 
 export function SiteLayoutWrapper({
   children,
   footerCourses,
 }: {
   children: React.ReactNode;
-  footerCourses: CourseSummary[];
+  footerCourses: CourseLink[];
 }) {
   const pathname = usePathname();
   // Check if we are inside auth, admin, or dashboard routes (accounting for possible sub-pages)
@@ -31,7 +31,7 @@ export function SiteLayoutWrapper({
       <Navbar />
       {children}
       <Footer courses={footerCourses} />
-      <ContactFormPopup />
+      <ContactFormPopup courses={footerCourses} />
       <ChatBot />
     </>
   );

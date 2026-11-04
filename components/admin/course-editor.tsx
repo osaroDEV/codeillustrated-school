@@ -32,7 +32,7 @@ export function CourseEditor({ course }: { course: AdminCourse }) {
           <h1 className="text-2xl font-bold text-white">{course.title}</h1>
           {course.is_published && (
             <a
-              href={`/academy/courses/${course.id}`}
+              href={`/academy/courses/${course.slug}`}
               target="_blank"
               rel="noopener"
               className="inline-flex items-center gap-1 text-[#3da3bc] hover:text-white text-xs"
@@ -41,7 +41,7 @@ export function CourseEditor({ course }: { course: AdminCourse }) {
             </a>
           )}
         </div>
-        <p className="text-white/40 text-sm mt-1">{course.id}</p>
+        <p className="text-white/40 text-sm mt-1">/courses/{course.slug}</p>
       </div>
       <CourseDetails course={course} />
       <Offerings course={course} />
@@ -55,6 +55,7 @@ export function CourseEditor({ course }: { course: AdminCourse }) {
 function CourseDetails({ course }: { course: AdminCourse }) {
   const router = useRouter();
   const [form, setForm] = useState({
+    slug: course.slug,
     title: course.title,
     description: course.description,
     full_description: course.full_description,
@@ -77,6 +78,16 @@ function CourseDetails({ course }: { course: AdminCourse }) {
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
+    const moving = form.slug.trim().toLowerCase() !== course.slug;
+    if (
+      moving &&
+      course.is_published &&
+      !confirm(
+        `Move this course's page from /courses/${course.slug} to /courses/${form.slug.trim().toLowerCase()}? Links to the old address will keep working and redirect to the new one.`
+      )
+    ) {
+      return;
+    }
     setSaving(true);
     setError("");
     const err = await send(`/courses/${course.id}`, "PATCH", form);
@@ -118,6 +129,17 @@ function CourseDetails({ course }: { course: AdminCourse }) {
       <form onSubmit={save} className={`${cardClass} p-5 grid grid-cols-1 sm:grid-cols-3 gap-4`}>
         <Field label="Title" id="d-title" className="sm:col-span-3">
           <input id="d-title" required value={form.title} onChange={set("title")} className={inputClass} />
+        </Field>
+        <Field label="Web address" id="d-slug" className="sm:col-span-3">
+          <div className="flex items-center gap-2">
+            <span className="text-white/40 text-sm whitespace-nowrap">/academy/courses/</span>
+            <input id="d-slug" required value={form.slug} onChange={set("slug")} className={inputClass} />
+          </div>
+          <p className="text-white/30 text-[11px] mt-1">
+            Lowercase letters, numbers and dashes. If you change it, the old address redirects here.
+            {course.course_slug_redirects.length > 0 &&
+              ` Old addresses that redirect here: ${course.course_slug_redirects.map((r) => r.slug).join(", ")}.`}
+          </p>
         </Field>
         <Field label="Short description (cards)" id="d-desc" className="sm:col-span-3">
           <textarea id="d-desc" rows={2} value={form.description} onChange={set("description")} className={`${inputClass} resize-none`} />

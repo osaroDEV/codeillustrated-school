@@ -21,6 +21,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
   }
 }
 
+// PATCH — edit details. Changing the slug moves the public page; the old
+// address keeps redirecting to it (see the course_slugs migration).
 export async function PATCH(req: NextRequest, { params }: Params) {
   const denied = await rejectNonAdmin();
   if (denied) return denied;
@@ -35,6 +37,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     .eq("id", id)
     .select()
     .maybeSingle();
+  if (error?.code === "23505") {
+    return NextResponse.json({ error: "Another course already uses that address." }, { status: 409 });
+  }
   if (error) return dbErrorResponse(error);
   if (!data) return NextResponse.json({ error: "Course not found" }, { status: 404 });
 

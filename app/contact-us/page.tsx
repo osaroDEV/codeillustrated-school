@@ -1,4 +1,5 @@
 import { ContactForm } from "@/components/contact-form";
+import { getCourses } from "@/lib/courses";
 import {
   getCanonicalUrl,
   getOpenGraphDefaults,
@@ -26,10 +27,11 @@ export const metadata: Metadata = {
   }),
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const courses = await getCourses();
   return (
     <main className="min-h-screen">
-      <ContactForm />
+      <ContactForm courses={courses.map(({ id, slug, title }) => ({ id, slug, title }))} />
     </main>
   );
 }

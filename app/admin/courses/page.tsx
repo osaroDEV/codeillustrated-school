@@ -20,6 +20,7 @@ export default async function AdminCoursesPage() {
       loadError={loadError}
       courses={courses.map((c) => ({
         id: c.id,
+        slug: c.slug,
         title: c.title,
         is_published: c.is_published,
         modules: c.course_modules.length,

@@ -56,7 +56,7 @@ export default function Courses({ courses }: { courses: Course[] }) {
                   <PriceDisplay price={course.price.group} className="text-lg text-slate-900" />
                 </div>
                 <Link
-                  href={`/courses/${course.id}`}
+                  href={`/courses/${course.slug}`}
                   className="text-primary font-bold inline-flex items-center gap-2 group/btn after:absolute after:inset-0"
                 >
                   Details

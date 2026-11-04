@@ -1,27 +1,41 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { STATIC_COURSES } from "./course-catalog";
-import { getCourseBySlug, getCourses, mapCourseRow, type CourseRow } from "./courses";
+import { findCourseRedirect, getCourseBySlug, getCourses, mapCourseRow, type CourseRow } from "./courses";
 
 // vi.mock is hoisted above the imports, so ./courses sees the mocked client.
 const selectResult = vi.hoisted(() => ({
   value: { data: null as unknown, error: null as unknown },
 }));
+const redirectRows = vi.hoisted(() => new Map<string, string>());
 
 vi.mock("@supabase/supabase-js", () => ({
   createClient: () => ({
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          order: async () => selectResult.value,
-        }),
-      }),
-    }),
+    from: (table: string) =>
+      table === "course_slug_redirects"
+        ? {
+            select: () => ({
+              eq: (_col: string, slug: string) => ({
+                maybeSingle: async () => ({
+                  data: redirectRows.has(slug) ? { course_id: redirectRows.get(slug) } : null,
+                  error: null,
+                }),
+              }),
+            }),
+          }
+        : {
+            select: () => ({
+              eq: () => ({
+                order: async () => selectResult.value,
+              }),
+            }),
+          },
   }),
 }));
 
 function row(overrides: Partial<CourseRow> = {}): CourseRow {
   return {
     id: "test-course",
+    slug: "test-course",
     title: "Test Course",
     description: "Short",
     full_description: "Long",
@@ -123,9 +137,21 @@ describe("getCourses", () => {
     expect(await getCourses()).toBe(STATIC_COURSES);
   });
 
-  it("getCourseBySlug finds a course or returns null", async () => {
-    selectResult.value = { data: [row({ id: "from-db" })], error: null };
-    expect((await getCourseBySlug("from-db"))?.id).toBe("from-db");
+  it("getCourseBySlug finds a course by its address, not its ID", async () => {
+    selectResult.value = { data: [row({ id: "from-db", slug: "new-address" })], error: null };
+    expect((await getCourseBySlug("new-address"))?.id).toBe("from-db");
+    expect(await getCourseBySlug("from-db")).toBeNull();
     expect(await getCourseBySlug("missing")).toBeNull();
+  });
+
+  it("findCourseRedirect sends old addresses and internal IDs to the live address", async () => {
+    selectResult.value = { data: [row({ id: "from-db", slug: "new-address" })], error: null };
+    redirectRows.set("old-address", "from-db");
+    redirectRows.set("gone", "unpublished-course");
+    expect(await findCourseRedirect("from-db")).toBe("new-address");
+    expect(await findCourseRedirect("old-address")).toBe("new-address");
+    expect(await findCourseRedirect("gone")).toBeNull();
+    expect(await findCourseRedirect("never-existed")).toBeNull();
+    redirectRows.clear();
   });
 });

@@ -3,14 +3,14 @@ import { createClient } from "@supabase/supabase-js";
 import { STATIC_COURSES } from "./course-catalog";
 import type { Course, OfferingKind, PriceTier } from "./course-types";
 
-export type { Course, CourseSummary, OfferingKind, PriceTier } from "./course-types";
+export type { Course, CourseLink, CourseSummary, OfferingKind, PriceTier } from "./course-types";
 
 // Server-only data access for the course catalogue. Reads go through the anon
 // key: RLS exposes published courses, their curriculum outline and active
 // offerings to everyone, so no session is needed and pages stay cacheable.
 
 const COURSE_SELECT = `
-  id, title, description, full_description, age, level, duration,
+  id, slug, title, description, full_description, age, level, duration,
   icon, color, bg, position,
   course_modules ( title, position, lessons ( title, position, is_published ) ),
   offerings ( kind, price_usd, price_ngn, is_active )
@@ -18,6 +18,7 @@ const COURSE_SELECT = `
 
 export interface CourseRow {
   id: string;
+  slug: string;
   title: string;
   description: string;
   full_description: string;
@@ -64,6 +65,7 @@ export function mapCourseRow(row: CourseRow): Course {
 
   return {
     id: row.id,
+    slug: row.slug,
     title: row.title,
     age: row.age,
     description: row.description,
@@ -122,7 +124,32 @@ export const getCourses = cache(async (): Promise<Course[]> => {
   }
 });
 
-export async function getCourseBySlug(id: string): Promise<Course | null> {
+export async function getCourseBySlug(slug: string): Promise<Course | null> {
   const courses = await getCourses();
-  return courses.find((c) => c.id === id) ?? null;
+  return courses.find((c) => c.slug === slug) ?? null;
+}
+
+/**
+ * Where a course page address that isn't live should go: the current slug of
+ * the published course that used to have it, or whose internal ID it is
+ * (older links and internal pages that only know course_id). Null for 404.
+ */
+export async function findCourseRedirect(address: string): Promise<string | null> {
+  const courses = await getCourses();
+  const byId = courses.find((c) => c.id === address);
+  if (byId) return byId.slug;
+
+  const client = createPublicClient();
+  if (!client) return null;
+  try {
+    const { data } = await client
+      .from("course_slug_redirects")
+      .select("course_id")
+      .eq("slug", address)
+      .maybeSingle();
+    if (!data) return null;
+    return courses.find((c) => c.id === data.course_id)?.slug ?? null;
+  } catch {
+    return null;
+  }
 }
