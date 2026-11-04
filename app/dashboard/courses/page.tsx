@@ -3,6 +3,10 @@ import { createAdminClient } from "@/lib/supabase";
 import { getCourses } from "@/lib/courses";
 import { CourseIcon } from "@/components/course-icon";
 import { RedeemCodeCard } from "@/components/dashboard/redeem-code-card";
+import { LocalTime } from "@/components/local-time";
+import { getLearnerSessions, type LearnerSession } from "@/lib/cohorts";
+import { nextSessionAt } from "@/lib/schedule";
+import Link from "next/link";
 import { Calendar, CheckCircle2, Clock, BookOpen } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -13,18 +17,21 @@ export const metadata: Metadata = {
 async function getEnrollments() {
   try {
     const user = await getCurrentUser();
-    if (!user) return [];
+    if (!user) return { enrollments: [], sessions: [] as LearnerSession[] };
 
     const admin = createAdminClient();
-    const { data } = await admin.from("enrollments").select("*").eq("user_id", user.id);
-    return data || [];
+    const [{ data }, sessions] = await Promise.all([
+      admin.from("enrollments").select("*, cohorts(name)").eq("user_id", user.id),
+      getLearnerSessions(admin, user.id).catch(() => [] as LearnerSession[]),
+    ]);
+    return { enrollments: data || [], sessions };
   } catch {
-    return [];
+    return { enrollments: [], sessions: [] as LearnerSession[] };
   }
 }
 
 export default async function CoursesPage() {
-  const [enrollments, courses] = await Promise.all([getEnrollments(), getCourses()]);
+  const [{ enrollments, sessions }, courses] = await Promise.all([getEnrollments(), getCourses()]);
 
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto">
@@ -44,6 +51,11 @@ export default async function CoursesPage() {
           {enrollments.map((enrollment) => {
             const course = courses.find((c) => c.id === enrollment.course_id);
             const modules = course?.curriculum || [];
+            const nextAt = nextSessionAt(enrollment, sessions);
+            const cohortName = (enrollment.cohorts as { name: string } | null)?.name;
+            const recordings = sessions.filter(
+              (s) => s.cohort_id === enrollment.cohort_id && s.recording_url
+            ).length;
 
             return (
               <div
@@ -61,6 +73,7 @@ export default async function CoursesPage() {
                         <div>
                           <h2 className="text-white font-bold text-lg">{course?.title || enrollment.course_id}</h2>
                           <p className="text-white/40 text-sm">{course?.age} · {course?.duration} · {course?.level}</p>
+                          {cohortName && <p className="text-[#3da3bc] text-xs mt-0.5">Cohort: {cohortName}</p>}
                         </div>
                         <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
                           enrollment.status === "active"
@@ -98,19 +111,29 @@ export default async function CoursesPage() {
 
                 {/* Session info */}
                 <div className="px-6 py-4 flex items-center gap-6 flex-wrap">
-                  {enrollment.next_session && (
+                  {nextAt && (
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-[#ffbd59]" />
                       <div>
                         <p className="text-white/40 text-[10px] uppercase tracking-wider">Next Session</p>
-                        <p className="text-white text-sm font-medium">
-                          {new Date(enrollment.next_session).toLocaleDateString("en-GB", {
-                            weekday: "long", day: "numeric", month: "long",
-                            hour: "2-digit", minute: "2-digit",
-                          })}
-                        </p>
+                        <LocalTime
+                          iso={nextAt}
+                          format={{ weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }}
+                          className="text-white text-sm font-medium"
+                        />
                       </div>
                     </div>
+                  )}
+                  {recordings > 0 && (
+                    <Link href="/dashboard/schedule" className="flex items-center gap-2 group">
+                      <BookOpen className="w-4 h-4 text-[#c31d24]" />
+                      <div>
+                        <p className="text-white/40 text-[10px] uppercase tracking-wider">Recordings</p>
+                        <p className="text-white text-sm font-medium group-hover:text-[#ffbd59] transition-colors">
+                          {recordings} available →
+                        </p>
+                      </div>
+                    </Link>
                   )}
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-[#3da3bc]" />

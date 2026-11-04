@@ -12,7 +12,7 @@ export async function GET() {
   const [{ data, error }, users] = await Promise.all([
     supabase
       .from("profiles")
-      .select("*, enrollments(id, course_id, progress, status, next_session, enrolled_at)")
+      .select("*, enrollments(id, course_id, progress, status, next_session, enrolled_at, cohort_id, cohorts(name))")
       .order("created_at", { ascending: false }),
     listAllAuthUsers(supabase).catch(() => null),
   ]);

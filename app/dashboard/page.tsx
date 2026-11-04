@@ -3,6 +3,10 @@ import { createAdminClient } from "@/lib/supabase";
 import { getCourses } from "@/lib/courses";
 import { CourseIcon } from "@/components/course-icon";
 import { RedeemCodeCard } from "@/components/dashboard/redeem-code-card";
+import { LocalTime } from "@/components/local-time";
+import { UpcomingSessions } from "@/components/schedule/session-list";
+import { getLearnerSessions } from "@/lib/cohorts";
+import { nextSessionAt } from "@/lib/schedule";
 import {
   BookOpen, TrendingUp, Calendar, Megaphone,
   Clock, ChevronRight, Zap, FileText,
@@ -21,11 +25,12 @@ async function getDashboardData() {
 
     const admin = createAdminClient();
 
-    const [profileRes, enrollmentsRes, announcementsRes, notesRes] = await Promise.all([
+    const [profileRes, enrollmentsRes, announcementsRes, notesRes, sessions] = await Promise.all([
       admin.from("profiles").select("full_name").eq("id", user.id).single(),
       admin.from("enrollments").select("*").eq("user_id", user.id),
       admin.from("announcements").select("*").order("created_at", { ascending: false }).limit(3),
       admin.from("learner_notes").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+      getLearnerSessions(admin, user.id).catch(() => []),
     ]);
 
     return {
@@ -34,6 +39,7 @@ async function getDashboardData() {
       enrollments: enrollmentsRes.error ? [] : (enrollmentsRes.data ?? []),
       announcements: announcementsRes.error ? [] : (announcementsRes.data ?? []),
       notes: notesRes.error ? [] : (notesRes.data ?? []),
+      sessions,
     };
   } catch {
     return null;
@@ -57,6 +63,8 @@ export default async function DashboardPage() {
   const enrollments = data?.enrollments || [];
   const announcements = data?.announcements || [];
   const notes = data?.notes || [];
+  const sessions = data?.sessions || [];
+  const courseTitles = Object.fromEntries(courses.map((c) => [c.id, c.title]));
 
   return (
     <div className="p-6 lg:p-8 max-w-6xl mx-auto">
@@ -111,6 +119,18 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {sessions.length > 0 && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white">Upcoming Classes</h2>
+            <Link href="/dashboard/schedule" className="text-white/40 hover:text-white text-xs flex items-center gap-1 transition-colors">
+              Full schedule <ChevronRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <UpcomingSessions sessions={sessions} courseTitles={courseTitles} limit={3} />
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Enrolled courses */}
         <div className="lg:col-span-2">
@@ -133,6 +153,7 @@ export default async function DashboardPage() {
             <div className="space-y-4">
               {enrollments.map((enrollment) => {
                 const course = courses.find((c) => c.id === enrollment.course_id);
+                const nextAt = nextSessionAt(enrollment, sessions);
                 return (
                   <div
                     key={enrollment.id}
@@ -172,10 +193,10 @@ export default async function DashboardPage() {
                         </div>
 
                         {/* Next session */}
-                        {enrollment.next_session && (
+                        {nextAt && (
                           <div className="mt-3 flex items-center gap-2 text-xs text-white/40">
                             <Calendar className="w-3 h-3 text-[#ffbd59]" />
-                            <span>Next session: <span className="text-[#ffbd59]">{new Date(enrollment.next_session).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span></span>
+                            <span>Next session: <LocalTime iso={nextAt} className="text-[#ffbd59]" /></span>
                           </div>
                         )}
                       </div>

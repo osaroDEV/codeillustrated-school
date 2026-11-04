@@ -36,7 +36,7 @@ export default async function DashboardLayout({
         userName={profile?.full_name || user.email?.split("@")[0]}
         userEmail={user.email}
         avatarUrl={profile?.avatar_url}
-        isAdmin={profile?.role === "admin"}
+        role={profile?.role}
       />
       <main className="lg:pl-64">
         <div className="pt-16 lg:pt-0 min-h-screen">
