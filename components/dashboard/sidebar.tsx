@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   CalendarDays,
   Presentation,
+  CreditCard,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/dashboard/courses", label: "My Courses", icon: BookOpen },
   { href: "/dashboard/schedule", label: "Schedule", icon: CalendarDays },
   { href: "/dashboard/announcements", label: "Announcements", icon: Megaphone },
+  { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
   { href: "/dashboard/profile", label: "Profile", icon: User },
 ];
 

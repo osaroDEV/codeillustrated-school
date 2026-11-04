@@ -8,7 +8,8 @@ Decisions so far:
 - **Payments:** Flutterwave, for both NGN and USD.
 - **Delivery:** live cohorts come first, with self-paced lessons supporting them.
 - **Guardian accounts:** none. Each learner has one account.
-- **Subscriptions:** sold per course, billed monthly or yearly, in NGN and USD. A subscription gives access to that course's self-paced lessons, files and session recordings. Live cohort seats are still bought once.
+- **Cohort seats are billed monthly** (decided at the start of Phase 3): group and 1-on-1 classes are monthly card subscriptions through Flutterwave payment plans, billed until the learner cancels or the cohort finishes. Admins place paying learners in cohorts.
+- **Self-paced subscriptions** (Phase 5): sold per course, billed monthly or yearly, in NGN and USD, giving access to that course's self-paced lessons, files and session recordings. They reuse Phase 3's billing tables and webhook.
 
 ### Where Phase 1 left things
 - **Auth:** per-user roles in `profiles.role` (`student` | `admin`). Helpers live in `lib/supabase-server.ts` (`requireUser`, `requireAdmin`, `rejectNonAdmin`, `requireVerifiedUserApi`, `isAdmin`). Email verification and password reset work.
@@ -21,7 +22,7 @@ Decisions so far:
 
 ## Phase 2: Cohorts, live sessions and catalogue editing
 
-**Status:** built on branch `lms/phase-2-cohorts`. Migration `20261104000000_cohorts_and_sessions.sql`.
+**Status:** shipped (PR #3). Migration `20261104000000_cohorts_and_sessions.sql`.
 
 **Goal:** run live classes from the LMS instead of WhatsApp and spreadsheets.
 
@@ -61,33 +62,52 @@ Decisions so far:
 
 ---
 
-## Phase 3: Online checkout with Flutterwave
+## Phase 3: Monthly checkout with Flutterwave
 
-**Goal:** a visitor can pay for an offering and end up enrolled in a cohort without anyone stepping in.
+**Status:** built on branch `lms/phase-3-checkout`. Migration `20261105000000_billing.sql`.
+
+**Goal:** a visitor can subscribe to a course's group or 1-on-1 classes, pay monthly by card, and be enrolled without anyone stepping in. An admin then places them in a cohort.
 
 **Schema:**
-- `orders`: `id`, `user_id`, `offering_id`, `cohort_id`, `currency` (NGN/USD), `amount`, `tx_ref` (unique), `flw_transaction_id`, `status` (pending/paid/failed/refunded), timestamps.
-- A Postgres function `fulfil_order(tx_ref)` that, in one transaction:
-  - locks the order row;
-  - checks cohort capacity;
-  - inserts the enrolment with `on conflict (user_id, course_id) do nothing`;
-  - marks the order paid.
-
-  This is the same idempotent claim used in `redeemInvite`, moved into SQL so retried webhooks are safe.
+- `payment_plans`: one Flutterwave payment plan per offering, currency and price, created the first time someone checks out. A plan's amount can't change, so a new price creates a new plan and existing subscribers keep their price.
+- `subscriptions`: learner, course, offering, plan, amount, `customer_email` (lower-case), `first_tx_ref`, `flw_subscription_id`, `status` (active / past_due / cancelled / expired), `current_period_end`. At most one live subscription per learner per course.
+- `orders`: every checkout and every charge, first payments and renewals alike. `tx_ref` is ours (`sub_…`) for checkouts.
+- `payment_events`: an audit log of every webhook, redirect and cron result, including charges that couldn't be matched.
+- `enrollments.source` (`manual` | `code` | `purchase` | `subscription`) and `enrollments.subscription_id`. Code enrolments are backfilled.
+- Service-role-only SQL functions keep the money logic atomic and idempotent:
+  - `fulfil_subscription_order`: the first charge creates the subscription and the enrolment, or resumes a lapsed one. Someone who already has a seat gets a cancelled subscription and the charge is flagged for a refund.
+  - `record_renewal`: adds a month from whichever is later, the paid-until date or the payment.
+  - `expire_subscriptions`: once the period plus 3 days' grace is over, the subscription expires and the seat is paused. The enrolment, progress and cohort are kept.
+  - `mark_order_refunded`.
 
 **Flow:**
-1. On the course page, "Enroll" per offering calls `POST /api/checkout`. That route needs a verified user, picks the currency from `hooks/use-currency.ts` (re-checked on the server), creates the `pending` order, and calls Flutterwave Standard (`/v3/payments`) for a hosted checkout link.
-2. Flutterwave redirects back to `/checkout/complete?tx_ref=…`, which polls the order status. It never trusts the query string.
-3. `POST /api/payments/flutterwave/webhook` checks the `verif-hash` header against `FLW_SECRET_HASH`. It then re-verifies through `GET /v3/transactions/{id}/verify`, checking that status, amount, currency and `tx_ref` all match the order, and calls `fulfil_order`.
-4. A receipt is emailed through the existing Brevo SMTP.
+1. **Checkout:** "Subscribe monthly" on the course page calls `POST /api/checkout`. The learner must be signed in and verified. NGN is only charged to visitors in Nigeria (`x-vercel-ip-country`); everyone else pays USD. The route creates the order and the plan, then calls Flutterwave Standard checkout with `payment_plan` set, so the payment is card only.
+2. **Redirect:** Flutterwave sends the learner to `/checkout/complete`, which re-verifies the transaction and shows the result.
+3. **Webhook:** `POST /api/payments/flutterwave/webhook` checks `verif-hash` and re-verifies every charge with `GET /v3/transactions/{id}/verify`, checking status, `tx_ref`, currency and amount. The redirect and webhook share `processCharge`, so whichever arrives first wins and the other changes nothing.
+4. **Renewals:** Flutterwave doesn't document the renewal `tx_ref` or include the plan in the transaction. Renewals are matched to the learner's live subscription by email, then by a `tx_ref` built from the first checkout, then by currency and amount, soonest due first. Anything left over is logged as `unmatched` for an admin. A failed renewal marks the subscription past due, and `subscription.cancelled` marks it cancelled.
+5. **Daily cron** (`vercel.json`, `/api/cron/billing`): expires lapsed subscriptions, re-checks checkouts still pending after 15 minutes, and closes abandoned checkouts after 3 days.
+6. **Access:** a seat paid by subscription only lets the learner join classes or see recordings while it's paid up (`hasSeatAccess`). Manual and scholarship-code enrolments are unaffected.
 
-**Admin:** a payments list with filters, manual "mark refunded" (which ends the enrolment), and comp enrolments through the existing scholarship codes.
+**UI:**
+- **Learner:** Dashboard → Billing shows subscriptions (renewal date, cancel, subscribe again) and receipts. My Courses and Schedule show a "renew" prompt when a seat lapses.
+- **Admin:** Admin → Payments shows MRR per currency and tabs for:
+  - **Needs attention:** paid learners waiting for a cohort, plus unmatched or rejected charges and duplicate purchases;
+  - **Subscriptions**, with cancel;
+  - **Charges**, with "Re-check" for pending ones and "Mark refunded".
+- **Ending billing:** marking a cohort finished cancels its members' subscriptions.
+- **Receipts:** first payments and renewals send a receipt email through Brevo.
 
-**Keep:** WhatsApp stays on the course page as a secondary "Talk to us" link.
+**Not included:**
+- Refunds are made in the Flutterwave dashboard. "Mark refunded" only records them.
+- Self-paced offerings can't be bought until the lesson player exists (Phase 4).
+- WhatsApp stays as "Questions? Talk to us". Courses served from the static fallback keep WhatsApp enrolment.
 
-**Build for Phase 5 now:** write the webhook as a dispatcher keyed on Flutterwave's `event` field and on the `tx_ref` prefix (`ord_` for orders, `sub_` for subscriptions), so recurring charges can be added later without a rewrite. Add `enrollments.source` (`manual` | `code` | `purchase` | `subscription`) in this phase's migration.
+**Env:** `FLW_SECRET_KEY`, `FLW_SECRET_HASH`, `CRON_SECRET`, `BREVO_API_KEY` (already used for the newsletter), and optionally `RECEIPT_FROM_EMAIL` and `APP_URL`. Setup steps are in `supabase/README.md`.
 
-**Env:** `FLW_PUBLIC_KEY`, `FLW_SECRET_KEY`, `FLW_SECRET_HASH`. Use Flutterwave test mode against the `academy-staging` project.
+**Tests:**
+- `lib/billing.test.ts`, `lib/flutterwave.test.ts`, `lib/billing-server.test.ts` and `tests/api/flutterwave-webhook.test.ts`.
+- Billing checks in `tests/db/migrations.test.ts`: fulfilment, idempotency, renewals, expiry, resubscribing, refunds and RLS.
+- **Still to do:** an end-to-end run with Flutterwave test keys against `academy-staging`, including a real renewal. That run should confirm the renewal `tx_ref` format, so the matching in `matchRenewal` can be tightened.
 
 ---
 
@@ -110,6 +130,13 @@ Decisions so far:
 ## Phase 5: Subscriptions per course
 
 **Goal:** a learner can subscribe to one course, monthly or yearly, and keeps its self-paced content and recordings for as long as they pay.
+
+**Builds on Phase 3:** the tables (`payment_plans`, `subscriptions`, `orders`, `payment_events`), the webhook, renewal matching, expiry cron, Billing page and admin Payments page already exist for monthly cohort seats. This phase:
+- allows `self_paced` in `PURCHASABLE_KINDS`;
+- adds `yearly` to `payment_plans.interval`, with a `record_renewal` that extends by the plan's interval;
+- grants self-paced subscribers lesson access in the Phase 4 access check.
+
+The design below was written before Phase 3; where they differ, Phase 3's implementation wins.
 
 **Schema:**
 - `subscription_plans`: `id`, `course_id`, `interval` (`monthly` | `yearly`), `price_usd`, `price_ngn`, `flw_plan_id_usd`, `flw_plan_id_ngn`, `is_active`, unique on (`course_id`, `interval`).

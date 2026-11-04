@@ -84,6 +84,7 @@ export function mapCourseRow(row: CourseRow): Course {
       group,
       oneOnOne: priceFor("cohort_1on1") ?? group,
     },
+    offerings,
   };
 }
 

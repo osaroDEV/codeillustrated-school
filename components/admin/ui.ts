@@ -26,3 +26,23 @@ export async function send(path: string, method: string, body?: unknown): Promis
     return "Network error. Please try again.";
   }
 }
+
+/** Like send(), but also returns the JSON body (e.g. a warning) on success. */
+export async function request<T = Record<string, unknown>>(
+  path: string,
+  method: string,
+  body?: unknown
+): Promise<{ error: string | null; data: T | null }> {
+  try {
+    const res = await fetch(`/academy/api/admin${path}`, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => null);
+    if (res.ok) return { error: null, data };
+    return { error: data?.error || `Request failed (${res.status})`, data: null };
+  } catch {
+    return { error: "Network error. Please try again.", data: null };
+  }
+}

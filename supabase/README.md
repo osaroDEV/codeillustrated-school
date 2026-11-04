@@ -2,7 +2,7 @@
 
 Supabase config (`config.toml`), email templates (`templates/`) and SQL migrations (`migrations/`, applied in filename order). The Supabase CLI is a dev dependency, so run it with `pnpm exec supabase …` or the `db:*` scripts.
 
-These migrations cover Phases 1 and 2 of the LMS. The later phases are planned in [`docs/lms-roadmap.md`](../docs/lms-roadmap.md).
+These migrations cover Phases 1–3 of the LMS. The later phases are planned in [`docs/lms-roadmap.md`](../docs/lms-roadmap.md).
 
 | Migration | What it does |
 | --- | --- |
@@ -13,6 +13,7 @@ These migrations cover Phases 1 and 2 of the LMS. The later phases are planned i
 | `…000400_require_email_verification.sql` | Makes every existing account that was never sent a verification email unverified again, and ends its sessions. |
 | `…000500_unique_enrollments.sql` | Merges duplicate enrollments (keeps the row with the most progress and appends the notes from the others), then adds `unique (user_id, course_id)`. |
 | `20261104000000_cohorts_and_sessions.sql` | Phase 2. Adds the `instructor` role, `cohorts`, `class_sessions` and `attendance`, and `enrollments.cohort_id`. A trigger refuses placements in a full cohort or a cohort of a different course. Links `enrollments.course_id` to `courses`. Adds the reorder functions used by the course editor. Stops anon and signed-in clients from reading `lessons.content`, `video_url` and `file_path`. |
+| `20261105000000_billing.sql` | Phase 3. Monthly billing for cohort seats: `payment_plans`, `subscriptions`, `orders`, `payment_events`, plus `enrollments.source` and `subscription_id`. The billing functions `fulfil_subscription_order`, `record_renewal`, `expire_subscriptions` and `mark_order_refunded` can only be called with the service role. |
 
 ## Local development
 
@@ -44,14 +45,32 @@ Every account must click an emailed link before it can sign in:
    - Set the "Confirm signup" template to the contents of `templates/confirmation.html`. If you skip this, the default link still verifies the account, but `/auth/confirm` can't sign the learner in, so they're sent to the login page instead.
    - Set the "Reset password" template to the contents of `templates/recovery.html`. Its link signs the learner in through `/auth/confirm` and opens `/auth/reset-password`; the default template's link can't, so "Forgot password?" wouldn't work without it.
    - Raise Rate Limits → "emails sent per hour" from the default (2) to something like 30.
-2. **Deploy the code.**
-3. **Apply the migrations:** `pnpm exec supabase link --project-ref <ref>`, then `pnpm db:push`.
+2. **Apply the migrations before the code that needs them is deployed**, so before merging to `main`. The migrations only add things, so the code already live keeps working. If you deploy first, the live site queries tables that don't exist yet; that happened with Phase 2. To push to production without re-linking the CLI away from staging, run `pnpm exec supabase db push --linked --project-ref <production ref>`. Add `--dry-run` first to see what it will apply.
+3. **Deploy the code** by merging to `main`.
 4. **Promote yourself to admin** in the SQL editor:
    ```sql
    update public.profiles set role = 'admin' where email = 'you@example.com';
    ```
 5. **Verify your own email:** sign in, click "Resend verification link" and follow the link. Admins have to verify too.
 6. **Send everyone else their links** from Admin → Learners → **Email verification links to all unverified**.
+
+## Payments (Phase 3)
+
+Cohort seats are monthly card subscriptions through Flutterwave (v3 API). To turn them on:
+
+1. **Flutterwave dashboard** → Settings → API keys: copy the secret key. Use test keys on staging.
+2. **Settings → Webhooks:**
+   - URL: `https://codeillustrated.com/academy/api/payments/flutterwave/webhook`
+   - Secret hash: a long random string.
+   - Make sure v3 webhooks and "retry on failure" are on, and enable the charge and subscription-cancellation events.
+3. **Vercel env vars:**
+   - `FLW_SECRET_KEY` and `FLW_SECRET_HASH` (the same hash as step 2).
+   - `CRON_SECRET` (any long random string; Vercel Cron sends it to `/api/cron/billing` every day at 06:00 UTC).
+   - `BREVO_API_KEY` (already set for the newsletter) for receipts. `RECEIPT_FROM_EMAIL` must be a sender verified in Brevo and defaults to `info@codeillustrated.com`.
+   - Optional: `APP_URL`, the base used for the Flutterwave redirect. It defaults to `https://codeillustrated.com/academy`. Set it per environment, e.g. `http://localhost:3000/academy` locally or the staging URL.
+4. **Prices:** in Admin → Courses, set the group and 1-on-1 prices (monthly, in USD and NGN) and tick "On sale". Only offerings that are on sale and priced in both currencies show a Subscribe button.
+
+Refunds are made in the Flutterwave dashboard; Admin → Payments → "Mark refunded" only records them. Charges the webhook couldn't match to a subscription show under Admin → Payments → Needs attention.
 
 **Instructors** (Phase 2): an admin gives someone the instructor role from Admin → Learners → Role, then assigns them to a cohort. Instructors sign in as usual and get a **Teaching** link in their dashboard. It shows only their own cohorts, where they can mark attendance and add meeting and recording links.
 

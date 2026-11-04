@@ -18,7 +18,7 @@ import {
 import { STATUS_BADGE } from "./cohorts-list";
 import {
   cardClass, dangerButtonClass, errorClass, inputClass, labelClass,
-  primaryButtonClass, secondaryButtonClass, send,
+  primaryButtonClass, request, secondaryButtonClass, send,
 } from "./ui";
 
 export interface CohortMember {
@@ -96,9 +96,10 @@ function CohortSettings({ cohort, staff }: Props) {
     e.preventDefault();
     setSaving(true);
     setError("");
-    const err = await send(`/cohorts/${cohort.id}`, "PATCH", form);
+    const { error: err, data } = await request<{ warning?: string }>(`/cohorts/${cohort.id}`, "PATCH", form);
     setSaving(false);
     if (err) return setError(err);
+    if (data?.warning) setError(data.warning);
     setEditing(false);
     router.refresh();
   }

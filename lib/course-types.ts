@@ -28,6 +28,11 @@ export interface Course {
     group: PriceTier;
     oneOnOne: PriceTier;
   };
+  /**
+   * Active offerings from the database, used for online checkout. Absent on
+   * the bundled STATIC_COURSES fallback, which only offers WhatsApp enrolment.
+   */
+  offerings?: { kind: OfferingKind; price: PriceTier }[];
 }
 
 /** Just enough of a course for links and dropdowns. */
