@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase";
 import { rejectNonAdmin } from "@/lib/supabase-server";
 import { cohortPatchSchema } from "@/lib/admin-schemas";
 import { checkInstructor, dbErrorResponse, parseBody } from "@/lib/cohorts";
+import { cancelCohortSubscriptions } from "@/lib/billing-server";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -20,9 +21,21 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   // Lowering capacity below the current headcount is allowed (nobody is
   // removed); the trigger only stops new placements.
+  const { data: before } = await supabase.from("cohorts").select("status").eq("id", id).maybeSingle();
   const { data, error } = await supabase.from("cohorts").update(body.data).eq("id", id).select().maybeSingle();
   if (error) return dbErrorResponse(error);
   if (!data) return NextResponse.json({ error: "Cohort not found" }, { status: 404 });
+
+  // Seats are billed monthly until the cohort ends.
+  if (body.data.status === "finished" && before?.status !== "finished") {
+    const billing = await cancelCohortSubscriptions(supabase, id);
+    if (billing.failed) {
+      return NextResponse.json({
+        ...data,
+        warning: `${billing.failed} subscription(s) couldn't be cancelled with Flutterwave. Cancel them from Admin → Payments.`,
+      });
+    }
+  }
   return NextResponse.json(data);
 }
 

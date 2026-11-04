@@ -15,6 +15,7 @@ const JOIN_MESSAGES: Record<string, string> = {
   ended: "That class has already finished. Its recording will appear under Past classes once it's uploaded.",
   no_link: "That class doesn't have a meeting link yet. Please check back shortly or contact your instructor.",
   not_found: "We couldn't find that class in your schedule.",
+  payment: "Your subscription for this course has lapsed. Renew it from Billing to join classes again.",
 };
 
 export default async function SchedulePage({

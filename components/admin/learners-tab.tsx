@@ -25,8 +25,16 @@ interface Enrollment {
   next_session: string | null;
   enrolled_at: string;
   cohort_id: string | null;
+  source: "manual" | "code" | "purchase" | "subscription";
   cohorts: { name: string } | null;
 }
+
+const SOURCE_LABEL: Record<Enrollment["source"], string> = {
+  manual: "Added by admin",
+  code: "Scholarship code",
+  purchase: "Paid",
+  subscription: "Paid monthly",
+};
 
 interface Learner {
   id: string;
@@ -375,6 +383,9 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
                                 <div className="flex items-center gap-2">
                                   <BookOpen className="w-4 h-4 text-[#c31d24]" />
                                   <span className="text-white text-sm font-medium">{course?.title || enr.course_id}</span>
+                                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.06] text-white/40">
+                                    {SOURCE_LABEL[enr.source] ?? enr.source}
+                                  </span>
                                   {enr.cohort_id ? (
                                     <Link
                                       href={`/admin/cohorts/${enr.cohort_id}`}

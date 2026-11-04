@@ -87,7 +87,7 @@ export async function redeemInvite(
 
   const { error: enrollError } = await admin
     .from("enrollments")
-    .insert({ user_id: userId, course_id: invite.course_id });
+    .insert({ user_id: userId, course_id: invite.course_id, source: "code" });
   if (enrollError) {
     // Release the code so it isn't burned by a failed enrollment.
     await admin

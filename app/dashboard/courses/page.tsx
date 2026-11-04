@@ -6,6 +6,7 @@ import { RedeemCodeCard } from "@/components/dashboard/redeem-code-card";
 import { LocalTime } from "@/components/local-time";
 import { getLearnerSessions, type LearnerSession } from "@/lib/cohorts";
 import { nextSessionAt } from "@/lib/schedule";
+import { hasSeatAccess, type SubscriptionState } from "@/lib/billing";
 import Link from "next/link";
 import { Calendar, CheckCircle2, Clock, BookOpen } from "lucide-react";
 import type { Metadata } from "next";
@@ -21,7 +22,10 @@ async function getEnrollments() {
 
     const admin = createAdminClient();
     const [{ data }, sessions] = await Promise.all([
-      admin.from("enrollments").select("*, cohorts(name)").eq("user_id", user.id),
+      admin
+        .from("enrollments")
+        .select("*, cohorts(name), subscriptions(status, current_period_end)")
+        .eq("user_id", user.id),
       getLearnerSessions(admin, user.id).catch(() => [] as LearnerSession[]),
     ]);
     return { enrollments: data || [], sessions };
@@ -53,6 +57,7 @@ export default async function CoursesPage() {
             const modules = course?.curriculum || [];
             const nextAt = nextSessionAt(enrollment, sessions);
             const cohortName = (enrollment.cohorts as { name: string } | null)?.name;
+            const lapsed = !hasSeatAccess(enrollment, enrollment.subscriptions as SubscriptionState | null);
             const recordings = sessions.filter(
               (s) => s.cohort_id === enrollment.cohort_id && s.recording_url
             ).length;
@@ -108,6 +113,13 @@ export default async function CoursesPage() {
                     )}
                   </div>
                 </div>
+
+                {lapsed && (
+                  <div className="mx-6 mt-4 px-4 py-3 rounded-xl bg-[#ffbd59]/10 border border-[#ffbd59]/30 text-[#ffbd59] text-sm flex items-center justify-between gap-3 flex-wrap">
+                    <span>Your subscription has lapsed. Renew it to join classes and watch recordings again.</span>
+                    <Link href="/dashboard/billing" className="font-semibold underline underline-offset-2">Billing</Link>
+                  </div>
+                )}
 
                 {/* Session info */}
                 <div className="px-6 py-4 flex items-center gap-6 flex-wrap">

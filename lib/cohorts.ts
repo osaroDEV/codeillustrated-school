@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import type { createAdminClient } from "./supabase";
 import type { StaffRole } from "./supabase-server";
 import { firstIssue } from "./admin-schemas";
+import { hasSeatAccess, type SubscriptionState } from "./billing";
 
 // Server-side data access for cohorts and class sessions. Callers pass the
 // service-role client and are responsible for checking who is asking: admin
@@ -89,6 +90,8 @@ export interface LearnerSession {
   duration_min: number;
   /** Whether /api/sessions/[id]/join has a link to send the learner to. */
   has_meeting_link: boolean;
+  /** The seat's subscription has lapsed: no joining and no recordings until it's renewed. */
+  locked: boolean;
   recording_url: string | null;
   attendance: AttendanceStatus | null;
 }
@@ -101,13 +104,18 @@ export interface LearnerSession {
 export async function getLearnerSessions(admin: AdminClient, userId: string): Promise<LearnerSession[]> {
   const { data: enrollments, error } = await admin
     .from("enrollments")
-    .select("cohort_id")
+    .select("cohort_id, source, subscriptions(status, current_period_end)")
     .eq("user_id", userId)
     .not("cohort_id", "is", null);
   if (error) throw error;
 
   const cohortIds = Array.from(new Set((enrollments ?? []).map((e) => e.cohort_id as string)));
   if (cohortIds.length === 0) return [];
+  const locked = new Set(
+    (enrollments ?? [])
+      .filter((e) => !hasSeatAccess(e, e.subscriptions as unknown as SubscriptionState | null))
+      .map((e) => e.cohort_id as string)
+  );
 
   const { data: sessions, error: sessionsError } = await admin
     .from("class_sessions")
@@ -136,8 +144,9 @@ export async function getLearnerSessions(admin: AdminClient, userId: string): Pr
     title: s.title,
     starts_at: s.starts_at,
     duration_min: s.duration_min,
-    has_meeting_link: !!(s.meeting_url || s.cohorts?.meeting_url),
-    recording_url: s.recording_url,
+    has_meeting_link: !locked.has(s.cohort_id) && !!(s.meeting_url || s.cohorts?.meeting_url),
+    locked: locked.has(s.cohort_id),
+    recording_url: locked.has(s.cohort_id) ? null : s.recording_url,
     attendance: attendance.get(s.id) ?? null,
   }));
 }

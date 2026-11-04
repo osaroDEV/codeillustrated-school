@@ -365,3 +365,180 @@ describe("deleting a cohort", () => {
     expect(n.n).toBe(0);
   });
 });
+
+// ─── Phase 3: billing ───
+
+describe("billing", () => {
+  let offering: string;
+  let plan: string;
+  const T0 = "2026-11-05T10:00:00Z";
+
+  const order = (txRef: string, user: string, course = c1) =>
+    sql(`
+      insert into public.orders (user_id, customer_email, kind, course_id, offering_id, plan_id, currency, amount, tx_ref)
+      values ('${user}', 'Learner@X.test', 'subscription', '${course}', '${offering}', '${plan}', 'NGN', 50000, '${txRef}')
+    `);
+  const fulfil = async (txRef: string, flwId: number, paidAt = T0) =>
+    (
+      await sql<{ r: { outcome: string; subscription_id: string; enrollment_id: string } }>(
+        `select public.fulfil_subscription_order('${txRef}', ${flwId}, 50000, '${paidAt}') as r`
+      )
+    )[0].r;
+
+  beforeAll(async () => {
+    [{ id: offering }] = await sql<{ id: string }>(
+      `select id from public.offerings where course_id = '${c2}' and kind = 'cohort_group'`
+    );
+    [{ id: plan }] = await sql<{ id: string }>(`
+      insert into public.payment_plans (offering_id, currency, amount, flw_plan_id)
+      values ('${offering}', 'NGN', 50000, 9001) returning id
+    `);
+    // Plans can only reference offerings of the same course in practice; the
+    // tests below use c2's offering with orders for c2.
+  });
+
+  it("tags enrolments made with scholarship codes", async () => {
+    const [{ n }] = await sql<{ n: number }>(
+      "select count(*)::int as n from public.enrollments where source not in ('manual', 'code', 'purchase', 'subscription')"
+    );
+    expect(n).toBe(0);
+  });
+
+  it("enrols a new learner on the first charge, once", async () => {
+    await order("sub_first", U.s2, c2);
+    const first = await fulfil("sub_first", 111);
+    expect(first.outcome).toBe("enrolled");
+
+    const [sub] = await sql<{ status: string; current_period_end: Date; customer_email: string }>(
+      `select status, current_period_end, customer_email from public.subscriptions where id = '${first.subscription_id}'`
+    );
+    expect(sub.status).toBe("active");
+    expect(sub.customer_email).toBe("learner@x.test");
+    expect(new Date(sub.current_period_end).toISOString()).toBe("2026-12-05T10:00:00.000Z");
+
+    const [enr] = await sql<{ source: string; subscription_id: string; status: string }>(
+      `select source, subscription_id, status from public.enrollments where user_id = '${U.s2}' and course_id = '${c2}'`
+    );
+    expect(enr).toMatchObject({ source: "subscription", subscription_id: first.subscription_id, status: "active" });
+
+    expect((await fulfil("sub_first", 111)).outcome).toBe("duplicate");
+    const [{ n }] = await sql<{ n: number }>(
+      `select count(*)::int as n from public.subscriptions where user_id = '${U.s2}' and course_id = '${c2}'`
+    );
+    expect(n).toBe(1);
+  });
+
+  it("records a second purchase by someone who already has access as already_enrolled", async () => {
+    await order("sub_again", U.s2, c2);
+    const r = await fulfil("sub_again", 112);
+    expect(r.outcome).toBe("already_enrolled");
+    const [sub] = await sql<{ status: string }>(`select status from public.subscriptions where id = '${r.subscription_id}'`);
+    expect(sub.status).toBe("cancelled");
+  });
+
+  it("treats manual and code enrolments as existing access", async () => {
+    // U.s1 has a manual enrolment in c2 from the cohort tests.
+    await order("sub_manual", U.s1, c2);
+    expect((await fulfil("sub_manual", 113)).outcome).toBe("already_enrolled");
+  });
+
+  it("rejects unknown orders", async () => {
+    await expect(fulfil("sub_nope", 114)).rejects.toThrow(/Unknown order/);
+  });
+
+  it("extends the period on renewal, idempotently", async () => {
+    const [{ id }] = await sql<{ id: string }>(
+      `select id from public.subscriptions where first_tx_ref = 'sub_first'`
+    );
+    const renew = async (flwId: number, paidAt: string) =>
+      (
+        await sql<{ r: { outcome: string } }>(
+          `select public.record_renewal('${id}', 'flw-renewal', ${flwId}, 50000, '${paidAt}') as r`
+        )
+      )[0].r.outcome;
+
+    expect(await renew(211, "2026-12-05T09:00:00Z")).toBe("renewed");
+    expect(await renew(211, "2026-12-05T09:00:00Z")).toBe("duplicate");
+    const [sub] = await sql<{ current_period_end: Date }>(
+      `select current_period_end from public.subscriptions where id = '${id}'`
+    );
+    expect(new Date(sub.current_period_end).toISOString()).toBe("2027-01-05T10:00:00.000Z");
+
+    // A late payment counts from the payment date, not the lapsed period end.
+    expect(await renew(212, "2027-02-01T00:00:00Z")).toBe("renewed");
+    const [later] = await sql<{ current_period_end: Date }>(
+      `select current_period_end from public.subscriptions where id = '${id}'`
+    );
+    expect(new Date(later.current_period_end).toISOString()).toBe("2027-03-01T00:00:00.000Z");
+
+    const [{ n }] = await sql<{ n: number }>(
+      `select count(*)::int as n from public.orders where subscription_id = '${id}' and is_renewal and status = 'paid'`
+    );
+    expect(n).toBe(2);
+  });
+
+  it("expires lapsed subscriptions after the grace period and pauses the seat", async () => {
+    const [{ id }] = await sql<{ id: string }>(`select id from public.subscriptions where first_tx_ref = 'sub_first'`);
+    // Paid until 2027-03-01; grace is 3 days. The first sweep only expires
+    // the two duplicate subscriptions cancelled above (paid until 2026-12-05).
+    expect((await sql<{ n: number }>(`select public.expire_subscriptions('2027-03-03T00:00:00Z') as n`))[0].n).toBe(2);
+    const [still] = await sql<{ status: string }>(`select status from public.subscriptions where id = '${id}'`);
+    expect(still.status).toBe("active");
+    expect((await sql<{ n: number }>(`select public.expire_subscriptions('2027-03-05T00:00:00Z') as n`))[0].n).toBe(1);
+
+    const [sub] = await sql<{ status: string }>(`select status from public.subscriptions where id = '${id}'`);
+    expect(sub.status).toBe("expired");
+    const [enr] = await sql<{ status: string }>(`select status from public.enrollments where subscription_id = '${id}'`);
+    expect(enr.status).toBe("paused");
+  });
+
+  it("resumes the same enrolment when the learner subscribes again", async () => {
+    await order("sub_back", U.s2, c2);
+    const r = await fulfil("sub_back", 115, "2027-04-01T00:00:00Z");
+    expect(r.outcome).toBe("reactivated");
+    const [enr] = await sql<{ status: string; subscription_id: string }>(
+      `select status, subscription_id from public.enrollments where user_id = '${U.s2}' and course_id = '${c2}'`
+    );
+    expect(enr).toEqual({ status: "active", subscription_id: r.subscription_id });
+  });
+
+  it("allows only one live subscription per learner and course", async () => {
+    await expect(
+      sql(`
+        insert into public.subscriptions (user_id, course_id, offering_id, plan_id, currency, amount, customer_email, first_tx_ref, current_period_end)
+        values ('${U.s2}', '${c2}', '${offering}', '${plan}', 'NGN', 50000, 'x', 'sub_dupe', now())
+      `)
+    ).rejects.toThrow(/subscriptions_one_live_per_course/);
+  });
+
+  it("refunding a first charge cancels the subscription and pauses the seat", async () => {
+    const [o] = await sql<{ id: string; subscription_id: string }>(
+      `select id, subscription_id from public.orders where tx_ref = 'sub_back'`
+    );
+    await sql(`select public.mark_order_refunded('${o.id}')`);
+    const [sub] = await sql<{ status: string }>(`select status from public.subscriptions where id = '${o.subscription_id}'`);
+    expect(sub.status).toBe("expired");
+    const [enr] = await sql<{ status: string }>(`select status from public.enrollments where subscription_id = '${o.subscription_id}'`);
+    expect(enr.status).toBe("paused");
+    await expect(sql(`select public.mark_order_refunded('${o.id}')`)).rejects.toThrow(/Only paid orders/);
+    expect((await fulfil("sub_back", 115)).outcome).toBe("refunded");
+  });
+
+  it("lets learners read only their own orders and subscriptions", async () => {
+    const mine = await sql<{ user_id: string }>("select user_id from public.orders", as("authenticated", U.s2));
+    expect(mine.length).toBeGreaterThan(0);
+    expect(mine.every((o) => o.user_id === U.s2)).toBe(true);
+    const subs = await sql<{ user_id: string }>("select user_id from public.subscriptions", as("authenticated", U.s3));
+    expect(subs).toHaveLength(0);
+    expect(await sql("select * from public.payment_events", as("authenticated", U.s2))).toHaveLength(0);
+    await expect(
+      sql(`update public.orders set status = 'paid' where user_id = '${U.s2}' returning id`, as("authenticated", U.s2))
+    ).resolves.toHaveLength(0);
+  });
+
+  it("keeps the billing functions away from API clients", async () => {
+    await expect(
+      sql(`select public.expire_subscriptions()`, as("authenticated", U.admin))
+    ).rejects.toThrow(/permission denied/);
+  });
+});

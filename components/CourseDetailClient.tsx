@@ -9,11 +9,9 @@ import {
   Clock,
   GraduationCap,
   Send,
-  User,
-  Users,
 } from "lucide-react";
 import Link from "next/link";
-import { PriceDisplay } from "./price-display";
+import { EnrollOptions } from "./enroll-options";
 
 interface CourseDetailClientProps {
   course: Course;
@@ -86,51 +84,7 @@ export default function CourseDetailClient({
                 </li>
               </ul>
 
-              <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-primary/30 transition-colors">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="flex items-center gap-2 text-sm font-bold text-slate-900">
-                      <Users className="w-4 h-4 text-primary" />
-                      Group Classes
-                    </span>
-                    <PriceDisplay
-                      price={course.price.group}
-                      className="text-xl"
-                    />
-                  </div>
-                  <p className="text-xs text-slate-500">
-                    Collaborative learning with peers in small groups.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 group hover:border-primary/30 transition-colors relative">
-                  <div className="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    Recommended
-                  </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="flex items-center gap-2 text-sm font-bold text-primary">
-                      <User className="w-4 h-4" />
-                      1-on-1 Classes
-                    </span>
-                    <PriceDisplay
-                      price={course.price.oneOnOne}
-                      className="text-xl text-primary"
-                    />
-                  </div>
-                  <p className="text-xs text-slate-500">
-                    Dedicated mentorship and personalized learning pace.
-                  </p>
-                </div>
-
-                <a
-                  href="https://wa.me/447405786279"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500 px-8 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-primary/20 flex items-center justify-center text-center text-white border-none mt-4"
-                >
-                  Enroll Now
-                </a>
-              </div>
+              <EnrollOptions course={course} />
 
               <p className="text-center text-sm text-slate-500 mt-6">
                 Not ready yet?{" "}
@@ -199,9 +153,8 @@ export default function CourseDetailClient({
           </h2>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 relative z-10">
             <a
-              href="https://wa.me/447405786279"
-              target="_blank"
-              rel="noreferrer"
+              href={course.offerings?.length ? "#enroll" : "https://wa.me/447405786279"}
+              {...(course.offerings?.length ? {} : { target: "_blank", rel: "noreferrer" })}
               className="bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500 px-12 py-5 rounded-2xl font-black text-xl hover:bg-white hover:text-primary transition-all shadow-xl shadow-black/20 active:scale-95 text-center flex items-center justify-center"
             >
               Enroll Now

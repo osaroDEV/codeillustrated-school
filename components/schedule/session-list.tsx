@@ -62,7 +62,14 @@ export function UpcomingSessions({
                 <LocalTime iso={s.starts_at} className="text-[#ffbd59]" /> · {s.duration_min} min · {s.cohort_name}
               </p>
             </div>
-            {state === "open" && s.has_meeting_link ? (
+            {s.locked ? (
+              <a
+                href="/academy/dashboard/billing"
+                className="flex-shrink-0 text-[#ffbd59] text-xs border border-[#ffbd59]/30 px-3 py-2 rounded-xl hover:bg-[#ffbd59]/10"
+              >
+                Renew to join
+              </a>
+            ) : state === "open" && s.has_meeting_link ? (
               <a
                 href={`/academy/api/sessions/${s.id}/join`}
                 target="_blank"
@@ -136,7 +143,7 @@ export function PastSessions({
                 <PlayCircle className="w-4 h-4" /> Recording
               </a>
             ) : (
-              <span className="text-white/20 text-xs flex-shrink-0">No recording</span>
+              <span className="text-white/20 text-xs flex-shrink-0">{s.locked ? "Renew to watch" : "No recording"}</span>
             )}
           </div>
         );

@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase";
 import { getCurrentUser, getRole, isEmailVerified } from "@/lib/supabase-server";
 import { canManageCohort, type ClassSession, type Cohort } from "@/lib/cohorts";
 import { joinState } from "@/lib/schedule";
+import { hasSeatAccess, type SubscriptionState } from "@/lib/billing";
 import { BASE_PATH } from "@/lib/seo";
 
 type Params = { params: Promise<{ id: string }> };
@@ -44,11 +45,14 @@ export async function GET(_req: NextRequest, { params }: Params) {
   if (!isStaff) {
     const { data: enrollment } = await admin
       .from("enrollments")
-      .select("id")
+      .select("id, source, subscriptions(status, current_period_end)")
       .eq("user_id", user.id)
       .eq("cohort_id", cohort.id)
       .maybeSingle();
     if (!enrollment) return back("not_found");
+    if (!hasSeatAccess(enrollment, enrollment.subscriptions as unknown as SubscriptionState | null)) {
+      return back("payment");
+    }
 
     const state = joinState(session);
     if (state === "upcoming") return back("early");
