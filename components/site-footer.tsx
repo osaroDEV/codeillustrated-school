@@ -1,13 +1,13 @@
 "use client";
 
-import type { CourseSummary } from "@/lib/course-types";
+import type { CourseLink } from "@/lib/course-types";
 import { Instagram, Mail, MapPin, Phone, Twitter } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import codeillIcon from "../public/code-ill.svg";
 
-export default function Footer({ courses }: { courses: CourseSummary[] }) {
+export default function Footer({ courses }: { courses: CourseLink[] }) {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -69,7 +69,7 @@ export default function Footer({ courses }: { courses: CourseSummary[] }) {
               {[
                 ...courses.map((c) => ({
                   name: c.title,
-                  href: `/courses/${c.id}`,
+                  href: `/courses/${c.slug}`,
                 })),
               ].map((link) => (
                 <li key={link.name}>

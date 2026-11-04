@@ -30,18 +30,34 @@ export const ROLES = ["student", "instructor", "admin"] as const;
 
 // ─── Course editor ───
 
+/** A course's web address, /courses/<slug>. Matches courses_slug_format. */
+export const courseSlug = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Use lowercase letters, numbers and dashes, e.g. junior-web-creator")
+  .max(80);
+
+/**
+ * The permanent internal ID for a new course: its first address, or that with
+ * -2, -3… when a course created earlier (and since renamed) already has it.
+ */
+export function newCourseId(slug: string, takenIds: Iterable<string>): string {
+  const taken = new Set(takenIds);
+  if (!taken.has(slug)) return slug;
+  let n = 2;
+  while (taken.has(`${slug}-${n}`)) n++;
+  return `${slug}-${n}`;
+}
+
 export const courseCreateSchema = z.object({
-  id: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Use lowercase letters, numbers and dashes, e.g. junior-web-creator")
-    .max(80),
+  slug: courseSlug,
   title: text.min(1).max(200),
 });
 
 export const coursePatchSchema = z
   .object({
+    slug: courseSlug,
     title: text.min(1).max(200),
     description: text.max(1000),
     full_description: text.max(10_000),

@@ -6,6 +6,7 @@ import {
   courseCreateSchema,
   coursePatchSchema,
   firstIssue,
+  newCourseId,
   reorderSchema,
   sessionPatchSchema,
   sessionsCreateSchema,
@@ -15,16 +16,32 @@ const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0
 
 describe("courseCreateSchema", () => {
   it("accepts and normalises a slug", () => {
-    expect(courseCreateSchema.parse({ id: " Junior-Web ", title: "Junior Web" }).id).toBe("junior-web");
+    expect(courseCreateSchema.parse({ slug: " Junior-Web ", title: "Junior Web" }).slug).toBe("junior-web");
   });
 
   it("rejects slugs with spaces or trailing dashes", () => {
-    expect(courseCreateSchema.safeParse({ id: "junior web", title: "x" }).success).toBe(false);
-    expect(courseCreateSchema.safeParse({ id: "junior-", title: "x" }).success).toBe(false);
+    expect(courseCreateSchema.safeParse({ slug: "junior web", title: "x" }).success).toBe(false);
+    expect(courseCreateSchema.safeParse({ slug: "junior-", title: "x" }).success).toBe(false);
+  });
+});
+
+describe("newCourseId", () => {
+  it("uses the address when no course has that ID yet", () => {
+    expect(newCourseId("web-basics", ["junior-web-creator"])).toBe("web-basics");
+  });
+
+  it("adds a number when a renamed course still holds that ID", () => {
+    expect(newCourseId("web-basics", ["web-basics"])).toBe("web-basics-2");
+    expect(newCourseId("web-basics", ["web-basics", "web-basics-2"])).toBe("web-basics-3");
   });
 });
 
 describe("coursePatchSchema", () => {
+  it("normalises a new address", () => {
+    expect(coursePatchSchema.parse({ slug: " Web-Basics " }).slug).toBe("web-basics");
+    expect(coursePatchSchema.safeParse({ slug: "web basics" }).success).toBe(false);
+  });
+
   it("turns an empty certificate price into null (free)", () => {
     expect(coursePatchSchema.parse({ certificate_price_usd: "" }).certificate_price_usd).toBeNull();
     expect(coursePatchSchema.parse({ certificate_price_usd: "25" }).certificate_price_usd).toBe(25);

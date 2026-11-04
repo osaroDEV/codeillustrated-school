@@ -1,5 +1,5 @@
 import CourseDetailClient from "@/components/CourseDetailClient";
-import { getCourseBySlug, getCourses, type Course } from "@/lib/courses";
+import { findCourseRedirect, getCourseBySlug, getCourses, type Course } from "@/lib/courses";
 import {
   BASE_PATH,
   getCanonicalUrl,
@@ -9,17 +9,17 @@ import {
   SITE_URL,
 } from "@/lib/seo";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 
 interface CoursePageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({
   params,
 }: CoursePageProps): Promise<Metadata> {
-  const { id } = await params;
-  const course = await getCourseBySlug(id);
+  const { slug } = await params;
+  const course = await getCourseBySlug(slug);
 
   if (!course) {
     return {
@@ -34,12 +34,12 @@ export async function generateMetadata({
     title,
     description,
     alternates: {
-      canonical: getCanonicalUrl(`/courses/${course.id}`),
+      canonical: getCanonicalUrl(`/courses/${course.slug}`),
     },
     openGraph: getOpenGraphDefaults({
       title: `${course.title} | ${SITE_NAME}`,
       description,
-      url: getCanonicalUrl(`/courses/${course.id}`),
+      url: getCanonicalUrl(`/courses/${course.slug}`),
     }),
     twitter: getTwitterDefaults({
       title: `${course.title} | ${SITE_NAME}`,
@@ -52,7 +52,7 @@ export async function generateMetadata({
 export async function generateStaticParams() {
   const courses = await getCourses();
   return courses.map((course) => ({
-    id: course.id,
+    slug: course.slug,
   }));
 }
 
@@ -68,7 +68,7 @@ function CourseSchema({ course }: { course: Course }) {
       name: SITE_NAME,
       url: `${SITE_URL}${BASE_PATH}`,
     },
-    url: `${SITE_URL}${BASE_PATH}/courses/${course.id}`,
+    url: `${SITE_URL}${BASE_PATH}/courses/${course.slug}`,
     coursePrerequisites: "No prior coding experience required",
     educationalLevel: course.level,
     timeRequired: course.duration,
@@ -99,10 +99,13 @@ function CourseSchema({ course }: { course: Course }) {
 }
 
 export default async function CoursePage({ params }: CoursePageProps) {
-  const { id } = await params;
-  const course = await getCourseBySlug(id);
+  const { slug } = await params;
+  const course = await getCourseBySlug(slug);
 
   if (!course) {
+    // An old address, or a course's internal ID: send it to the live page.
+    const current = await findCourseRedirect(slug);
+    if (current) permanentRedirect(`/courses/${current}`);
     notFound();
   }
 

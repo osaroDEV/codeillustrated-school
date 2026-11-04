@@ -125,7 +125,7 @@ export default async function RootLayout({
           />
         </noscript>
         <CurrencyProvider>
-          <SiteLayoutWrapper footerCourses={courses.map(({ id, title }) => ({ id, title }))}>
+          <SiteLayoutWrapper footerCourses={courses.map(({ id, slug, title }) => ({ id, slug, title }))}>
             {children}
           </SiteLayoutWrapper>
           <Toaster />

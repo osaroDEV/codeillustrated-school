@@ -38,7 +38,10 @@ export interface AdminOffering {
 }
 
 export interface AdminCourse {
+  /** Permanent internal ID. */
   id: string;
+  /** Public address, /courses/<slug>. */
+  slug: string;
   title: string;
   description: string;
   full_description: string;
@@ -54,9 +57,11 @@ export interface AdminCourse {
   is_published: boolean;
   course_modules: AdminModule[];
   offerings: AdminOffering[];
+  /** Earlier addresses that redirect to this course, newest first. */
+  course_slug_redirects: { slug: string; created_at: string }[];
 }
 
-const SELECT = "*, course_modules(*, lessons(*)), offerings(*)";
+const SELECT = "*, course_modules(*, lessons(*)), offerings(*), course_slug_redirects(slug, created_at)";
 
 const byPosition = (a: { position: number }, b: { position: number }) => a.position - b.position;
 
@@ -68,6 +73,9 @@ function normalize(row: AdminCourse): AdminCourse {
     course_modules: [...(row.course_modules ?? [])]
       .sort(byPosition)
       .map((m) => ({ ...m, lessons: [...(m.lessons ?? [])].sort(byPosition) })),
+    course_slug_redirects: [...(row.course_slug_redirects ?? [])].sort((a, b) =>
+      b.created_at.localeCompare(a.created_at)
+    ),
     offerings: (row.offerings ?? []).map((o) => ({
       ...o,
       price_usd: Number(o.price_usd),

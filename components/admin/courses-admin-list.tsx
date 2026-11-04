@@ -4,10 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Loader2, Plus } from "lucide-react";
-import { cardClass, errorClass, inputClass, labelClass, primaryButtonClass, send } from "./ui";
+import { cardClass, errorClass, inputClass, labelClass, primaryButtonClass, request } from "./ui";
 
 interface Row {
   id: string;
+  slug: string;
   title: string;
   is_published: boolean;
   modules: number;
@@ -17,7 +18,7 @@ interface Row {
 export function CoursesAdminList({ courses, loadError }: { courses: Row[]; loadError: string | null }) {
   const router = useRouter();
   const [creating, setCreating] = useState(false);
-  const [id, setId] = useState("");
+  const [slug, setSlug] = useState("");
   const [title, setTitle] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -25,17 +26,17 @@ export function CoursesAdminList({ courses, loadError }: { courses: Row[]; loadE
   function onTitle(value: string) {
     setTitle(value);
     // Suggest a slug from the title until the admin edits it themselves.
-    if (!id || id === slugify(title)) setId(slugify(value));
+    if (!slug || slug === slugify(title)) setSlug(slugify(value));
   }
 
   async function create(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     setError("");
-    const err = await send("/courses", "POST", { id, title });
+    const { error: err, data } = await request<{ id: string }>("/courses", "POST", { slug, title });
     setSaving(false);
-    if (err) return setError(err);
-    router.push(`/admin/courses/${id}`);
+    if (err || !data) return setError(err ?? "Couldn't create the course.");
+    router.push(`/admin/courses/${data.id}`);
   }
 
   return (
@@ -58,9 +59,9 @@ export function CoursesAdminList({ courses, loadError }: { courses: Row[]; loadE
             <input id="course-title" required value={title} onChange={(e) => onTitle(e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass} htmlFor="course-id">URL slug</label>
-            <input id="course-id" required value={id} onChange={(e) => setId(e.target.value)} placeholder="junior-web-creator" className={inputClass} />
-            <p className="text-white/30 text-[11px] mt-1">Appears in the course page address. It can&apos;t be changed later.</p>
+            <label className={labelClass} htmlFor="course-slug">Web address</label>
+            <input id="course-slug" required value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="junior-web-creator" className={inputClass} />
+            <p className="text-white/30 text-[11px] mt-1">The course page will be at /academy/courses/{slug || "…"}. You can change it later.</p>
           </div>
           {error && <div className={`${errorClass} sm:col-span-2`}>{error}</div>}
           <div className="sm:col-span-2 flex gap-2">
@@ -93,7 +94,7 @@ export function CoursesAdminList({ courses, loadError }: { courses: Row[]; loadE
                 </span>
               </div>
               <p className="text-white/40 text-xs mt-0.5">
-                {c.id} · {c.modules} modules · {c.lessons} lessons
+                /courses/{c.slug} · {c.modules} modules · {c.lessons} lessons
               </p>
             </div>
             <ChevronRight className="w-4 h-4 text-white/30" />

@@ -41,7 +41,7 @@ function CoursesListSchema({ courses }: { courses: Course[] }) {
     itemListElement: courses.map((course, index) => ({
       "@type": "ListItem",
       position: index + 1,
-      url: `${SITE_URL}${BASE_PATH}/courses/${course.id}`,
+      url: `${SITE_URL}${BASE_PATH}/courses/${course.slug}`,
       name: course.title,
     })),
   };

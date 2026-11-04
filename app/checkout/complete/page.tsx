@@ -31,7 +31,7 @@ export default async function CheckoutCompletePage({
       ? (
           await admin
             .from("orders")
-            .select("id, status, currency, amount, course_id, subscription_id, courses(title), subscriptions(status)")
+            .select("id, status, currency, amount, course_id, subscription_id, courses(title, slug), subscriptions(status)")
             .eq("tx_ref", params.tx_ref)
             .eq("user_id", user.id)
             .maybeSingle()
@@ -58,7 +58,8 @@ export default async function CheckoutCompletePage({
     order = await loadOrder();
   }
 
-  const title = (order?.courses as unknown as { title: string } | null)?.title ?? "your course";
+  const course = order?.courses as unknown as { title: string; slug: string } | null;
+  const title = course?.title ?? "your course";
   const subStatus = (order?.subscriptions as unknown as { status: string } | null)?.status;
 
   return (
@@ -108,7 +109,7 @@ export default async function CheckoutCompletePage({
           </Link>
           {order && order.status !== "paid" && (
             <Link
-              href={`/courses/${order.course_id}#enroll`}
+              href={`/courses/${course?.slug ?? order.course_id}#enroll`}
               className="border border-border font-bold px-6 py-3 rounded-2xl hover:bg-slate-50 transition-colors"
             >
               Back to course

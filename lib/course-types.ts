@@ -9,7 +9,10 @@ export interface PriceTier {
 export type OfferingKind = "cohort_group" | "cohort_1on1" | "self_paced";
 
 export interface Course {
+  /** Permanent internal ID; enrolments, cohorts and orders refer to it. */
   id: string;
+  /** The public address, /courses/<slug>. Admins can change it; old ones redirect. */
+  slug: string;
   title: string;
   age: string;
   description: string;
@@ -35,5 +38,8 @@ export interface Course {
   offerings?: { kind: OfferingKind; price: PriceTier }[];
 }
 
-/** Just enough of a course for links and dropdowns. */
+/** Just enough of a course for admin dropdowns. */
 export type CourseSummary = Pick<Course, "id" | "title">;
+
+/** Just enough of a course to link to its page and name it in a form. */
+export type CourseLink = Pick<Course, "id" | "slug" | "title">;
