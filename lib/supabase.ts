@@ -30,7 +30,7 @@ export type Database = {
           id: string;
           full_name: string | null;
           avatar_url: string | null;
-          role: "student" | "admin";
+          role: "student" | "instructor" | "admin";
           email: string | null;
           created_at: string;
         };
@@ -75,6 +75,7 @@ export type Database = {
           enrolled_at: string;
           next_session: string | null;
           notes: string | null;
+          cohort_id: string | null;
         };
         Insert: {
           user_id: string;

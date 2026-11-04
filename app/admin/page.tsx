@@ -1,7 +1,7 @@
-import { AdminPanel } from "@/components/admin/admin-panel";
-import { getCourses } from "@/lib/courses";
+import { redirect } from "next/navigation";
+import { requireStaff } from "@/lib/supabase-server";
 
 export default async function AdminPage() {
-  const courses = await getCourses();
-  return <AdminPanel courses={courses.map(({ id, title }) => ({ id, title }))} />;
+  const { role } = await requireStaff();
+  redirect(role === "admin" ? "/admin/learners" : "/admin/cohorts");
 }

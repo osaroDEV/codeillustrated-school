@@ -55,13 +55,20 @@ function verifyEmailPath(user: User) {
   return `/auth/verify-email?email=${encodeURIComponent(user.email ?? "")}`;
 }
 
-export async function isAdmin(userId: string): Promise<boolean> {
+export type Role = "student" | "instructor" | "admin";
+export type StaffRole = Exclude<Role, "student">;
+
+export async function getRole(userId: string): Promise<Role> {
   const { data } = await createAdminClient()
     .from("profiles")
     .select("role")
     .eq("id", userId)
     .single();
-  return data?.role === "admin";
+  return data?.role === "admin" || data?.role === "instructor" ? data.role : "student";
+}
+
+export async function isAdmin(userId: string): Promise<boolean> {
+  return (await getRole(userId)) === "admin";
 }
 
 // For server components: redirects instead of returning null.
@@ -78,6 +85,17 @@ export async function requireAdmin(): Promise<User> {
   if (!isEmailVerified(user)) redirect(verifyEmailPath(user));
   if (!(await isAdmin(user.id))) redirect("/dashboard");
   return user;
+}
+
+// Admins and instructors. Instructors only see their own cohorts; pages and
+// routes that are admin-only still call requireAdmin / rejectNonAdmin.
+export async function requireStaff(): Promise<{ user: User; role: StaffRole }> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/auth/login?redirectTo=/admin");
+  if (!isEmailVerified(user)) redirect(verifyEmailPath(user));
+  const role = await getRole(user.id);
+  if (role === "student") redirect("/dashboard");
+  return { user, role };
 }
 
 // For route handlers: returns an error response to send back, or null when
@@ -107,4 +125,19 @@ export async function requireVerifiedUserApi(): Promise<
     };
   }
   return { user };
+}
+
+// For staff route handlers: the verified admin or instructor, or an error response.
+export async function requireStaffApi(): Promise<
+  { user: User; role: StaffRole; response?: never } | { user?: never; role?: never; response: NextResponse }
+> {
+  const user = await getCurrentUser();
+  if (!user) {
+    return { response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+  }
+  const role = isEmailVerified(user) ? await getRole(user.id) : "student";
+  if (role === "student") {
+    return { response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
+  }
+  return { user, role };
 }

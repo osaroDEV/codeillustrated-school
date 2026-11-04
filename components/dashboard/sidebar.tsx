@@ -13,12 +13,15 @@ import {
   Menu,
   X,
   ShieldCheck,
+  CalendarDays,
+  Presentation,
 } from "lucide-react";
 import { useState } from "react";
 
 const navItems = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/courses", label: "My Courses", icon: BookOpen },
+  { href: "/dashboard/schedule", label: "Schedule", icon: CalendarDays },
   { href: "/dashboard/announcements", label: "Announcements", icon: Megaphone },
   { href: "/dashboard/profile", label: "Profile", icon: User },
 ];
@@ -27,10 +30,10 @@ interface SidebarProps {
   userName?: string;
   userEmail?: string;
   avatarUrl?: string | null;
-  isAdmin?: boolean;
+  role?: "student" | "instructor" | "admin";
 }
 
-export function DashboardSidebar({ userName, userEmail, avatarUrl, isAdmin }: SidebarProps) {
+export function DashboardSidebar({ userName, userEmail, avatarUrl, role }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -83,14 +86,18 @@ export function DashboardSidebar({ userName, userEmail, avatarUrl, isAdmin }: Si
             </Link>
           );
         })}
-        {isAdmin && (
+        {(role === "admin" || role === "instructor") && (
           <Link
-            href="/admin"
+            href={role === "admin" ? "/admin" : "/admin/cohorts"}
             onClick={() => setMobileOpen(false)}
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-white/50 hover:text-white hover:bg-white/[0.06]"
           >
-            <ShieldCheck className="w-4 h-4 flex-shrink-0" />
-            Admin panel
+            {role === "admin" ? (
+              <ShieldCheck className="w-4 h-4 flex-shrink-0" />
+            ) : (
+              <Presentation className="w-4 h-4 flex-shrink-0" />
+            )}
+            {role === "admin" ? "Admin panel" : "Teaching"}
           </Link>
         )}
       </nav>
