@@ -64,7 +64,7 @@ Decisions so far:
 
 ## Phase 3: Monthly checkout with Flutterwave
 
-**Status:** built on branch `lms/phase-3-checkout`. Migration `20261105000000_billing.sql`.
+**Status:** shipped (PR #4). Migration `20261105000000_billing.sql`.
 
 **Goal:** a visitor can subscribe to a course's group or 1-on-1 classes, pay monthly by card, and be enrolled without anyone stepping in. An admin then places them in a cohort.
 

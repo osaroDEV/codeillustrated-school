@@ -17,31 +17,23 @@ import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as z from "zod";
+import { contactSchema, submitContact, type ContactInput } from "@/lib/contact";
 import type { CourseLink } from "@/lib/course-types";
 
-const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  phone: z.string().min(10, "Please enter a valid phone number"),
-  course: z.string().min(1, "Please select a course"),
-  message: z.string().min(10, "Message must be at least 10 characters"),
-});
-
-type FormData = z.infer<typeof formSchema>;
 
 export function ContactFormPopup({ courses }: { courses: CourseLink[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ContactInput>({
+    resolver: zodResolver(contactSchema),
     defaultValues: {
       name: "",
       email: "",
       phone: "",
       course: "",
       message: "",
+      website: "",
     },
   });
 
@@ -54,16 +46,16 @@ export function ContactFormPopup({ courses }: { courses: CourseLink[] }) {
     return () => clearTimeout(timer);
   }, []);
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: ContactInput) => {
     setIsSubmitting(true);
-
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    console.log("Form submitted:", data);
+    const error = await submitContact(data);
+    setIsSubmitting(false);
+    if (error) {
+      toast.error(error);
+      return;
+    }
     toast.success("Thank you! We'll get back to you within 24 hours.");
     form.reset();
-    setIsSubmitting(false);
     setIsOpen(false);
   };
 
@@ -125,6 +117,7 @@ export function ContactFormPopup({ courses }: { courses: CourseLink[] }) {
                     method="POST"
                     className="space-y-4 sm:space-y-5"
                   >
+                    <input type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" className="sr-only" {...form.register("website")} />
                     <FormField
                       control={form.control}
                       name="name"
