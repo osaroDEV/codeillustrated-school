@@ -113,8 +113,8 @@ export function ContactFormPopup({ courses }: { courses: CourseLink[] }) {
               <div className="px-6 sm:px-8 py-6 sm:py-8">
                 <Form {...form}>
                   <form
-                    action="https://formsubmit.co/admin@codeillustrated.com"
-                    method="POST"
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    noValidate
                     className="space-y-4 sm:space-y-5"
                   >
                     <input type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" className="sr-only" {...form.register("website")} />
