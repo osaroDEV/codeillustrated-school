@@ -15,6 +15,7 @@ These migrations cover Phases 1–3 of the LMS, plus editable course addresses. 
 | `20261104000000_cohorts_and_sessions.sql` | Phase 2. Adds the `instructor` role, `cohorts`, `class_sessions` and `attendance`, and `enrollments.cohort_id`. A trigger refuses placements in a full cohort or a cohort of a different course. Links `enrollments.course_id` to `courses`. Adds the reorder functions used by the course editor. Stops anon and signed-in clients from reading `lessons.content`, `video_url` and `file_path`. |
 | `20261105000000_billing.sql` | Phase 3. Monthly billing for cohort seats: `payment_plans`, `subscriptions`, `orders`, `payment_events`, plus `enrollments.source` and `subscription_id`. The billing functions `fulfil_subscription_order`, `record_renewal`, `expire_subscriptions` and `mark_order_refunded` can only be called with the service role. |
 | `20261106000000_course_slugs.sql` | Editable course web addresses. `courses.id` stays the permanent internal ID that everything else points at; the public address comes from the new `courses.slug`. A trigger records each address a course leaves in `course_slug_redirects`, so old links redirect to the new page. Anyone can read redirects for published courses; only the trigger writes them. |
+| `20261108000000_contact_messages.sql` | Keeps messages from the public contact forms for Admin → Messages. Only `/api/contact` (service role) writes them; only admins can read them. |
 
 ## Local development
 

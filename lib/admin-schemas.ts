@@ -28,6 +28,10 @@ export const COHORT_STATUSES = ["planned", "running", "finished"] as const;
 export const ATTENDANCE_STATUSES = ["present", "late", "absent"] as const;
 export const ROLES = ["student", "instructor", "admin"] as const;
 
+// ─── Contact messages ───
+
+export const contactMessagePatchSchema = z.object({ status: z.enum(["new", "handled"]) });
+
 // ─── Course editor ───
 
 /** A course's web address, /courses/<slug>. Matches courses_slug_format. */

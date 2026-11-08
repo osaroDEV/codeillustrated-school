@@ -179,8 +179,8 @@ export function ContactForm({ courses }: { courses: CourseLink[] }) {
               <CardContent>
                 <Form {...form}>
                   <form
-                    action="https://formsubmit.co/admin@codeillustrated.com"
-                    method="POST"
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    noValidate
                     className="space-y-6"
                   >
                     <input type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" className="sr-only" {...form.register("website")} />
@@ -245,7 +245,7 @@ export function ContactForm({ courses }: { courses: CourseLink[] }) {
                           <FormLabel>Course Interest</FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>

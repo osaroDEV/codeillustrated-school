@@ -606,3 +606,33 @@ describe("course addresses", () => {
     ).rejects.toThrow(/row-level security/);
   });
 });
+
+describe("contact messages", () => {
+  const ID = "30000000-0000-4000-8000-000000000001";
+
+  beforeAll(async () => {
+    await sql(`insert into public.contact_messages (id, name, email, phone, course, message)
+      values ('${ID}', 'Ada', 'ada@x.test', '08012345678', 'General inquiry', 'Hello there')`);
+  });
+
+  it("start as new and only allow known statuses", async () => {
+    const [m] = await sql<{ status: string; email_sent: boolean }>(`select status, email_sent from public.contact_messages where id = '${ID}'`);
+    expect(m).toEqual({ status: "new", email_sent: false });
+    await expect(sql(`update public.contact_messages set status = 'odd' where id = '${ID}'`)).rejects.toThrow(/check constraint/);
+  });
+
+  it("are readable by admins only", async () => {
+    expect(await sql("select id from public.contact_messages", as("authenticated", U.admin))).toHaveLength(1);
+    expect(await sql("select id from public.contact_messages", as("authenticated", U.s1))).toHaveLength(0);
+    expect(await sql("select id from public.contact_messages", as("anon"))).toHaveLength(0);
+  });
+
+  it("can't be written by API clients, even admins", async () => {
+    await expect(
+      sql(`insert into public.contact_messages (name, email, phone, course, message) values ('x','x@x.test','1','c','m')`, as("anon"))
+    ).rejects.toThrow(/row-level security/);
+    await expect(
+      sql(`update public.contact_messages set status = 'handled' where id = '${ID}' returning id`, as("authenticated", U.admin))
+    ).resolves.toHaveLength(0);
+  });
+});
