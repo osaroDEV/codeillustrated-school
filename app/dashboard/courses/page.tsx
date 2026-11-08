@@ -7,8 +7,9 @@ import { LocalTime } from "@/components/local-time";
 import { getLearnerSessions, type LearnerSession } from "@/lib/cohorts";
 import { nextSessionAt } from "@/lib/schedule";
 import { hasSeatAccess, type SubscriptionState } from "@/lib/billing";
+import { getCourseOutlines, getCourseResources, type CourseResource, type OutlineModule } from "@/lib/lessons";
 import Link from "next/link";
-import { Calendar, CheckCircle2, Clock, BookOpen } from "lucide-react";
+import { Calendar, CheckCircle2, ChevronDown, Circle, Clock, BookOpen, ExternalLink, FileText } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -16,9 +17,15 @@ export const metadata: Metadata = {
 };
 
 async function getEnrollments() {
+  const empty = {
+    enrollments: [],
+    sessions: [] as LearnerSession[],
+    outlines: new Map<string, OutlineModule[]>(),
+    resources: [] as CourseResource[],
+  };
   try {
     const user = await getCurrentUser();
-    if (!user) return { enrollments: [], sessions: [] as LearnerSession[] };
+    if (!user) return empty;
 
     const admin = createAdminClient();
     const [{ data }, sessions] = await Promise.all([
@@ -28,14 +35,19 @@ async function getEnrollments() {
         .eq("user_id", user.id),
       getLearnerSessions(admin, user.id).catch(() => [] as LearnerSession[]),
     ]);
-    return { enrollments: data || [], sessions };
+    const courseIds = (data ?? []).map((e) => e.course_id as string);
+    const [outlines, resources] = await Promise.all([
+      getCourseOutlines(admin, user.id, courseIds),
+      getCourseResources(admin, courseIds),
+    ]);
+    return { enrollments: data || [], sessions, outlines, resources };
   } catch {
-    return { enrollments: [], sessions: [] as LearnerSession[] };
+    return empty;
   }
 }
 
 export default async function CoursesPage() {
-  const [{ enrollments, sessions }, courses] = await Promise.all([getEnrollments(), getCourses()]);
+  const [{ enrollments, sessions, outlines, resources }, courses] = await Promise.all([getEnrollments(), getCourses()]);
 
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto">
@@ -54,10 +66,12 @@ export default async function CoursesPage() {
         <div className="space-y-6">
           {enrollments.map((enrollment) => {
             const course = courses.find((c) => c.id === enrollment.course_id);
-            const modules = course?.curriculum || [];
+            const modules = outlines.get(enrollment.course_id) ?? [];
+            const firstUnfinished = modules.findIndex((m) => m.lessons.some((l) => !l.done));
             const nextAt = nextSessionAt(enrollment, sessions);
             const cohortName = (enrollment.cohorts as { name: string } | null)?.name;
             const lapsed = !hasSeatAccess(enrollment, enrollment.subscriptions as SubscriptionState | null);
+            const courseResources = resources.filter((r) => r.course_id === enrollment.course_id);
             const recordings = sessions.filter(
               (s) => s.cohort_id === enrollment.cohort_id && s.recording_url
             ).length;
@@ -116,7 +130,7 @@ export default async function CoursesPage() {
 
                 {lapsed && (
                   <div className="mx-6 mt-4 px-4 py-3 rounded-xl bg-[#ffbd59]/10 border border-[#ffbd59]/30 text-[#ffbd59] text-sm flex items-center justify-between gap-3 flex-wrap">
-                    <span>Your subscription has lapsed. Renew it to join classes and watch recordings again.</span>
+                    <span>Your subscription has lapsed. Renew it to open your lessons, join classes and watch recordings again.</span>
                     <Link href="/dashboard/billing" className="font-semibold underline underline-offset-2">Billing</Link>
                   </div>
                 )}
@@ -158,29 +172,60 @@ export default async function CoursesPage() {
                   </div>
                 </div>
 
-                {/* Curriculum */}
+                {/* Lessons */}
                 {modules.length > 0 && (
                   <div className="px-6 pb-6">
-                    <p className="text-white/30 text-xs uppercase tracking-wider mb-3">Curriculum</p>
+                    <p className="text-white/30 text-xs uppercase tracking-wider mb-3">Lessons</p>
                     <div className="space-y-2">
                       {modules.map((mod, i) => {
-                        const moduleProgress = Math.min(100, Math.max(0, (enrollment.progress || 0) - i * (100 / modules.length)));
-                        const isComplete = moduleProgress >= 100 / modules.length;
+                        const finished = mod.lessons.filter((l) => l.done).length;
                         return (
-                          <div key={i} className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors ${
-                            isComplete
-                              ? "bg-[#c31d24]/10 border-[#c31d24]/20"
-                              : "bg-white/[0.02] border-white/[0.06]"
-                          }`}>
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
-                              isComplete ? "bg-[#c31d24] text-white" : "bg-white/10 text-white/40"
-                            }`}>
-                              {isComplete ? "✓" : i + 1}
-                            </div>
-                            <span className={`text-sm ${isComplete ? "text-white" : "text-white/50"}`}>{mod.module}</span>
-                          </div>
+                          <details key={mod.id} open={i === firstUnfinished} className="group rounded-xl border bg-white/[0.02] border-white/[0.06]">
+                            <summary className="flex items-center gap-3 px-4 py-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                              <span className="flex-1 text-sm text-white/80">{mod.title}</span>
+                              <span className="text-white/35 text-xs">{finished}/{mod.lessons.length}</span>
+                              <ChevronDown className="w-4 h-4 text-white/30 transition-transform group-open:rotate-180" />
+                            </summary>
+                            <ul className="px-2 pb-2">
+                              {mod.lessons.map((l) => (
+                                <li key={l.id}>
+                                  <Link
+                                    href={`/dashboard/courses/${enrollment.course_id}/lessons/${l.id}`}
+                                    className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/[0.05]"
+                                  >
+                                    {l.done ? <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" /> : <Circle className="w-4 h-4 text-white/25 shrink-0" />}
+                                    <span className="truncate">{l.title}</span>
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </details>
                         );
                       })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Resources */}
+                {!lapsed && enrollment.status !== "paused" && courseResources.length > 0 && (
+                  <div className="px-6 pb-6">
+                    <p className="text-white/30 text-xs uppercase tracking-wider mb-3">Resources</p>
+                    <div className="space-y-2">
+                      {courseResources.map((r) => (
+                        <a
+                          key={r.id}
+                          href={`/academy/api/resources/${r.id}/open`}
+                          target="_blank"
+                          rel="noopener"
+                          className="flex items-center gap-3 px-4 py-3 rounded-xl border bg-white/[0.02] border-white/[0.06] hover:border-white/[0.15] transition-colors"
+                        >
+                          {r.kind === "file" ? <FileText className="w-4 h-4 text-[#3da3bc] shrink-0" /> : <ExternalLink className="w-4 h-4 text-[#3da3bc] shrink-0" />}
+                          <span className="min-w-0">
+                            <span className="block text-sm text-white/80 truncate">{r.title}</span>
+                            {r.description && <span className="block text-xs text-white/40 truncate">{r.description}</span>}
+                          </span>
+                        </a>
+                      ))}
                     </div>
                   </div>
                 )}

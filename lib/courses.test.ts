@@ -120,6 +120,26 @@ describe("mapCourseRow", () => {
   });
 });
 
+describe("mapCourseRow previews", () => {
+  it("exposes only free-preview lesson IDs, lined up with the lessons", () => {
+    const course = mapCourseRow(
+      row({
+        course_modules: [
+          {
+            title: "M",
+            position: 1,
+            lessons: [
+              { id: "a", title: "A", position: 1, is_published: true, is_preview: false },
+              { id: "b", title: "B", position: 2, is_published: true, is_preview: true },
+            ],
+          },
+        ],
+      })
+    );
+    expect(course.curriculum[0].previewIds).toEqual([null, "b"]);
+  });
+});
+
 describe("getCourses", () => {
   afterEach(() => {
     selectResult.value = { data: null, error: null };

@@ -32,6 +32,20 @@ export const ROLES = ["student", "instructor", "admin"] as const;
 
 export const contactMessagePatchSchema = z.object({ status: z.enum(["new", "handled"]) });
 
+// ─── Course files and resources ───
+
+export const uploadRequestSchema = z.object({
+  scope: z.enum(["lessons", "resources"]),
+  file_name: text.min(1).max(255),
+});
+
+const resourceFields = { title: text.min(1).max(200), description: text.max(1000).default("") };
+
+export const resourceCreateSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("file"), file_path: text.min(1).max(500), ...resourceFields }),
+  z.object({ kind: z.literal("link"), url: httpUrl, ...resourceFields }),
+]);
+
 // ─── Course editor ───
 
 /** A course's web address, /courses/<slug>. Matches courses_slug_format. */

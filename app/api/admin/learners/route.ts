@@ -67,19 +67,19 @@ export async function DELETE(req: NextRequest) {
   return NextResponse.json({ success: true });
 }
 
-// PATCH — update a learner's enrollment (progress, next_session, notes, status)
+// PATCH — update a learner's enrollment (next_session, notes, status).
+// Progress is calculated in the database from lessons and attendance.
 export async function PATCH(req: NextRequest) {
   const denied = await rejectNonAdmin();
   if (denied) return denied;
 
-  const { enrollment_id, progress, next_session, notes, status } = await req.json();
+  const { enrollment_id, next_session, notes, status } = await req.json();
   if (!enrollment_id) {
     return NextResponse.json({ error: "enrollment_id is required" }, { status: 400 });
   }
 
   const supabase = createAdminClient();
   const updates: Record<string, unknown> = {};
-  if (progress !== undefined) updates.progress = progress;
   if (next_session !== undefined) updates.next_session = next_session;
   if (notes !== undefined) updates.notes = notes;
   if (status !== undefined) updates.status = status;

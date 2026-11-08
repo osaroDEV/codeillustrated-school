@@ -12,7 +12,7 @@ export type { Course, CourseLink, CourseSummary, OfferingKind, PriceTier } from 
 const COURSE_SELECT = `
   id, slug, title, description, full_description, age, level, duration,
   icon, color, bg, position,
-  course_modules ( title, position, lessons ( title, position, is_published ) ),
+  course_modules ( title, position, lessons ( id, title, position, is_published, is_preview ) ),
   offerings ( kind, price_usd, price_ngn, is_active )
 `;
 
@@ -33,7 +33,7 @@ export interface CourseRow {
     | {
         title: string;
         position: number;
-        lessons: { title: string; position: number; is_published: boolean }[] | null;
+        lessons: { id?: string; title: string; position: number; is_published: boolean; is_preview?: boolean }[] | null;
       }[]
     | null;
   offerings:
@@ -75,13 +75,16 @@ export function mapCourseRow(row: CourseRow): Course {
     fullDescription: row.full_description,
     duration: row.duration,
     level: row.level,
-    curriculum: [...(row.course_modules ?? [])].sort(byPosition).map((m) => ({
-      module: m.title,
-      lessons: [...(m.lessons ?? [])]
-        .filter((l) => l.is_published)
-        .sort(byPosition)
-        .map((l) => l.title),
-    })),
+    curriculum: [...(row.course_modules ?? [])].sort(byPosition).map((m) => {
+      const lessons = [...(m.lessons ?? [])].filter((l) => l.is_published).sort(byPosition);
+      return {
+        module: m.title,
+        lessons: lessons.map((l) => l.title),
+        previewIds: lessons.some((l) => l.is_preview)
+          ? lessons.map((l) => (l.is_preview && l.id ? l.id : null))
+          : undefined,
+      };
+    }),
     price: {
       group,
       oneOnOne: priceFor("cohort_1on1") ?? group,

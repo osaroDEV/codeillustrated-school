@@ -24,6 +24,8 @@ export interface Course {
   curriculum: {
     module: string;
     lessons: string[];
+    /** Same order as lessons: a lesson's ID if it's a free preview, else null. */
+    previewIds?: (string | null)[];
   }[];
   duration: string;
   level: string;

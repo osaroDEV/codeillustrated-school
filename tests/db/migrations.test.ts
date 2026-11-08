@@ -636,3 +636,141 @@ describe("contact messages", () => {
     ).resolves.toHaveLength(0);
   });
 });
+
+describe("lesson progress", () => {
+  const COURSE = "progress-course";
+  const M = "40000000-0000-4000-8000-000000000001";
+  const L = [1, 2, 3, 4].map((n) => `41000000-0000-4000-8000-00000000000${n}`);
+  const COHORT = "42000000-0000-4000-8000-000000000001";
+  const SESSION = "43000000-0000-4000-8000-000000000001";
+  const SESSION2 = "43000000-0000-4000-8000-000000000002";
+  const STUDENT = "00000000-0000-4000-8000-0000000000d1";
+  const STUDENT2 = "00000000-0000-4000-8000-0000000000d2";
+  const progress = async (u = STUDENT) =>
+    (await sql<{ progress: number }>(`select progress from public.enrollments where user_id = '${u}' and course_id = '${COURSE}'`))[0].progress;
+  const complete = (lesson: string, u = STUDENT) => sql(`insert into public.lesson_progress (user_id, lesson_id) values ('${u}', '${lesson}')`);
+  const undo = (lesson: string, u = STUDENT) => sql(`delete from public.lesson_progress where user_id = '${u}' and lesson_id = '${lesson}'`);
+
+  beforeAll(async () => {
+    await sql(`
+      insert into auth.users (id, email) values ('${STUDENT}', 'p1@x.test'), ('${STUDENT2}', 'p2@x.test');
+      insert into public.courses (id, slug, title, is_published) values ('${COURSE}', '${COURSE}', 'Progress', true);
+      insert into public.course_modules (id, course_id, title, position) values ('${M}', '${COURSE}', 'M', 1);
+      insert into public.lessons (id, module_id, title, position, type) values
+        ('${L[0]}', '${M}', 'Text', 1, 'text'), ('${L[1]}', '${M}', 'Video', 2, 'video'),
+        ('${L[2]}', '${M}', 'Live A', 3, 'live'), ('${L[3]}', '${M}', 'Live B', 4, 'live');
+      insert into public.cohorts (id, course_id, name) values ('${COHORT}', '${COURSE}', 'P');
+      insert into public.enrollments (user_id, course_id, cohort_id) values ('${STUDENT}', '${COURSE}', '${COHORT}');
+      insert into public.enrollments (user_id, course_id, progress_baseline) values ('${STUDENT2}', '${COURSE}', 40);
+      insert into public.class_sessions (id, cohort_id, lesson_id, starts_at, duration_min) values
+        ('${SESSION}', '${COHORT}', '${L[2]}', now() - interval '2 days', 60),
+        ('${SESSION2}', '${COHORT}', null, now() - interval '1 day', 60);
+    `);
+  });
+
+  it("starts from the credit an enrolment already has", async () => {
+    expect(await progress()).toBe(0);
+    expect(await progress(STUDENT2)).toBe(40);
+  });
+
+  it("moves with completed lessons, and back when undone", async () => {
+    await complete(L[0]);
+    expect(await progress()).toBe(25);
+    await complete(L[1]);
+    expect(await progress()).toBe(50);
+    await undo(L[1]);
+    expect(await progress()).toBe(25);
+  });
+
+  it("builds on a starting credit and only reaches 100 when everything is done", async () => {
+    await complete(L[0], STUDENT2);
+    expect(await progress(STUDENT2)).toBe(55);
+    await complete(L[1], STUDENT2);
+    await complete(L[2], STUDENT2);
+    expect(await progress(STUDENT2)).toBe(85);
+    await complete(L[3], STUDENT2);
+    expect(await progress(STUDENT2)).toBe(100);
+  });
+
+  it("counts attending the class that teaches a lesson", async () => {
+    await sql(`insert into public.attendance (session_id, user_id, status) values ('${SESSION}', '${STUDENT}', 'present')`);
+    expect(await progress()).toBe(50);
+  });
+
+  it("doesn't double count a lesson both attended and marked complete", async () => {
+    await complete(L[2]);
+    expect(await progress()).toBe(50);
+    await undo(L[2]);
+  });
+
+  it("counts other attended classes towards the remaining live lessons", async () => {
+    await sql(`insert into public.attendance (session_id, user_id, status) values ('${SESSION2}', '${STUDENT}', 'late')`);
+    expect(await progress()).toBe(75);
+  });
+
+  it("drops the credit when attendance is corrected to absent", async () => {
+    await sql(`update public.attendance set status = 'absent' where session_id = '${SESSION2}' and user_id = '${STUDENT}'`);
+    expect(await progress()).toBe(50);
+  });
+
+  it("recalculates everyone when the course's lessons change", async () => {
+    await sql(`update public.lessons set is_published = false where id = '${L[3]}'`);
+    expect(await progress()).toBe(66);
+    await sql(`update public.lessons set is_published = true where id = '${L[3]}'`);
+    expect(await progress()).toBe(50);
+    expect(await progress(STUDENT2)).toBe(100);
+  });
+
+  it("recalculates when a class is deleted", async () => {
+    await sql(`delete from public.class_sessions where id = '${SESSION}'`);
+    expect(await progress()).toBe(25);
+  });
+
+  it("recalculates when a learner leaves their cohort", async () => {
+    await sql(`insert into public.class_sessions (id, cohort_id, lesson_id, starts_at, duration_min) values ('${SESSION}', '${COHORT}', '${L[2]}', now(), 60);
+      insert into public.attendance (session_id, user_id, status) values ('${SESSION}', '${STUDENT}', 'present')`);
+    expect(await progress()).toBe(50);
+    await sql(`update public.enrollments set cohort_id = null where user_id = '${STUDENT}' and course_id = '${COURSE}'`);
+    expect(await progress()).toBe(25);
+  });
+
+  it("recalculates when a lesson or a whole module is deleted", async () => {
+    await sql(`delete from public.lessons where id = '${L[3]}'`);
+    expect(await progress()).toBe(33);
+    await sql(`delete from public.course_modules where id = '${M}'`);
+    expect(await progress()).toBe(0);
+    expect(await progress(STUDENT2)).toBe(40);
+  });
+
+  it("lets learners read only their own, and no client write", async () => {
+    const lesson = (await sql<{ id: string }>("select id from public.lessons limit 1"))[0].id;
+    await complete(lesson, U.s1);
+    expect(await sql("select lesson_id from public.lesson_progress", as("authenticated", U.s1))).toHaveLength(1);
+    expect(await sql("select lesson_id from public.lesson_progress", as("authenticated", U.s2))).toHaveLength(0);
+    expect(await sql("select lesson_id from public.lesson_progress", as("anon"))).toHaveLength(0);
+    await expect(
+      sql(`insert into public.lesson_progress (user_id, lesson_id) values ('${U.s2}', '${lesson}')`, as("authenticated", U.s2))
+    ).rejects.toThrow(/row-level security/);
+  });
+
+  it("keeps the calculation away from API clients", async () => {
+    await expect(sql(`select public.refresh_progress_for_course('${c1}')`, as("authenticated", U.admin))).rejects.toThrow(/permission denied/);
+  });
+});
+
+describe("course resources", () => {
+  beforeAll(async () => {
+    await sql(`insert into public.course_resources (course_id, title, kind, url) values ('${c1}', 'Guide', 'link', 'https://x.test')`);
+  });
+
+  it("need the matching file or link", async () => {
+    await expect(
+      sql(`insert into public.course_resources (course_id, title, kind) values ('${c1}', 'Bad', 'file')`)
+    ).rejects.toThrow(/check constraint/);
+  });
+
+  it("can't be read directly by any API client", async () => {
+    expect(await sql("select id from public.course_resources", as("anon"))).toHaveLength(0);
+    expect(await sql("select id from public.course_resources", as("authenticated", U.s1))).toHaveLength(0);
+  });
+});
