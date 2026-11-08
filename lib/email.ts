@@ -17,6 +17,8 @@ export function escapeHtml(s: string): string {
 export async function sendEmail(input: {
   to: string;
   toName?: string | null;
+  /** Where replies should go, when that isn't the sender. */
+  replyTo?: { email: string; name?: string };
   subject: string;
   /** Plain-text paragraphs; rendered as both text and simple HTML. */
   paragraphs: string[];
@@ -33,6 +35,7 @@ export async function sendEmail(input: {
       body: JSON.stringify({
         sender: { email: FROM_EMAIL(), name: FROM_NAME },
         to: [{ email: input.to, name: input.toName || undefined }],
+        replyTo: input.replyTo,
         subject: input.subject,
         textContent: input.paragraphs.join("\n\n"),
         htmlContent: input.paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`).join(""),
