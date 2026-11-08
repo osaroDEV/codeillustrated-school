@@ -4,6 +4,7 @@ import { rejectNonAdmin } from "@/lib/supabase-server";
 import { lessonPatchSchema } from "@/lib/admin-schemas";
 import { refreshCatalogue } from "@/lib/catalogue-admin";
 import { dbErrorResponse, parseBody } from "@/lib/cohorts";
+import { removeCourseFile } from "@/lib/lessons";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -15,7 +16,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const body = await parseBody(req, lessonPatchSchema);
   if (body.response) return body.response;
 
-  const { data, error } = await createAdminClient()
+  const admin = createAdminClient();
+  const { data: before } = await admin.from("lessons").select("file_path").eq("id", id).maybeSingle();
+  const { data, error } = await admin
     .from("lessons")
     .update(body.data)
     .eq("id", id)
@@ -23,6 +26,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     .maybeSingle();
   if (error) return dbErrorResponse(error);
   if (!data) return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
+  if (before?.file_path && before.file_path !== data.file_path) await removeCourseFile(admin, before.file_path);
 
   refreshCatalogue();
   return NextResponse.json(data);
@@ -34,8 +38,10 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   if (denied) return denied;
 
   const { id } = await params;
-  const { error } = await createAdminClient().from("lessons").delete().eq("id", id);
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("lessons").delete().eq("id", id).select("file_path").maybeSingle();
   if (error) return dbErrorResponse(error);
+  await removeCourseFile(admin, data?.file_path);
 
   refreshCatalogue();
   return NextResponse.json({ success: true });

@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import {
   ArrowDown, ArrowLeft, ArrowUp, Check, ExternalLink, Eye, EyeOff, Loader2, Pencil, Plus, Trash2,
 } from "lucide-react";
-import type { AdminCourse, AdminLesson, AdminModule, AdminOffering } from "@/lib/catalogue-admin";
+import type { AdminCourse, AdminLesson, AdminModule, AdminOffering, AdminResource } from "@/lib/catalogue-admin";
+import { storedFileName } from "@/lib/lesson-access";
+import { FileUpload } from "./file-upload";
 import { COURSE_ICONS } from "@/lib/course-icons";
 import {
   cardClass, dangerButtonClass, errorClass, inputClass, labelClass,
@@ -46,6 +48,7 @@ export function CourseEditor({ course }: { course: AdminCourse }) {
       <CourseDetails course={course} />
       <Offerings course={course} />
       <Curriculum course={course} />
+      <Resources course={course} />
     </div>
   );
 }
@@ -469,6 +472,7 @@ function LessonRow({
     type: lesson.type,
     duration_min: lesson.duration_min?.toString() ?? "",
     video_url: lesson.video_url ?? "",
+    file_path: lesson.file_path ?? "",
     content: lesson.content ?? "",
     is_preview: lesson.is_preview,
     is_published: lesson.is_published,
@@ -524,8 +528,27 @@ function LessonRow({
           </Field>
           <Field label="Video link" id={`l-video-${lesson.id}`}>
             <input id={`l-video-${lesson.id}`} type="url" value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="https://…" className={inputClass} />
+            <p className="text-white/30 text-[11px] mt-1">YouTube or Vimeo links play inside the lesson. Other links open in a new tab.</p>
           </Field>
-          <Field label="Content (private; shown to enrolled learners once the lesson player ships)" id={`l-content-${lesson.id}`} className="sm:col-span-3">
+          {(form.type === "file" || form.file_path) && (
+            <Field label="Lesson file (private; up to 50 MB)" id={`l-file-${lesson.id}`} className="sm:col-span-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                {form.file_path && <span className="text-white/70 text-xs">{storedFileName(form.file_path)}</span>}
+                <FileUpload
+                  scope="lessons"
+                  label={form.file_path ? "Replace file" : "Upload file"}
+                  onUploaded={(path) => setForm((f) => ({ ...f, file_path: path }))}
+                />
+                {form.file_path && (
+                  <button type="button" onClick={() => setForm({ ...form, file_path: "" })} className="text-white/40 hover:text-white text-xs">
+                    Remove
+                  </button>
+                )}
+              </div>
+              <p className="text-white/30 text-[11px] mt-1">Click Save lesson to keep the change.</p>
+            </Field>
+          )}
+          <Field label="Lesson text (Markdown; only people with access can read it)" id={`l-content-${lesson.id}`} className="sm:col-span-3">
             <textarea id={`l-content-${lesson.id}`} rows={4} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className={`${inputClass} resize-y`} />
           </Field>
           <div className="sm:col-span-3 flex items-center gap-5 text-xs text-white/60">
@@ -551,6 +574,95 @@ function LessonRow({
       )}
       {!editing && error && <div className={`${errorClass} m-2`}>{error}</div>}
     </div>
+  );
+}
+
+// ─── Resources ───
+
+function Resources({ course }: { course: AdminCourse }) {
+  const router = useRouter();
+  const blank = { kind: "link" as AdminResource["kind"], title: "", description: "", url: "", file_path: "" };
+  const [form, setForm] = useState(blank);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  async function add(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setError("");
+    const { kind, title, description, url, file_path } = form;
+    const err = await send(
+      `/courses/${course.id}/resources`,
+      "POST",
+      kind === "file" ? { kind, title, description, file_path } : { kind, title, description, url }
+    );
+    setSaving(false);
+    if (err) return setError(err);
+    setForm(blank);
+    router.refresh();
+  }
+
+  async function remove(r: AdminResource) {
+    if (!confirm(`Delete "${r.title}"?`)) return;
+    const err = await send(`/resources/${r.id}`, "DELETE");
+    if (err) return setError(err);
+    router.refresh();
+  }
+
+  return (
+    <section>
+      <h2 className="text-white font-semibold mb-1">Resources</h2>
+      <p className="text-white/40 text-xs mb-3">Files and links for learners with a current place on this course. They appear under the course in My Courses.</p>
+      <div className={`${cardClass} p-5 space-y-4`}>
+        {course.course_resources.map((r) => (
+          <div key={r.id} className="flex items-center gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-white/80 text-sm truncate">{r.title}</p>
+              <p className="text-white/30 text-xs truncate">
+                {r.kind === "file" && r.file_path ? storedFileName(r.file_path) : r.url}
+              </p>
+            </div>
+            <IconButton label="Delete resource" danger onClick={() => remove(r)}><Trash2 className="w-3 h-3" /></IconButton>
+          </div>
+        ))}
+        <form onSubmit={add} className="grid grid-cols-1 sm:grid-cols-3 gap-3 border-t border-white/[0.06] pt-4">
+          <Field label="Type" id="r-kind">
+            <select id="r-kind" value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value as AdminResource["kind"] })} className={inputClass}>
+              <option value="link" className="bg-[#0d0d14]">Link</option>
+              <option value="file" className="bg-[#0d0d14]">File</option>
+            </select>
+          </Field>
+          <Field label="Title" id="r-title" className="sm:col-span-2">
+            <input id="r-title" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={inputClass} />
+          </Field>
+          <Field label="Description (optional)" id="r-desc" className="sm:col-span-3">
+            <input id="r-desc" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inputClass} />
+          </Field>
+          {form.kind === "link" ? (
+            <Field label="Link" id="r-url" className="sm:col-span-3">
+              <input id="r-url" type="url" required value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} placeholder="https://…" className={inputClass} />
+            </Field>
+          ) : (
+            <Field label="File (up to 50 MB)" id="r-file" className="sm:col-span-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                {form.file_path && <span className="text-white/70 text-xs">{storedFileName(form.file_path)}</span>}
+                <FileUpload
+                  scope="resources"
+                  label={form.file_path ? "Replace file" : "Upload file"}
+                  onUploaded={(path) => setForm((f) => ({ ...f, file_path: path }))}
+                />
+              </div>
+            </Field>
+          )}
+          <div className="sm:col-span-3">
+            <button type="submit" disabled={saving || (form.kind === "file" && !form.file_path)} className={primaryButtonClass}>
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Add resource
+            </button>
+          </div>
+          {error && <div className={`${errorClass} sm:col-span-3`}>{error}</div>}
+        </form>
+      </div>
+    </section>
   );
 }
 

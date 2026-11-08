@@ -37,6 +37,17 @@ export interface AdminOffering {
   is_active: boolean;
 }
 
+export interface AdminResource {
+  id: string;
+  course_id: string;
+  title: string;
+  description: string;
+  kind: "file" | "link";
+  file_path: string | null;
+  url: string | null;
+  position: number;
+}
+
 export interface AdminCourse {
   /** Permanent internal ID. */
   id: string;
@@ -59,9 +70,10 @@ export interface AdminCourse {
   offerings: AdminOffering[];
   /** Earlier addresses that redirect to this course, newest first. */
   course_slug_redirects: { slug: string; created_at: string }[];
+  course_resources: AdminResource[];
 }
 
-const SELECT = "*, course_modules(*, lessons(*)), offerings(*), course_slug_redirects(slug, created_at)";
+const SELECT = "*, course_modules(*, lessons(*)), offerings(*), course_slug_redirects(slug, created_at), course_resources(*)";
 
 const byPosition = (a: { position: number }, b: { position: number }) => a.position - b.position;
 
@@ -76,6 +88,7 @@ function normalize(row: AdminCourse): AdminCourse {
     course_slug_redirects: [...(row.course_slug_redirects ?? [])].sort((a, b) =>
       b.created_at.localeCompare(a.created_at)
     ),
+    course_resources: [...(row.course_resources ?? [])].sort(byPosition),
     offerings: (row.offerings ?? []).map((o) => ({
       ...o,
       price_usd: Number(o.price_usd),

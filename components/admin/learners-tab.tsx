@@ -61,7 +61,6 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
   const [loadingLearners, setLoadingLearners] = useState(false);
   const [expandedLearner, setExpandedLearner] = useState<string | null>(null);
   const [editingEnrollment, setEditingEnrollment] = useState<string | null>(null);
-  const [progressEdit, setProgressEdit] = useState(0);
   const [nextSessionEdit, setNextSessionEdit] = useState("");
   const [notesEdit, setNotesEdit] = useState("");
   const [savingEnrollment, setSavingEnrollment] = useState(false);
@@ -103,7 +102,6 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         enrollment_id: enrollment.id,
-        progress: progressEdit,
         // Learners in a cohort get their next session from its schedule.
         ...(enrollment.cohort_id ? {} : { next_session: fromDatetimeLocal(nextSessionEdit) }),
         notes: notesEdit || null,
@@ -405,7 +403,6 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
                                       setEditingEnrollment(null);
                                     } else {
                                       setEditingEnrollment(enr.id);
-                                      setProgressEdit(enr.progress || 0);
                                       setNextSessionEdit(toDatetimeLocal(enr.next_session));
                                       setNotesEdit("");
                                     }
@@ -427,14 +424,6 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
 
                               {isEditing ? (
                                 <div className="space-y-3">
-                                  <div>
-                                    <label className="text-white/40 text-xs mb-1 block">Progress: {progressEdit}%</label>
-                                    <input
-                                      type="range" min="0" max="100" value={progressEdit}
-                                      onChange={(e) => setProgressEdit(parseInt(e.target.value))}
-                                      className="w-full accent-[#c31d24]"
-                                    />
-                                  </div>
                                   {enr.cohort_id ? (
                                     <p className="text-white/40 text-xs">
                                       Next session comes from the cohort&apos;s schedule.

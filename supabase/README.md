@@ -2,7 +2,7 @@
 
 Supabase config (`config.toml`), email templates (`templates/`) and SQL migrations (`migrations/`, applied in filename order). The Supabase CLI is a dev dependency, so run it with `pnpm exec supabase …` or the `db:*` scripts.
 
-These migrations cover Phases 1–3 of the LMS, plus editable course addresses. The later phases are planned in [`docs/lms-roadmap.md`](../docs/lms-roadmap.md).
+These migrations cover Phases 1–4 of the LMS, plus editable course addresses and the contact inbox. The later phases are planned in [`docs/lms-roadmap.md`](../docs/lms-roadmap.md).
 
 | Migration | What it does |
 | --- | --- |
@@ -16,6 +16,7 @@ These migrations cover Phases 1–3 of the LMS, plus editable course addresses. 
 | `20261105000000_billing.sql` | Phase 3. Monthly billing for cohort seats: `payment_plans`, `subscriptions`, `orders`, `payment_events`, plus `enrollments.source` and `subscription_id`. The billing functions `fulfil_subscription_order`, `record_renewal`, `expire_subscriptions` and `mark_order_refunded` can only be called with the service role. |
 | `20261106000000_course_slugs.sql` | Editable course web addresses. `courses.id` stays the permanent internal ID that everything else points at; the public address comes from the new `courses.slug`. A trigger records each address a course leaves in `course_slug_redirects`, so old links redirect to the new page. Anyone can read redirects for published courses; only the trigger writes them. |
 | `20261108000000_contact_messages.sql` | Keeps messages from the public contact forms for Admin → Messages. Only `/api/contact` (service role) writes them; only admins can read them. |
+| `20261109000000_lessons_and_progress.sql` | Phase 4. `lesson_progress`, `course_resources` and the private `course-files` bucket. Triggers recalculate `enrollments.progress` from completed lessons and attendance; earlier hand-set values are kept in `progress_baseline` as a starting credit. |
 
 ## Local development
 

@@ -130,7 +130,16 @@ export default function CourseDetailClient({
                       className="flex items-center gap-3 text-slate-600"
                     >
                       <div className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />
-                      {lesson}
+                      {module.previewIds?.[lIdx] ? (
+                        <Link
+                          href={`/dashboard/courses/${course.id}/lessons/${module.previewIds[lIdx]}`}
+                          className="text-primary font-medium hover:underline"
+                        >
+                          {lesson} <span className="text-xs font-bold uppercase tracking-wide">· Free preview</span>
+                        </Link>
+                      ) : (
+                        lesson
+                      )}
                     </li>
                   ))}
                 </ul>
