@@ -6,11 +6,14 @@ import Link from "next/link";
 import { signIn } from "@/lib/auth";
 import { ResendVerification } from "@/components/auth/resend-verification";
 import { Eye, EyeOff, Loader2, GraduationCap } from "lucide-react";
+import { safeRedirectPath } from "@/lib/utils";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/dashboard";
+  const redirectTo = safeRedirectPath(searchParams.get("redirectTo"), "/dashboard");
+  // Keep the visitor's place when they move between login and signup.
+  const signupHref = redirectTo === "/dashboard" ? "/auth/signup" : `/auth/signup?redirectTo=${encodeURIComponent(redirectTo)}`;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -167,7 +170,7 @@ function LoginForm() {
 
           <p className="text-center text-white/40 text-sm mt-6">
             New to Code Illustrated?{" "}
-            <Link href="/auth/signup" className="text-[#ffbd59] hover:text-[#f5a623] font-medium transition-colors">
+            <Link href={signupHref} className="text-[#ffbd59] hover:text-[#f5a623] font-medium transition-colors">
               Create your account
             </Link>
           </p>

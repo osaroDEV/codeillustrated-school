@@ -5,11 +5,30 @@ import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getSession } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 import codeillIcon from "../public/code-ill.svg";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Public pages are cached, so this is only known in the browser. Until then
+  // show the signed-out links, which are also what search engines should see.
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    getSession().then((session) => {
+      if (active) setSignedIn(!!session);
+    });
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSignedIn(!!session);
+    });
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
+  }, []);
 
   const navItems = [
     { href: "/", label: "Home" },
@@ -63,18 +82,29 @@ export function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button
-              asChild
-              className="bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
-            >
-              <a
-                href="https://wa.me/447405786279"
-                target="_blank"
-                rel="noreferrer"
+            {signedIn ? (
+              <Button
+                asChild
+                className="bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
               >
-                Get Started
-              </a>
-            </Button>
+                <Link href="/dashboard">My Dashboard</Link>
+              </Button>
+            ) : (
+              <>
+                <Link
+                  href="/auth/login"
+                  className="text-sm font-medium transition-colors hover:text-primary-500 dark:hover:text-primary-400"
+                >
+                  Log in
+                </Link>
+                <Button
+                  asChild
+                  className="bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
+                >
+                  <Link href="/auth/signup">Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -114,18 +144,25 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
+              {!signedIn && (
+                <Link
+                  href="/auth/login"
+                  className="block text-sm font-medium transition-colors hover:text-primary-500 dark:hover:text-primary-400"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Log in
+                </Link>
+              )}
               <Button
                 asChild
                 className="w-full bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
               >
-                <a
-                  href="https://wa.me/447405786279"
+                <Link
+                  href={signedIn ? "/dashboard" : "/auth/signup"}
                   onClick={() => setIsMenuOpen(false)}
-                  target="_blank"
-                  rel="noreferrer"
                 >
-                  Get Started
-                </a>
+                  {signedIn ? "My Dashboard" : "Get Started"}
+                </Link>
               </Button>
             </nav>
           </motion.div>
