@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ResendVerification } from "@/components/auth/resend-verification";
 import Link from "next/link";
+import { safeRedirectPath } from "@/lib/utils";
 import {
   Eye, EyeOff, Loader2, GraduationCap,
   CheckCircle2, ArrowRight, Key, User, Mail, Lock,
@@ -11,8 +12,12 @@ import {
 
 type Step = "register" | "success";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = safeRedirectPath(searchParams.get("redirectTo"), "/dashboard");
+  // Keep the visitor's place when they move between login and signup.
+  const loginHref = redirectTo === "/dashboard" ? "/auth/login" : `/auth/login?redirectTo=${encodeURIComponent(redirectTo)}`;
 
   const [step, setStep] = useState<Step>("register");
   const [inviteCode, setInviteCode] = useState("");
@@ -253,7 +258,7 @@ export default function SignupPage() {
               </div>
               <button
                 id="go-to-dashboard-btn"
-                onClick={() => router.push("/auth/login")}
+                onClick={() => router.push(loginHref)}
                 className="w-full bg-gradient-to-r from-[#c31d24] to-[#e53535] text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-[#c31d24]/25"
               >
                 Go to Login <ArrowRight className="w-4 h-4" />
@@ -264,11 +269,25 @@ export default function SignupPage() {
 
         <p className="text-center text-white/25 text-xs mt-6">
           Already have an account?{" "}
-          <Link href="/auth/login" className="text-white/40 hover:text-white transition-colors underline">
+          <Link href={loginHref} className="text-white/40 hover:text-white transition-colors underline">
             Sign in
           </Link>
         </p>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-[#c31d24] animate-spin" />
+        </div>
+      }
+    >
+      <SignupForm />
+    </Suspense>
   );
 }

@@ -71,6 +71,8 @@ export default function Footer({ courses }: { courses: CourseLink[] }) {
                   name: c.title,
                   href: `/courses/${c.slug}`,
                 })),
+                { name: "Log in", href: "/auth/login" },
+                { name: "Create account", href: "/auth/signup" },
               ].map((link) => (
                 <li key={link.name}>
                   <Link
