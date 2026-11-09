@@ -1,5 +1,6 @@
 "use client";
 
+import { NoteReplies, type NoteReply } from "@/components/notes/note-replies";
 import { useState, useEffect, useCallback } from "react";
 import type { CourseSummary } from "@/lib/courses";
 import { fromDatetimeLocal, toDatetimeLocal } from "@/lib/schedule";
@@ -48,6 +49,7 @@ interface Learner {
 }
 
 interface LearnerNote {
+  learner_note_replies?: NoteReply[] | null;
   id: string;
   user_id: string;
   title: string | null;
@@ -570,6 +572,7 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
                                       </button>
                                     </div>
                                   </div>
+                                  <NoteReplies noteId={note.id} replies={note.learner_note_replies} ownerId={learner.id} ownerLabel={learner.full_name || "Learner"} staffLabel="Staff" onPosted={() => fetchNotes(learner.id)} />
                                 </div>
                               )}
                             </div>

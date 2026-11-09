@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  BookOpen, ClipboardList, CreditCard, GraduationCap, Inbox, Key, LayoutDashboard, LogOut, Megaphone,
+  BarChart3, BookOpen, ClipboardList, CreditCard, GraduationCap, Inbox, Key, LayoutDashboard, LogOut, Megaphone,
   Presentation, ShieldCheck, Users,
 } from "lucide-react";
 import { signOut } from "@/lib/auth";
@@ -15,6 +15,7 @@ const ADMIN_NAV = [
   { href: "/admin/grading", label: "Grading", icon: ClipboardList },
   { href: "/admin/payments", label: "Payments", icon: CreditCard },
   { href: "/admin/messages", label: "Messages", icon: Inbox },
+  { href: "/admin/reports", label: "Reports", icon: BarChart3 },
   { href: "/admin/codes", label: "Invite Codes", icon: Key },
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
 ];

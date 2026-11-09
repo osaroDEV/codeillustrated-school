@@ -1,3 +1,4 @@
+import { NoteReplies, type NoteReply } from "@/components/notes/note-replies";
 import { getCurrentUser } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase";
 import { getCourses } from "@/lib/courses";
@@ -29,7 +30,7 @@ async function getDashboardData() {
       admin.from("profiles").select("full_name").eq("id", user.id).single(),
       admin.from("enrollments").select("*").eq("user_id", user.id),
       admin.from("announcements").select("*").order("created_at", { ascending: false }).limit(3),
-      admin.from("learner_notes").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+      admin.from("learner_notes").select("*, learner_note_replies(id, author_id, body, created_at)").eq("user_id", user.id).order("created_at", { ascending: false }),
       getLearnerSessions(admin, user.id).catch(() => []),
     ]);
 
@@ -247,7 +248,7 @@ export default async function DashboardPage() {
             <h2 className="text-lg font-semibold text-white">Notes from Your Instructor</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {notes.map((note: { id: string; title: string | null; body: string; updated_at: string }) => (
+            {notes.map((note: { id: string; title: string | null; body: string; updated_at: string; learner_note_replies: NoteReply[] | null }) => (
               <div
                 key={note.id}
                 className="bg-[#ffbd59]/5 border border-[#ffbd59]/15 rounded-2xl p-5 hover:border-[#ffbd59]/25 transition-all"
@@ -259,6 +260,7 @@ export default async function DashboardPage() {
                 <p className="text-white/20 text-[10px] mt-3">
                   {new Date(note.updated_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                 </p>
+                <NoteReplies noteId={note.id} replies={note.learner_note_replies} ownerId={data!.user.id} ownerLabel="You" staffLabel="Your instructor" />
               </div>
             ))}
           </div>

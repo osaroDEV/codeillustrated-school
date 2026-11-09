@@ -200,6 +200,8 @@ The design below was written before Phase 3; where they differ, Phase 3's implem
 
 ## Phase 7: Notifications and reporting
 
+**Status:** shipped. Migration `20261114000000_notifications_and_replies.sql`. Emails queue in `email_outbox` and `/api/cron/notifications` sends them. Vercel's Hobby plan only runs daily jobs, so Supabase's `pg_cron` calls it every 15 minutes (`supabase/sql/schedule-notifications.sql`, production only), with a daily Vercel Cron as a backstop. Learners can turn course emails off in Profile.
+
 - **Email reminders:** a session reminder 24 hours ahead and another 1 hour ahead, plus emails for new announcements and graded assignments. Schedule them with Vercel Cron or Supabase `pg_cron` and send through Brevo.
 - **Admin reports:** enrolments and revenue by course and currency (one-off and subscription revenue shown separately), MRR and churn per course, attendance rate per cohort, and completion rate, built with recharts (already a dependency).
 - **Learner notes:** let learners reply to notes, which are currently admin-write only.
