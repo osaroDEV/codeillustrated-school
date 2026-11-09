@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2, Circle, Download, ExternalLink, Lock, PlayCircle, Video } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase";
 import { requireUser } from "@/lib/supabase-server";
-import { canTrackProgress, canViewLesson, videoEmbedUrl } from "@/lib/lesson-access";
-import { getCourseOutlines, getLessonClasses, loadLesson, type LessonClass, type OutlineModule } from "@/lib/lessons";
+import { canTrackProgress, canViewLesson, storedFileName, videoEmbedUrl } from "@/lib/lesson-access";
+import { getCourseOutlines, getLessonBlocks, getLessonClasses, loadLesson, type LessonBlock, type LessonClass, type OutlineModule } from "@/lib/lessons";
 import { joinState } from "@/lib/schedule";
 import { LocalTime } from "@/components/local-time";
 import { CompleteButton } from "@/components/lessons/complete-button";
@@ -55,8 +55,9 @@ export default async function LessonPage({ params }: Params) {
     );
   }
 
-  const [outlines, classes] = await Promise.all([
+  const [outlines, blocks, classes] = await Promise.all([
     getCourseOutlines(admin, user.id, [courseId]),
+    getLessonBlocks(admin, lesson.id),
     seat.access === "enrolled" ? getLessonClasses(admin, lesson.id, seat.cohortId) : Promise.resolve([]),
   ]);
   const modules = outlines.get(courseId) ?? [];
@@ -68,8 +69,7 @@ export default async function LessonPage({ params }: Params) {
   const nextHref = next ? lessonHref(courseId, next.id) : null;
   const done = index >= 0 && flat[index].done;
 
-  const embed = lesson.video_url ? videoEmbedUrl(lesson.video_url) : null;
-  const empty = !lesson.content && !lesson.video_url && !lesson.file_path && lesson.type !== "live";
+  const empty = blocks.length === 0 && lesson.type !== "live";
 
   return (
     <div className="p-6 lg:p-8 max-w-6xl mx-auto">
@@ -88,35 +88,11 @@ export default async function LessonPage({ params }: Params) {
             </p>
           )}
 
-          <div className="mt-6">
-            {lesson.video_url &&
-              (embed ? (
-                <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/10">
-                  <iframe
-                    src={embed}
-                    title={lesson.title}
-                    className="w-full h-full"
-                    allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                    allowFullScreen
-                  />
-                </div>
-              ) : (
-                <a href={lesson.video_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-[#3da3bc] hover:text-white text-sm">
-                  <PlayCircle className="w-4 h-4" /> Watch the video <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              ))}
-
-            {lesson.file_path && (
-              <a
-                href={`/academy/api/lessons/${lesson.id}/file`}
-                className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-white/10 hover:bg-white/15 border border-white/10"
-              >
-                <Download className="w-4 h-4" /> Download the file
-              </a>
-            )}
-
+          <div className="mt-6 space-y-6">
             {lesson.type === "live" && <LiveClasses classes={classes} enrolled={seat.access === "enrolled"} />}
-            {lesson.content && <div className="mt-4"><LessonMarkdown>{lesson.content}</LessonMarkdown></div>}
+            {blocks.map((block) => (
+              <Block key={block.id} block={block} lessonTitle={lesson.title} />
+            ))}
             {empty && <p className="text-white/40 text-sm">The material for this lesson hasn&apos;t been added yet.</p>}
           </div>
 
@@ -140,6 +116,45 @@ export default async function LessonPage({ params }: Params) {
         <CourseOutline courseId={courseId} modules={modules} currentId={lesson.id} previewOnly={seat.access === "preview"} />
       </div>
     </div>
+  );
+}
+
+function Block({ block, lessonTitle }: { block: LessonBlock; lessonTitle: string }) {
+  if (block.kind === "text") return <LessonMarkdown>{block.content ?? ""}</LessonMarkdown>;
+
+  if (block.kind === "file") {
+    return (
+      <a
+        href={`/academy/api/lesson-blocks/${block.id}/file`}
+        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-white/10 hover:bg-white/15 border border-white/10"
+      >
+        <Download className="w-4 h-4" /> {block.title || storedFileName(block.file_path ?? "")}
+      </a>
+    );
+  }
+
+  const link = block.video_url ?? "";
+  const embed = videoEmbedUrl(link);
+  if (!embed) {
+    return (
+      <a href={link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-[#3da3bc] hover:text-white text-sm">
+        <PlayCircle className="w-4 h-4" /> {block.title || "Watch the video"} <ExternalLink className="w-3.5 h-3.5" />
+      </a>
+    );
+  }
+  return (
+    <figure>
+      <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/10">
+        <iframe
+          src={embed}
+          title={block.title || lessonTitle}
+          className="w-full h-full"
+          allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+          allowFullScreen
+        />
+      </div>
+      {block.title && <figcaption className="text-white/50 text-sm mt-2">{block.title}</figcaption>}
+    </figure>
   );
 }
 

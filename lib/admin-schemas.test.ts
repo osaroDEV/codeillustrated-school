@@ -6,6 +6,7 @@ import {
   courseCreateSchema,
   coursePatchSchema,
   firstIssue,
+  lessonPatchSchema,
   newCourseId,
   reorderSchema,
   sessionPatchSchema,
@@ -22,6 +23,29 @@ describe("courseCreateSchema", () => {
   it("rejects slugs with spaces or trailing dashes", () => {
     expect(courseCreateSchema.safeParse({ slug: "junior web", title: "x" }).success).toBe(false);
     expect(courseCreateSchema.safeParse({ slug: "junior-", title: "x" }).success).toBe(false);
+  });
+});
+
+describe("lessonPatchSchema blocks", () => {
+  const video = { kind: "video", video_url: "https://youtu.be/abcdefg" };
+
+  it("accepts any mix of block kinds, in order", () => {
+    const blocks = [{ kind: "text", content: "Hi" }, video, { kind: "file", file_path: "lessons/a.pdf" }, video];
+    expect(lessonPatchSchema.parse({ blocks }).blocks?.map((b) => b.kind)).toEqual(["text", "video", "file", "video"]);
+  });
+
+  it("accepts an empty list, which clears the lesson", () => {
+    expect(lessonPatchSchema.parse({ blocks: [] }).blocks).toEqual([]);
+  });
+
+  it("rejects empty text, bad links and unknown kinds", () => {
+    expect(lessonPatchSchema.safeParse({ blocks: [{ kind: "text", content: "  " }] }).success).toBe(false);
+    expect(lessonPatchSchema.safeParse({ blocks: [{ kind: "video", video_url: "javascript:alert(1)" }] }).success).toBe(false);
+    expect(lessonPatchSchema.safeParse({ blocks: [{ kind: "quiz" }] }).success).toBe(false);
+  });
+
+  it("no longer accepts the old single-format fields", () => {
+    expect(lessonPatchSchema.parse({ title: "T", content: "x", video_url: "https://x.test" })).toEqual({ title: "T" });
   });
 });
 

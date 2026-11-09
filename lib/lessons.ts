@@ -65,9 +65,6 @@ interface LessonRow {
   id: string;
   title: string;
   type: LessonType;
-  content: string | null;
-  video_url: string | null;
-  file_path: string | null;
   is_preview: boolean;
   is_published: boolean;
   duration_min: number | null;
@@ -84,7 +81,7 @@ export async function loadLesson(
   const { data } = await admin
     .from("lessons")
     .select(
-      "id, title, type, content, video_url, file_path, is_preview, is_published, duration_min, course_modules!inner(course_id)"
+      "id, title, type, is_preview, is_published, duration_min, course_modules!inner(course_id)"
     )
     .eq("id", lessonId)
     .maybeSingle();
@@ -94,6 +91,25 @@ export async function loadLesson(
   const seat = await courseSeat(admin, user, courseId, lesson.is_preview);
   if (!lesson.is_published && seat.access !== "staff") return null;
   return { lesson, courseId, seat };
+}
+
+export interface LessonBlock {
+  id: string;
+  kind: "text" | "video" | "file";
+  title: string | null;
+  content: string | null;
+  video_url: string | null;
+  file_path: string | null;
+}
+
+/** A lesson's material, in order. Only call this after the access check. */
+export async function getLessonBlocks(admin: AdminClient, lessonId: string): Promise<LessonBlock[]> {
+  const { data } = await admin
+    .from("lesson_blocks")
+    .select("id, kind, title, content, video_url, file_path")
+    .eq("lesson_id", lessonId)
+    .order("position");
+  return (data ?? []) as LessonBlock[];
 }
 
 /** Published outlines with this learner's ticks, keyed by course. */
@@ -194,8 +210,9 @@ export async function signedFileUrl(admin: AdminClient, path: string): Promise<s
 }
 
 /** Remove a replaced or deleted file. Best effort: a leftover file is harmless. */
-export async function removeCourseFile(admin: AdminClient, path: string | null | undefined) {
-  if (!path) return;
-  const { error } = await admin.storage.from(COURSE_FILES_BUCKET).remove([path]);
+export async function removeCourseFile(admin: AdminClient, paths: string | string[] | null | undefined) {
+  const list = (Array.isArray(paths) ? paths : [paths]).filter((p): p is string => !!p);
+  if (list.length === 0) return;
+  const { error } = await admin.storage.from(COURSE_FILES_BUCKET).remove(list);
   if (error) console.error("Course file not removed:", error.message);
 }

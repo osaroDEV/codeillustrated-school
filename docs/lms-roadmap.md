@@ -113,7 +113,7 @@ Decisions so far:
 
 ## Phase 4: Lesson content and automatic progress
 
-**Status:** shipped. Migration `20261109000000_lessons_and_progress.sql`. Hand-set progress from before this phase is kept as `enrollments.progress_baseline`, a starting credit that completed lessons build on. The public Resources page keeps its Google Drive mockups; `course_resources` holds the enrolment-gated files.
+**Status:** shipped. Migration `20261109000000_lessons_and_progress.sql`. Hand-set progress from before this phase is kept as `enrollments.progress_baseline`, a starting credit that completed lessons build on. Lessons are built from ordered `lesson_blocks` (any mix of text, video and file; migration `20261110000000_lesson_blocks.sql`), and `lessons.type` now only marks live lessons. The public Resources page keeps its Google Drive mockups; `course_resources` holds the enrolment-gated files.
 
 **Goal:** self-paced material that supports the cohorts. This is the "lesson content access" work the comment in `20261029000200_course_catalogue.sql` calls Phase 2. That comment predates this roadmap.
 

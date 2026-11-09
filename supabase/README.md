@@ -17,6 +17,7 @@ These migrations cover Phases 1–4 of the LMS, plus editable course addresses a
 | `20261106000000_course_slugs.sql` | Editable course web addresses. `courses.id` stays the permanent internal ID that everything else points at; the public address comes from the new `courses.slug`. A trigger records each address a course leaves in `course_slug_redirects`, so old links redirect to the new page. Anyone can read redirects for published courses; only the trigger writes them. |
 | `20261108000000_contact_messages.sql` | Keeps messages from the public contact forms for Admin → Messages. Only `/api/contact` (service role) writes them; only admins can read them. |
 | `20261109000000_lessons_and_progress.sql` | Phase 4. `lesson_progress`, `course_resources` and the private `course-files` bucket. Triggers recalculate `enrollments.progress` from completed lessons and attendance; earlier hand-set values are kept in `progress_baseline` as a starting credit. |
+| `20261110000000_lesson_blocks.sql` | A lesson becomes an ordered list of `lesson_blocks` (text, video or file) and existing lesson material is carried over. Only server code reads blocks, after the access check. `lessons.content`, `video_url` and `file_path` are no longer read. |
 
 ## Local development
 
