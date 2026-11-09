@@ -94,10 +94,39 @@ describe("LessonBlocksEditor", () => {
     expect(button("Move block down", blockAt(0)).disabled).toBe(true);
   });
 
+  it("keeps a saved block's id so learner work stays attached", async () => {
+    await render(
+      toDraftBlocks([
+        { id: "11111111-1111-4111-8111-111111111111", lesson_id: "l", position: 1, kind: "assignment", title: "A", content: "Brief", video_url: null, file_path: null, quiz: null, pass_mark: 70, is_required: false },
+      ])
+    );
+    await click(button("Text"));
+    const [saved, added] = toBlockPayload(current);
+    expect(saved).toEqual({ id: "11111111-1111-4111-8111-111111111111", kind: "assignment", title: "A", content: "Brief", is_required: false });
+    expect(added).not.toHaveProperty("id");
+  });
+
+  it("builds a quiz with several answers and a chosen correct one", async () => {
+    await render();
+    await click(button("Quiz"));
+    const quiz = blockAt(0);
+    await type(quiz.querySelector<HTMLInputElement>('input[aria-label="Question 1"]')!, "2 + 2?");
+    await type(quiz.querySelector<HTMLInputElement>('input[aria-label="Answer 1"]')!, "3");
+    await type(quiz.querySelector<HTMLInputElement>('input[aria-label="Answer 2"]')!, "4");
+    expect(blockProblem(current)).toBeNull();
+    await click(quiz.querySelector('input[aria-label="Answer 2 is correct"]')!);
+    expect(toBlockPayload(current)[0]).toMatchObject({
+      kind: "quiz",
+      quiz: [{ question: "2 + 2?", options: ["3", "4"], correct: 1 }],
+      pass_mark: "70",
+      is_required: true,
+    });
+  });
+
   it("loads existing blocks", async () => {
     await render(
       toDraftBlocks([
-        { id: "b1", lesson_id: "l", position: 1, kind: "video", title: "Cap", content: null, video_url: "https://youtu.be/abcdefg", file_path: null },
+        { id: "b1", lesson_id: "l", position: 1, kind: "video", title: "Cap", content: null, video_url: "https://youtu.be/abcdefg", file_path: null, quiz: null, pass_mark: 70, is_required: true },
       ])
     );
     expect(blockAt(0).querySelector<HTMLInputElement>('input[type="url"]')!.value).toBe("https://youtu.be/abcdefg");
@@ -106,12 +135,15 @@ describe("LessonBlocksEditor", () => {
 });
 
 describe("blockProblem", () => {
-  const draft = (over: Partial<DraftBlock>): DraftBlock => ({ key: "k", kind: "text", title: "", content: "", video_url: "", file_path: "", ...over });
+  const draft = (over: Partial<DraftBlock>): DraftBlock => ({ key: "k", kind: "text", title: "", content: "", video_url: "", file_path: "", quiz: [], pass_mark: "70", is_required: true, ...over });
 
   it("names the first unfinished block", () => {
     expect(blockProblem([draft({ content: "ok" }), draft({ content: "  " })])).toMatch(/^Block 2: add some text/);
     expect(blockProblem([draft({ kind: "video" })])).toMatch(/video link/);
     expect(blockProblem([draft({ kind: "file" })])).toMatch(/upload a file/);
+    expect(blockProblem([draft({ kind: "assignment" })])).toMatch(/assignment brief/);
+    expect(blockProblem([draft({ kind: "quiz" })])).toMatch(/add a question/);
+    expect(blockProblem([draft({ kind: "quiz", quiz: [{ question: "Q", options: ["a", ""], correct: 0 }] })])).toMatch(/every question/);
   });
 
   it("allows a lesson with no blocks", () => {

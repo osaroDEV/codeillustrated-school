@@ -182,6 +182,8 @@ The design below was written before Phase 3; where they differ, Phase 3's implem
 
 ## Phase 6: Assignments, completion and certificates
 
+**Status:** shipped. Migration `20261113000000_assessments_and_certificates.sql`. Quizzes and assignments are lesson blocks. A course completes when every published lesson is finished, every required quiz and assignment is passed, and attendance meets the course's optional minimum (cohort learners only). Completion is one way, and admins can mark it by hand. Certificates are free unless `certificate_price_*` is set, in which case they're a one-off Flutterwave order (`orders.kind = 'one_off'`).
+
 - **Assignments and quizzes:**
   - `assignments` are attached to a lesson. `submissions` hold text or file uploads, a grade, feedback and a `graded_by` field.
   - Quizzes are simple multiple-choice, auto-graded and stored as JSON on the lesson.

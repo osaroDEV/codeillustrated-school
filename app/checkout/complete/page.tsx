@@ -31,7 +31,7 @@ export default async function CheckoutCompletePage({
       ? (
           await admin
             .from("orders")
-            .select("id, status, currency, amount, course_id, subscription_id, courses(title, slug), subscriptions(status), payment_plans(interval), offerings(kind)")
+            .select("id, kind, status, currency, amount, course_id, subscription_id, courses(title, slug), subscriptions(status), payment_plans(interval), offerings(kind)")
             .eq("tx_ref", params.tx_ref)
             .eq("user_id", user.id)
             .maybeSingle()
@@ -73,6 +73,14 @@ export default async function CheckoutCompletePage({
             title="We couldn't find that payment"
             body="If you were charged, it will appear in your dashboard shortly. Contact us if it doesn't."
           />
+        ) : order.status === "paid" && order.kind === "one_off" ? (
+          <>
+            <State
+              icon={<CheckCircle2 className="w-12 h-12 text-accent-500" />}
+              title={`Your ${title} certificate is ready!`}
+              body={`We received ${formatMoney(order.amount, order.currency)}. Open My Courses to view and download it.`}
+            />
+          </>
         ) : order.status === "paid" && subStatus === "cancelled" ? (
           <State
             icon={<CheckCircle2 className="w-12 h-12 text-accent-500" />}

@@ -192,6 +192,11 @@ export function dbErrorResponse(error: { code?: string; message: string }): Next
       return NextResponse.json({ error: "That cohort is full." }, { status: 409 });
     case "CI003":
       return NextResponse.json({ error: "The list doesn't match what's saved. Reload and try again." }, { status: 409 });
+    case "CI006":
+      return NextResponse.json(
+        { error: "A quiz or assignment you removed has learner work, so it can't be deleted. Mark it optional instead." },
+        { status: 409 }
+      );
     case "23505":
       return NextResponse.json({ error: "That already exists." }, { status: 409 });
     case "22P02":

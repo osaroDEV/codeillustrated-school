@@ -69,7 +69,7 @@ export function videoEmbedUrl(link: string): string | null {
 }
 
 /** A storage path for an upload: a random prefix plus a tidied file name. */
-export function storagePath(scope: "lessons" | "resources", fileName: string, random: string): string {
+export function storagePath(scope: string, fileName: string, random: string): string {
   const cleaned = fileName
     .normalize("NFKD")
     .replace(/[^\w.-]+/g, "-")

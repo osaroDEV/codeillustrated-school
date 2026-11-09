@@ -410,3 +410,35 @@ describe("runDailyBilling — notices", () => {
     expect(db.ops.find((o) => o.table === "subscriptions" && o.op === "update")).toBeUndefined();
   });
 });
+
+describe("processCharge — certificates", () => {
+  const certOrder = { ...order, kind: "one_off", tx_ref: "cert_abc", amount: "5000.00" };
+  const certTx = (over: Record<string, unknown> = {}) => tx({ tx_ref: "cert_abc", amount: 5000, ...over });
+  const db = () => fakeAdmin((q) => (q.table === "orders" && q.op === "select" ? { data: certOrder } : {}));
+
+  it("issues the certificate and links to it", async () => {
+    flw.verifyTransaction.mockResolvedValue(certTx());
+    const d = db();
+    d.onRpc(() => ({ data: { outcome: "issued", code: "CI-ABC" } }));
+    expect((await processCharge(d.admin, 4242, ctx)).outcome).toBe("issued");
+    expect(d.rpcs[0].name).toBe("fulfil_certificate_order");
+    const email = sendEmail.mock.calls[0][0];
+    expect(email.subject).toMatch(/certificate is ready/);
+    expect(email.paragraphs.join(" ")).toContain("/certificates/CI-ABC");
+  });
+
+  it("emails only once for a repeated webhook", async () => {
+    flw.verifyTransaction.mockResolvedValue(certTx());
+    const d = db();
+    d.onRpc(() => ({ data: { outcome: "duplicate" } }));
+    expect((await processCharge(d.admin, 4242, ctx)).outcome).toBe("duplicate");
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("rejects an underpayment without issuing", async () => {
+    flw.verifyTransaction.mockResolvedValue(certTx({ amount: 10 }));
+    const d = db();
+    expect((await processCharge(d.admin, 4242, ctx)).outcome).toBe("rejected");
+    expect(d.rpcs).toHaveLength(0);
+  });
+});

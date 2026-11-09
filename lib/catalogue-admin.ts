@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 import type { createAdminClient } from "./supabase";
+import type { QuizQuestion } from "./assessments";
 
 // Admin-side reads of the course catalogue: every course, published or not,
 // with full lesson rows. Public pages read through lib/courses.ts instead.
@@ -10,11 +11,14 @@ export interface AdminLessonBlock {
   id: string;
   lesson_id: string;
   position: number;
-  kind: "text" | "video" | "file";
+  kind: "text" | "video" | "file" | "quiz" | "assignment";
   title: string | null;
   content: string | null;
   video_url: string | null;
   file_path: string | null;
+  quiz: QuizQuestion[] | null;
+  pass_mark: number;
+  is_required: boolean;
 }
 
 export interface AdminLesson {
@@ -75,6 +79,7 @@ export interface AdminCourse {
   bg: string;
   certificate_price_usd: number | null;
   certificate_price_ngn: number | null;
+  completion_min_attendance: number | null;
   position: number;
   is_published: boolean;
   course_modules: AdminModule[];

@@ -82,7 +82,10 @@ export async function PATCH(req: NextRequest) {
   const updates: Record<string, unknown> = {};
   if (next_session !== undefined) updates.next_session = next_session;
   if (notes !== undefined) updates.notes = notes;
-  if (status !== undefined) updates.status = status;
+  if (status !== undefined) {
+    updates.status = status;
+    updates.completed_at = status === "completed" ? new Date().toISOString() : null;
+  }
 
   const { data, error } = await supabase
     .from("enrollments")

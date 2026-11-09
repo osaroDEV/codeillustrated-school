@@ -69,6 +69,7 @@ function CourseDetails({ course }: { course: AdminCourse }) {
     bg: course.bg,
     certificate_price_usd: course.certificate_price_usd?.toString() ?? "",
     certificate_price_ngn: course.certificate_price_ngn?.toString() ?? "",
+    completion_min_attendance: course.completion_min_attendance?.toString() ?? "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -176,6 +177,9 @@ function CourseDetails({ course }: { course: AdminCourse }) {
         </Field>
         <Field label="Certificate price (NGN)" id="d-cert-ngn">
           <input id="d-cert-ngn" type="number" min="0" step="0.01" value={form.certificate_price_ngn} onChange={set("certificate_price_ngn")} placeholder="Free" className={inputClass} />
+        </Field>
+        <Field label="Minimum attendance to complete (%)" id="d-attendance">
+          <input id="d-attendance" type="number" min="1" max="100" value={form.completion_min_attendance} onChange={set("completion_min_attendance")} placeholder="Not required" className={inputClass} />
         </Field>
         <div className="sm:col-span-3 flex items-center gap-3">
           <button type="submit" disabled={saving} className={primaryButtonClass}>

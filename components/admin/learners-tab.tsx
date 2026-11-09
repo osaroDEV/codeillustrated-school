@@ -95,6 +95,15 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
     fetchLearners();
   }, [fetchLearners]);
 
+  async function setCourseStatus(enrollmentId: string, status: "active" | "completed") {
+    await fetch("/academy/api/admin/learners", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ enrollment_id: enrollmentId, status }),
+    });
+    fetchLearners();
+  }
+
   async function saveEnrollment(enrollment: Enrollment) {
     setSavingEnrollment(true);
     await fetch("/academy/api/admin/learners", {
@@ -411,6 +420,14 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
                                 >
                                   {isEditing ? "Cancel" : "Edit"}
                                 </button>
+                                {!isEditing && enr.status !== "paused" && (
+                                  <button
+                                    onClick={() => setCourseStatus(enr.id, enr.status === "completed" ? "active" : "completed")}
+                                    className="text-xs text-white/40 hover:text-white border border-white/10 px-3 py-1 rounded-lg hover:border-white/20 transition-all"
+                                  >
+                                    {enr.status === "completed" ? "Reopen" : "Mark completed"}
+                                  </button>
+                                )}
                                 {!isEditing && (
                                   <button
                                     onClick={() => deleteEnrollment(enr.id)}

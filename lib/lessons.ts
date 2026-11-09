@@ -1,6 +1,7 @@
 import type { User } from "@supabase/supabase-js";
 import type { createAdminClient } from "./supabase";
 import type { SubscriptionState } from "./billing";
+import type { QuizQuestion } from "./assessments";
 import { getRole } from "./supabase-server";
 import { COURSE_FILES_BUCKET, lessonAccess, storedFileName, type LessonAccess } from "./lesson-access";
 
@@ -103,18 +104,22 @@ export async function loadLesson(
 
 export interface LessonBlock {
   id: string;
-  kind: "text" | "video" | "file";
+  kind: "text" | "video" | "file" | "quiz" | "assignment";
   title: string | null;
   content: string | null;
   video_url: string | null;
   file_path: string | null;
+  /** Includes the answers: never pass this to the browser as it is. */
+  quiz: QuizQuestion[] | null;
+  pass_mark: number;
+  is_required: boolean;
 }
 
 /** A lesson's material, in order. Only call this after the access check. */
 export async function getLessonBlocks(admin: AdminClient, lessonId: string): Promise<LessonBlock[]> {
   const { data } = await admin
     .from("lesson_blocks")
-    .select("id, kind, title, content, video_url, file_path")
+    .select("id, kind, title, content, video_url, file_path, quiz, pass_mark, is_required")
     .eq("lesson_id", lessonId)
     .order("position");
   return (data ?? []) as LessonBlock[];

@@ -4,17 +4,25 @@ import { getCourses } from "@/lib/courses";
 import { CourseIcon } from "@/components/course-icon";
 import { RedeemCodeCard } from "@/components/dashboard/redeem-code-card";
 import { LocalTime } from "@/components/local-time";
+import { ClaimCertificateButton } from "@/components/certificates/claim-button";
 import { getLearnerSessions, type LearnerSession } from "@/lib/cohorts";
 import { nextSessionAt } from "@/lib/schedule";
 import { hasSeatAccess, type SubscriptionState } from "@/lib/billing";
 import { getCourseOutlines, getCourseRecordings, getCourseResources, type CourseRecording, type CourseResource, type OutlineModule } from "@/lib/lessons";
 import Link from "next/link";
-import { Calendar, CheckCircle2, ChevronDown, Circle, Clock, BookOpen, ExternalLink, FileText, PlayCircle } from "lucide-react";
+import { Award, Calendar, CheckCircle2, ChevronDown, Circle, Clock, BookOpen, ExternalLink, FileText, PlayCircle } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "My Courses | Code Illustrated Dashboard",
 };
+
+interface Requirements {
+  items_total: number;
+  items_passed: number;
+  attendance_required: number | null;
+  attendance_pct: number | null;
+}
 
 function isSelfPaced(enrollment: { source?: string | null; subscriptions?: unknown }) {
   const sub = enrollment.subscriptions as { offerings: { kind: string } | null } | null | undefined;
@@ -28,6 +36,8 @@ async function getEnrollments() {
     outlines: new Map<string, OutlineModule[]>(),
     resources: [] as CourseResource[],
     courseRecordings: [] as CourseRecording[],
+    certificates: new Map<string, string>(),
+    requirements: new Map<string, Requirements>(),
   };
   try {
     const user = await getCurrentUser();
@@ -37,25 +47,46 @@ async function getEnrollments() {
     const [{ data }, sessions] = await Promise.all([
       admin
         .from("enrollments")
-        .select("*, cohorts(name), subscriptions(status, current_period_end, offerings(kind))")
+        .select("*, cohorts(name), subscriptions(status, current_period_end, offerings(kind)), courses(certificate_price_usd, certificate_price_ngn)")
         .eq("user_id", user.id),
       getLearnerSessions(admin, user.id).catch(() => [] as LearnerSession[]),
     ]);
     const courseIds = (data ?? []).map((e) => e.course_id as string);
     const selfPacedIds = (data ?? []).filter(isSelfPaced).map((e) => e.course_id as string);
-    const [outlines, resources, courseRecordings] = await Promise.all([
+    const [outlines, resources, courseRecordings, { data: issued }, requirementRows] = await Promise.all([
       getCourseOutlines(admin, user.id, courseIds),
       getCourseResources(admin, courseIds),
       getCourseRecordings(admin, selfPacedIds),
+      admin.from("certificates").select("code, course_id").eq("user_id", user.id).is("revoked_at", null),
+      Promise.all(
+        (data ?? [])
+          .filter((e) => e.status === "active")
+          .map(async (e) => {
+            const { data: r } = await admin.rpc("course_requirements", {
+              p_user_id: user.id,
+              p_course_id: e.course_id,
+              p_cohort_id: e.cohort_id,
+            });
+            return [e.course_id as string, r as Requirements] as const;
+          })
+      ),
     ]);
-    return { enrollments: data || [], sessions, outlines, resources, courseRecordings };
+    return {
+      enrollments: data || [],
+      sessions,
+      outlines,
+      resources,
+      courseRecordings,
+      certificates: new Map((issued ?? []).map((c) => [c.course_id as string, c.code as string])),
+      requirements: new Map(requirementRows),
+    };
   } catch {
     return empty;
   }
 }
 
 export default async function CoursesPage() {
-  const [{ enrollments, sessions, outlines, resources, courseRecordings }, courses] = await Promise.all([getEnrollments(), getCourses()]);
+  const [{ enrollments, sessions, outlines, resources, courseRecordings, certificates, requirements }, courses] = await Promise.all([getEnrollments(), getCourses()]);
 
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto">
@@ -81,6 +112,13 @@ export default async function CoursesPage() {
             const lapsed = !hasSeatAccess(enrollment, enrollment.subscriptions as SubscriptionState | null);
             const courseResources = resources.filter((r) => r.course_id === enrollment.course_id);
             const selfPaced = isSelfPaced(enrollment);
+            const certificateCode = certificates.get(enrollment.course_id);
+            const requirement = requirements.get(enrollment.course_id);
+            const prices = enrollment.courses as { certificate_price_usd: number | string | null; certificate_price_ngn: number | string | null } | null;
+            const certificatePrice =
+              Number(prices?.certificate_price_usd ?? 0) > 0 || Number(prices?.certificate_price_ngn ?? 0) > 0
+                ? { usd: Number(prices?.certificate_price_usd ?? 0), ngn: Number(prices?.certificate_price_ngn ?? 0) }
+                : null;
             const selfPacedRecordings = courseRecordings.filter(
               (r) => r.course_id === enrollment.course_id && /^https?:\/\//i.test(r.recording_url)
             );
@@ -146,6 +184,27 @@ export default async function CoursesPage() {
                     <span>Your subscription has lapsed. Renew it to open your lessons, join classes and watch recordings again.</span>
                     <Link href="/dashboard/billing" className="font-semibold underline underline-offset-2">Billing</Link>
                   </div>
+                )}
+
+                {enrollment.status === "completed" && (
+                  <div className="mx-6 mt-4 px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-between gap-3 flex-wrap">
+                    <span className="text-green-300 text-sm font-medium">You&apos;ve completed this course. Well done!</span>
+                    {certificateCode ? (
+                      <Link href={`/certificates/${certificateCode}`} className="inline-flex items-center gap-2 text-sm font-semibold text-white">
+                        <Award className="w-4 h-4 text-[#ffbd59]" /> View certificate
+                      </Link>
+                    ) : (
+                      <ClaimCertificateButton courseId={enrollment.course_id} price={certificatePrice} />
+                    )}
+                  </div>
+                )}
+
+                {requirement && (requirement.items_total > 0 || requirement.attendance_required !== null) && (
+                  <p className="mx-6 mt-4 text-white/45 text-xs">
+                    To complete this course:
+                    {requirement.items_total > 0 && ` ${requirement.items_passed} of ${requirement.items_total} quizzes and assignments passed.`}
+                    {requirement.attendance_required !== null && ` Attendance ${requirement.attendance_pct ?? 0}% of ${requirement.attendance_required}% needed.`}
+                  </p>
                 )}
 
                 {/* Session info */}

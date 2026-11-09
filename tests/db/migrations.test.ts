@@ -804,6 +804,8 @@ describe("lesson blocks", () => {
     const migration = readFileSync(join(MIGRATIONS, FILE), "utf8");
     await db.exec(migration);
     await db.exec(migration);
+    // Re-running restored this migration's version of replace_lesson_blocks.
+    await db.exec(readFileSync(join(MIGRATIONS, "20261113000000_assessments_and_certificates.sql"), "utf8"));
     const rows = await blocks(OLD);
     expect(rows.map((b) => [b.position, b.kind])).toEqual([[1, "video"], [2, "file"], [3, "text"]]);
     expect(rows[1].file_path).toBe("lessons/old.pdf");
@@ -964,5 +966,170 @@ describe("shared recordings", () => {
     expect(row.shared_with_self_paced).toBe(false);
     const [{ n }] = await sql<{ n: number }>("select count(*)::int as n from public.class_sessions where shared_with_self_paced");
     expect(n).toBe(0);
+  });
+});
+
+describe("assessments and completion", () => {
+  const C = "phase6-course";
+  const M = "80000000-0000-4000-8000-000000000001";
+  const L1 = "81000000-0000-4000-8000-000000000001";
+  const L2 = "81000000-0000-4000-8000-000000000002";
+  const KID = "82000000-0000-4000-8000-000000000001";
+  const SESS = "83000000-0000-4000-8000-000000000001";
+  const SESS2 = "83000000-0000-4000-8000-000000000002";
+  const QUIZ = "84000000-0000-4000-8000-000000000001";
+  const TASK = "84000000-0000-4000-8000-000000000002";
+  const A = "00000000-0000-4000-8000-0000000000f1";
+  const B = "00000000-0000-4000-8000-0000000000f2";
+
+  const replace = (lesson: string, blocks: unknown[]) =>
+    sql<{ r: string[] }>(`select public.replace_lesson_blocks('${lesson}', '${JSON.stringify(blocks).replace(/'/g, "''")}'::jsonb) as r`);
+  const blockIds = async (lesson: string) =>
+    (await sql<{ id: string; kind: string }>(`select id, kind from public.lesson_blocks where lesson_id = '${lesson}' order by position`));
+  const enrolment = async (u: string) =>
+    (await sql<{ status: string; completed_at: string | null; progress: number }>(
+      `select status, completed_at, progress from public.enrollments where user_id = '${u}' and course_id = '${C}'`
+    ))[0];
+  const finishLessons = (u: string) =>
+    sql(`insert into public.lesson_progress (user_id, lesson_id) values ('${u}', '${L1}'), ('${u}', '${L2}') on conflict do nothing`);
+  const quizBlock = { id: QUIZ, kind: "quiz", quiz: [{ question: "Q", options: ["a", "b"], correct: 1 }], pass_mark: 70, is_required: true };
+
+  beforeAll(async () => {
+    await sql(`
+      insert into auth.users (id, email, raw_user_meta_data) values ('${A}', 'a@x.test', '{"full_name":"Ada Obi"}'), ('${B}', 'b@x.test', '{}');
+      insert into public.courses (id, slug, title, is_published) values ('${C}', '${C}', 'Phase Six', true);
+      insert into public.course_modules (id, course_id, title, position) values ('${M}', '${C}', 'M', 1);
+      insert into public.lessons (id, module_id, title, position, type) values ('${L1}', '${M}', 'One', 1, 'text'), ('${L2}', '${M}', 'Two', 2, 'text');
+      insert into public.lesson_blocks (id, lesson_id, position, kind, quiz) values ('${QUIZ}', '${L1}', 1, 'quiz', '[{"question":"Q","options":["a","b"],"correct":1}]');
+      insert into public.lesson_blocks (id, lesson_id, position, kind, content) values ('${TASK}', '${L1}', 2, 'assignment', 'Do it');
+      insert into public.cohorts (id, course_id, name) values ('${KID}', '${C}', 'K');
+      insert into public.enrollments (user_id, course_id) values ('${A}', '${C}');
+      insert into public.enrollments (user_id, course_id, cohort_id) values ('${B}', '${C}', '${KID}');
+      update public.profiles set full_name = 'Ada Obi' where id = '${A}';
+    `);
+  });
+
+  it("keeps block ids when a lesson is reordered", async () => {
+    await replace(L1, [{ id: TASK, kind: "assignment", content: "Do it" }, quizBlock, { kind: "text", content: "New" }]);
+    const rows = await blockIds(L1);
+    expect(rows.map((r) => r.kind)).toEqual(["assignment", "quiz", "text"]);
+    expect(rows[0].id).toBe(TASK);
+    expect(rows[1].id).toBe(QUIZ);
+  });
+
+  it("ignores an id that belongs to another lesson", async () => {
+    await replace(L2, [{ id: QUIZ, kind: "text", content: "Stolen" }]);
+    const rows = await blockIds(L2);
+    expect(rows[0].id).not.toBe(QUIZ);
+    expect((await blockIds(L1)).map((r) => r.id)).toContain(QUIZ);
+    await replace(L2, []);
+  });
+
+  it("isn't complete until every requirement is met", async () => {
+    await finishLessons(A);
+    expect((await enrolment(A)).status).toBe("active");
+    await sql(`insert into public.quiz_attempts (block_id, user_id, answers, score, passed) values ('${QUIZ}', '${A}', '[0]', 0, false)`);
+    expect((await enrolment(A)).status).toBe("active");
+    await sql(`insert into public.quiz_attempts (block_id, user_id, answers, score, passed) values ('${QUIZ}', '${A}', '[1]', 100, true)`);
+    expect((await enrolment(A)).status).toBe("active");
+    await sql(`insert into public.assignment_submissions (block_id, user_id, body) values ('${TASK}', '${A}', 'Mine')`);
+    expect((await enrolment(A)).status).toBe("active");
+  });
+
+  it("refuses to delete a block with learner work, changing nothing", async () => {
+    await expect(replace(L1, [{ kind: "text", content: "Only this" }])).rejects.toThrow(/learner work/);
+    expect((await blockIds(L1)).map((r) => r.id)).toContain(TASK);
+    await expect(sql(`delete from public.lessons where id = '${L1}'`)).rejects.toThrow(/foreign key/);
+  });
+
+  it("completes when the last requirement passes", async () => {
+    await sql(`update public.assignment_submissions set status = 'needs_work' where block_id = '${TASK}' and user_id = '${A}'`);
+    expect((await enrolment(A)).status).toBe("active");
+    await sql(`update public.assignment_submissions set status = 'passed' where block_id = '${TASK}' and user_id = '${A}'`);
+    const e = await enrolment(A);
+    expect(e.status).toBe("completed");
+    expect(e.completed_at).not.toBeNull();
+  });
+
+  it("doesn't take a completion back when the course changes", async () => {
+    await sql(`insert into public.lessons (module_id, title, position, type) values ('${M}', 'Added later', 3, 'text')`);
+    expect((await enrolment(A)).status).toBe("completed");
+    await sql(`delete from public.lessons where module_id = '${M}' and position = 3`);
+  });
+
+  it("applies a minimum attendance to cohort learners only", async () => {
+    await sql(`
+      insert into public.class_sessions (id, cohort_id, starts_at, duration_min) values
+        ('${SESS}', '${KID}', now() - interval '2 days', 60), ('${SESS2}', '${KID}', now() - interval '1 day', 60);
+      update public.courses set completion_min_attendance = 100 where id = '${C}';
+      insert into public.quiz_attempts (block_id, user_id, answers, score, passed) values ('${QUIZ}', '${B}', '[1]', 100, true);
+      insert into public.assignment_submissions (block_id, user_id, body, status) values ('${TASK}', '${B}', 'x', 'passed');
+    `);
+    await finishLessons(B);
+    await sql(`insert into public.attendance (session_id, user_id, status) values ('${SESS}', '${B}', 'present')`);
+    expect((await enrolment(B)).status).toBe("active");
+    const [{ r }] = await sql<{ r: { attendance_pct: number; met: boolean } }>(
+      `select public.course_requirements('${B}', '${C}', '${KID}') as r`
+    );
+    expect(r).toMatchObject({ attendance_pct: 50, met: false });
+    await sql(`insert into public.attendance (session_id, user_id, status) values ('${SESS2}', '${B}', 'late')`);
+    expect((await enrolment(B)).status).toBe("completed");
+  });
+
+  it("leaves paused learners alone", async () => {
+    await sql(`update public.enrollments set status = 'paused', completed_at = null where user_id = '${B}' and course_id = '${C}'`);
+    await sql(`update public.attendance set status = 'present' where session_id = '${SESS2}' and user_id = '${B}'`);
+    expect((await enrolment(B)).status).toBe("paused");
+  });
+
+  describe("certificates", () => {
+    const issue = async (u: string, code: string) =>
+      (await sql<{ c: string }>(`select public.issue_certificate('${u}', '${C}', '${code}') as c`))[0].c;
+
+    it("copy the name and title, and return the same code when claimed again", async () => {
+      expect(await issue(A, "CI-FIRST")).toBe("CI-FIRST");
+      expect(await issue(A, "CI-OTHER")).toBe("CI-FIRST");
+      const [row] = await sql<{ learner_name: string; course_title: string }>(`select learner_name, course_title from public.certificates where code = 'CI-FIRST'`);
+      expect(row).toEqual({ learner_name: "Ada Obi", course_title: "Phase Six" });
+    });
+
+    it("stay as issued when the course is renamed", async () => {
+      await sql(`update public.courses set title = 'Renamed' where id = '${C}'`);
+      const [row] = await sql<{ course_title: string }>(`select course_title from public.certificates where code = 'CI-FIRST'`);
+      expect(row.course_title).toBe("Phase Six");
+    });
+
+    it("are issued once per paid order and revoked by a refund", async () => {
+      await sql(`insert into public.orders (user_id, customer_email, kind, course_id, currency, amount, tx_ref) values ('${B}', 'b@x.test', 'one_off', '${C}', 'USD', 10, 'cert_one')`);
+      const fulfil = async () =>
+        (await sql<{ r: { outcome: string; code?: string } }>(`select public.fulfil_certificate_order('cert_one', 7001, 10, now(), 'CI-PAID') as r`))[0].r;
+      expect(await fulfil()).toEqual({ outcome: "issued", code: "CI-PAID" });
+      expect((await fulfil()).outcome).toBe("duplicate");
+
+      const [{ id }] = await sql<{ id: string }>(`select id from public.orders where tx_ref = 'cert_one'`);
+      await sql(`select public.mark_order_refunded('${id}')`);
+      const [cert] = await sql<{ revoked_at: string | null }>(`select revoked_at from public.certificates where code = 'CI-PAID'`);
+      expect(cert.revoked_at).not.toBeNull();
+      expect((await fulfil()).outcome).toBe("refunded");
+    });
+
+    it("are restored under the same code when bought again", async () => {
+      await sql(`insert into public.orders (user_id, customer_email, kind, course_id, currency, amount, tx_ref) values ('${B}', 'b@x.test', 'one_off', '${C}', 'USD', 10, 'cert_two')`);
+      const [{ r }] = await sql<{ r: { code: string } }>(`select public.fulfil_certificate_order('cert_two', 7002, 10, now(), 'CI-NEW') as r`);
+      expect(r.code).toBe("CI-PAID");
+      const [cert] = await sql<{ revoked_at: string | null }>(`select revoked_at from public.certificates where code = 'CI-PAID'`);
+      expect(cert.revoked_at).toBeNull();
+    });
+  });
+
+  it("keeps learner work and certificates away from API clients", async () => {
+    for (const table of ["quiz_attempts", "assignment_submissions", "certificates"]) {
+      expect(await sql(`select 1 from public.${table}`, as("authenticated", A))).toHaveLength(0);
+      expect(await sql(`select 1 from public.${table}`, as("anon"))).toHaveLength(0);
+    }
+    await expect(sql(`select public.issue_certificate('${A}', '${C}', 'CI-X')`, as("authenticated", A))).rejects.toThrow(/permission denied/);
+    await expect(
+      sql(`insert into public.quiz_attempts (block_id, user_id, answers, score, passed) values ('${QUIZ}', '${A}', '[]', 100, true)`, as("authenticated", A))
+    ).rejects.toThrow(/row-level security/);
   });
 });
