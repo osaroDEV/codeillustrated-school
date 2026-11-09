@@ -7,6 +7,7 @@ import {
   coursePatchSchema,
   firstIssue,
   lessonPatchSchema,
+  offeringUpsertSchema,
   newCourseId,
   reorderSchema,
   sessionPatchSchema,
@@ -46,6 +47,21 @@ describe("lessonPatchSchema blocks", () => {
 
   it("no longer accepts the old single-format fields", () => {
     expect(lessonPatchSchema.parse({ title: "T", content: "x", video_url: "https://x.test" })).toEqual({ title: "T" });
+  });
+});
+
+describe("offeringUpsertSchema yearly prices", () => {
+  const base = { kind: "self_paced", price_usd: "10", price_ngn: "15000" };
+
+  it("accepts both or neither", () => {
+    expect(offeringUpsertSchema.parse({ ...base, yearly_price_usd: "100", yearly_price_ngn: "150000" }).yearly_price_usd).toBe(100);
+    expect(offeringUpsertSchema.parse({ ...base, yearly_price_usd: "", yearly_price_ngn: "" }).yearly_price_usd).toBeNull();
+    expect(offeringUpsertSchema.safeParse(base).success).toBe(true);
+  });
+
+  it("refuses only one of them, or zero", () => {
+    expect(offeringUpsertSchema.safeParse({ ...base, yearly_price_usd: "100", yearly_price_ngn: "" }).success).toBe(false);
+    expect(offeringUpsertSchema.safeParse({ ...base, yearly_price_usd: "0", yearly_price_ngn: "0" }).success).toBe(false);
   });
 });
 

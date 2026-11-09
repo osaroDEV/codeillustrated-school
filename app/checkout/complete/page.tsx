@@ -4,7 +4,7 @@ import { CheckCircle2, Clock, XCircle } from "lucide-react";
 import { requireUser } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase";
 import { processCharge } from "@/lib/billing-server";
-import { formatMoney } from "@/lib/billing";
+import { formatMoney, intervalNoun, type BillingInterval } from "@/lib/billing";
 import { AutoRefresh } from "@/components/billing/auto-refresh";
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default async function CheckoutCompletePage({
       ? (
           await admin
             .from("orders")
-            .select("id, status, currency, amount, course_id, subscription_id, courses(title, slug), subscriptions(status)")
+            .select("id, status, currency, amount, course_id, subscription_id, courses(title, slug), subscriptions(status), payment_plans(interval), offerings(kind)")
             .eq("tx_ref", params.tx_ref)
             .eq("user_id", user.id)
             .maybeSingle()
@@ -61,6 +61,8 @@ export default async function CheckoutCompletePage({
   const course = order?.courses as unknown as { title: string; slug: string } | null;
   const title = course?.title ?? "your course";
   const subStatus = (order?.subscriptions as unknown as { status: string } | null)?.status;
+  const interval = (order?.payment_plans as unknown as { interval: BillingInterval } | null)?.interval;
+  const selfPaced = (order?.offerings as unknown as { kind: string } | null)?.kind === "self_paced";
 
   return (
     <div className="pt-32 pb-24 px-6 bg-white min-h-[70vh]">
@@ -81,7 +83,7 @@ export default async function CheckoutCompletePage({
           <State
             icon={<CheckCircle2 className="w-12 h-12 text-accent-500" />}
             title={`You're enrolled in ${title}!`}
-            body={`We received ${formatMoney(order.amount, order.currency)}. Your subscription renews monthly and you can cancel any time. We'll place you in a class group and your schedule will appear in your dashboard.`}
+            body={`We received ${formatMoney(order.amount, order.currency)}. Your subscription renews every ${intervalNoun(interval)} and you can cancel any time. ${selfPaced ? "Your lessons are ready in your dashboard." : "We'll place you in a class group and your schedule will appear in your dashboard."}`}
           />
         ) : order.status === "pending" ? (
           <>

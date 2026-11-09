@@ -216,7 +216,10 @@ function OfferingCard({
   const router = useRouter();
   const [usd, setUsd] = useState(offering?.price_usd.toString() ?? "");
   const [ngn, setNgn] = useState(offering?.price_ngn.toString() ?? "");
+  const [yearlyUsd, setYearlyUsd] = useState(offering?.yearly_price_usd?.toString() ?? "");
+  const [yearlyNgn, setYearlyNgn] = useState(offering?.yearly_price_ngn?.toString() ?? "");
   const [active, setActive] = useState(offering?.is_active ?? false);
+  const selfPaced = kind === "self_paced";
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
@@ -231,6 +234,7 @@ function OfferingCard({
       price_usd: usd,
       price_ngn: ngn,
       is_active: active,
+      ...(selfPaced ? { yearly_price_usd: yearlyUsd, yearly_price_ngn: yearlyNgn } : {}),
     });
     setSaving(false);
     if (err) return setError(err);
@@ -255,6 +259,20 @@ function OfferingCard({
           <input id={`o-ngn-${kind}`} type="number" min="0" step="0.01" required value={ngn} onChange={(e) => setNgn(e.target.value)} className={inputClass} />
         </Field>
       </div>
+      <p className="text-white/30 text-[11px]">Prices are per month.</p>
+      {selfPaced && (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            <Field label="Yearly USD" id="o-yearly-usd">
+              <input id="o-yearly-usd" type="number" min="0" step="0.01" value={yearlyUsd} onChange={(e) => setYearlyUsd(e.target.value)} placeholder="Optional" className={inputClass} />
+            </Field>
+            <Field label="Yearly NGN" id="o-yearly-ngn">
+              <input id="o-yearly-ngn" type="number" min="0" step="0.01" value={yearlyNgn} onChange={(e) => setYearlyNgn(e.target.value)} placeholder="Optional" className={inputClass} />
+            </Field>
+          </div>
+          <p className="text-white/30 text-[11px]">Lessons and shared recordings, no live classes. Leave both yearly prices empty to sell monthly only.</p>
+        </>
+      )}
       <div className="flex items-center gap-2">
         <button type="submit" disabled={saving} className={secondaryButtonClass}>
           {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />} Save

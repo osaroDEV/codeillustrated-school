@@ -7,14 +7,19 @@ import { LocalTime } from "@/components/local-time";
 import { getLearnerSessions, type LearnerSession } from "@/lib/cohorts";
 import { nextSessionAt } from "@/lib/schedule";
 import { hasSeatAccess, type SubscriptionState } from "@/lib/billing";
-import { getCourseOutlines, getCourseResources, type CourseResource, type OutlineModule } from "@/lib/lessons";
+import { getCourseOutlines, getCourseRecordings, getCourseResources, type CourseRecording, type CourseResource, type OutlineModule } from "@/lib/lessons";
 import Link from "next/link";
-import { Calendar, CheckCircle2, ChevronDown, Circle, Clock, BookOpen, ExternalLink, FileText } from "lucide-react";
+import { Calendar, CheckCircle2, ChevronDown, Circle, Clock, BookOpen, ExternalLink, FileText, PlayCircle } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "My Courses | Code Illustrated Dashboard",
 };
+
+function isSelfPaced(enrollment: { source?: string | null; subscriptions?: unknown }) {
+  const sub = enrollment.subscriptions as { offerings: { kind: string } | null } | null | undefined;
+  return enrollment.source === "subscription" && sub?.offerings?.kind === "self_paced";
+}
 
 async function getEnrollments() {
   const empty = {
@@ -22,6 +27,7 @@ async function getEnrollments() {
     sessions: [] as LearnerSession[],
     outlines: new Map<string, OutlineModule[]>(),
     resources: [] as CourseResource[],
+    courseRecordings: [] as CourseRecording[],
   };
   try {
     const user = await getCurrentUser();
@@ -31,23 +37,25 @@ async function getEnrollments() {
     const [{ data }, sessions] = await Promise.all([
       admin
         .from("enrollments")
-        .select("*, cohorts(name), subscriptions(status, current_period_end)")
+        .select("*, cohorts(name), subscriptions(status, current_period_end, offerings(kind))")
         .eq("user_id", user.id),
       getLearnerSessions(admin, user.id).catch(() => [] as LearnerSession[]),
     ]);
     const courseIds = (data ?? []).map((e) => e.course_id as string);
-    const [outlines, resources] = await Promise.all([
+    const selfPacedIds = (data ?? []).filter(isSelfPaced).map((e) => e.course_id as string);
+    const [outlines, resources, courseRecordings] = await Promise.all([
       getCourseOutlines(admin, user.id, courseIds),
       getCourseResources(admin, courseIds),
+      getCourseRecordings(admin, selfPacedIds),
     ]);
-    return { enrollments: data || [], sessions, outlines, resources };
+    return { enrollments: data || [], sessions, outlines, resources, courseRecordings };
   } catch {
     return empty;
   }
 }
 
 export default async function CoursesPage() {
-  const [{ enrollments, sessions, outlines, resources }, courses] = await Promise.all([getEnrollments(), getCourses()]);
+  const [{ enrollments, sessions, outlines, resources, courseRecordings }, courses] = await Promise.all([getEnrollments(), getCourses()]);
 
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto">
@@ -72,6 +80,10 @@ export default async function CoursesPage() {
             const cohortName = (enrollment.cohorts as { name: string } | null)?.name;
             const lapsed = !hasSeatAccess(enrollment, enrollment.subscriptions as SubscriptionState | null);
             const courseResources = resources.filter((r) => r.course_id === enrollment.course_id);
+            const selfPaced = isSelfPaced(enrollment);
+            const selfPacedRecordings = courseRecordings.filter(
+              (r) => r.course_id === enrollment.course_id && /^https?:\/\//i.test(r.recording_url)
+            );
             const recordings = sessions.filter(
               (s) => s.cohort_id === enrollment.cohort_id && s.recording_url
             ).length;
@@ -93,6 +105,7 @@ export default async function CoursesPage() {
                           <h2 className="text-white font-bold text-lg">{course?.title || enrollment.course_id}</h2>
                           <p className="text-white/40 text-sm">{course?.age} · {course?.duration} · {course?.level}</p>
                           {cohortName && <p className="text-[#3da3bc] text-xs mt-0.5">Cohort: {cohortName}</p>}
+                          {selfPaced && <p className="text-[#3da3bc] text-xs mt-0.5">Self-paced</p>}
                         </div>
                         <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
                           enrollment.status === "active"
@@ -202,6 +215,28 @@ export default async function CoursesPage() {
                           </details>
                         );
                       })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Recordings for self-paced subscribers, from any cohort */}
+                {selfPaced && !lapsed && enrollment.status !== "paused" && selfPacedRecordings.length > 0 && (
+                  <div className="px-6 pb-6">
+                    <p className="text-white/30 text-xs uppercase tracking-wider mb-3">Class recordings</p>
+                    <div className="space-y-2">
+                      {selfPacedRecordings.map((r) => (
+                        <a
+                          key={r.id}
+                          href={r.recording_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 px-4 py-3 rounded-xl border bg-white/[0.02] border-white/[0.06] hover:border-white/[0.15] transition-colors"
+                        >
+                          <PlayCircle className="w-4 h-4 text-[#3da3bc] shrink-0" />
+                          <span className="min-w-0 flex-1 text-sm text-white/80 truncate">{r.title}</span>
+                          <LocalTime iso={r.starts_at} format={{ day: "numeric", month: "short", year: "numeric" }} className="text-white/35 text-xs shrink-0" />
+                        </a>
+                      ))}
                     </div>
                   </div>
                 )}

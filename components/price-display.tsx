@@ -8,12 +8,14 @@ interface PriceDisplayProps {
   price: PriceTier;
   className?: string;
   showPeriod?: boolean;
+  period?: "mo" | "yr";
 }
 
 export function PriceDisplay({
   price,
   className,
   showPeriod = true,
+  period = "mo",
 }: PriceDisplayProps) {
   const { currency, symbol, isLoading } = useCurrency();
 
@@ -29,7 +31,7 @@ export function PriceDisplay({
     <span className={cn("font-black", className)}>
       {symbol}
       {amount.toLocaleString()}
-      {showPeriod && <span className="text-sm font-medium text-slate-500 ml-1">/mo</span>}
+      {showPeriod && <span className="text-sm font-medium text-slate-500 ml-1">/{period}</span>}
     </span>
   );
 }

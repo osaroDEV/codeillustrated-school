@@ -13,9 +13,46 @@ export type Currency = "NGN" | "USD";
 export const SUBSCRIPTION_GRACE_DAYS = 3;
 const GRACE_MS = SUBSCRIPTION_GRACE_DAYS * 24 * 60 * 60 * 1000;
 
-/** Offerings that can be bought online (monthly). Self-paced waits for the lesson player. */
-export const PURCHASABLE_KINDS = ["cohort_group", "cohort_1on1"] as const;
+/** Offerings that can be bought online. */
+export const PURCHASABLE_KINDS = ["cohort_group", "cohort_1on1", "self_paced"] as const;
 export type PurchasableKind = (typeof PURCHASABLE_KINDS)[number];
+
+export type BillingInterval = "monthly" | "yearly";
+
+export interface PricedOffering {
+  price_usd: number | string;
+  price_ngn: number | string;
+  yearly_price_usd?: number | string | null;
+  yearly_price_ngn?: number | string | null;
+}
+
+/** What one billing period costs, or null if that combination isn't on sale. */
+export function checkoutAmount(
+  offering: PricedOffering,
+  currency: Currency,
+  interval: BillingInterval
+): number | null {
+  const raw =
+    interval === "yearly"
+      ? currency === "NGN"
+        ? offering.yearly_price_ngn
+        : offering.yearly_price_usd
+      : currency === "NGN"
+        ? offering.price_ngn
+        : offering.price_usd;
+  const amount = Number(raw);
+  return raw != null && amount > 0 ? amount : null;
+}
+
+/** "month" or "year", for sentences like "renews every year". */
+export function intervalNoun(interval: BillingInterval | null | undefined): "month" | "year" {
+  return interval === "yearly" ? "year" : "month";
+}
+
+/** A subscription's price spread over a month, for recurring-revenue totals. */
+export function monthlyEquivalent(amount: number, interval: BillingInterval | null | undefined): number {
+  return interval === "yearly" ? Math.round((amount / 12) * 100) / 100 : amount;
+}
 
 export function newTxRef(): string {
   return `sub_${nanoid(20)}`;

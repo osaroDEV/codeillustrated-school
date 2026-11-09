@@ -7,6 +7,9 @@ import {
   newTxRef,
   resolveCurrency,
   subscriptionCovers,
+  checkoutAmount,
+  intervalNoun,
+  monthlyEquivalent,
 } from "./billing";
 
 describe("resolveCurrency", () => {
@@ -114,5 +117,36 @@ describe("helpers", () => {
   it("formats money", () => {
     expect(formatMoney(50000, "NGN")).toBe("₦50,000");
     expect(formatMoney("49.5", "USD")).toBe("$49.5");
+  });
+});
+
+describe("checkoutAmount", () => {
+  const offering = { price_usd: "10.00", price_ngn: "15000.00", yearly_price_usd: "100.00", yearly_price_ngn: "150000.00" };
+
+  it("picks the price for the currency and billing period", () => {
+    expect(checkoutAmount(offering, "USD", "monthly")).toBe(10);
+    expect(checkoutAmount(offering, "NGN", "monthly")).toBe(15000);
+    expect(checkoutAmount(offering, "USD", "yearly")).toBe(100);
+    expect(checkoutAmount(offering, "NGN", "yearly")).toBe(150000);
+  });
+
+  it("is null when that option isn't priced", () => {
+    expect(checkoutAmount({ price_usd: 10, price_ngn: 0 }, "NGN", "monthly")).toBeNull();
+    expect(checkoutAmount({ price_usd: 10, price_ngn: 10, yearly_price_usd: null, yearly_price_ngn: null }, "USD", "yearly")).toBeNull();
+    expect(checkoutAmount({ price_usd: 10, price_ngn: 10 }, "USD", "yearly")).toBeNull();
+  });
+});
+
+describe("billing periods", () => {
+  it("names the period", () => {
+    expect(intervalNoun("monthly")).toBe("month");
+    expect(intervalNoun("yearly")).toBe("year");
+    expect(intervalNoun(undefined)).toBe("month");
+  });
+
+  it("spreads yearly plans over twelve months for recurring revenue", () => {
+    expect(monthlyEquivalent(120, "yearly")).toBe(10);
+    expect(monthlyEquivalent(100, "yearly")).toBe(8.33);
+    expect(monthlyEquivalent(50, "monthly")).toBe(50);
   });
 });

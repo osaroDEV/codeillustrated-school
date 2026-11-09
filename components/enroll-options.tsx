@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, User, Users } from "lucide-react";
+import { BookOpen, Loader2, User, Users } from "lucide-react";
+import type { BillingInterval } from "@/lib/billing";
 import type { Course, OfferingKind } from "@/lib/course-types";
 import { useCurrency } from "@/hooks/use-currency";
 import { PriceDisplay } from "./price-display";
@@ -29,15 +30,17 @@ export function EnrollOptions({ course }: { course: Course }) {
   const [busy, setBusy] = useState<OfferingKind | null>(null);
   const [error, setError] = useState("");
   const online = new Map((course.offerings ?? []).map((o) => [o.kind, o.price]));
+  const selfPaced = (course.offerings ?? []).find((o) => o.kind === "self_paced" && o.price.usd > 0 && o.price.ngn > 0);
+  const [selfPacedInterval, setSelfPacedInterval] = useState<BillingInterval>("monthly");
 
-  async function subscribe(kind: OfferingKind) {
+  async function subscribe(kind: OfferingKind, interval: BillingInterval = "monthly") {
     setBusy(kind);
     setError("");
     try {
       const res = await fetch("/academy/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ course_id: course.id, kind, currency }),
+        body: JSON.stringify({ course_id: course.id, kind, currency, interval }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.status === 401) {
@@ -95,11 +98,53 @@ export function EnrollOptions({ course }: { course: Course }) {
         );
       })}
 
+      {selfPaced && (
+        <div className="p-4 rounded-2xl border transition-colors bg-slate-50 border-slate-100 hover:border-primary/30">
+          <div className="flex items-center justify-between mb-2">
+            <span className="flex items-center gap-2 text-sm font-bold text-slate-900">
+              <BookOpen className="w-4 h-4 text-primary" />
+              Self-paced
+            </span>
+            <PriceDisplay
+              price={selfPacedInterval === "yearly" && selfPaced.yearlyPrice ? selfPaced.yearlyPrice : selfPaced.price}
+              period={selfPacedInterval === "yearly" ? "yr" : "mo"}
+              className="text-xl"
+            />
+          </div>
+          <p className="text-xs text-slate-500">Lessons at your own pace, plus selected class recordings. No live classes.</p>
+          {selfPaced.yearlyPrice && (
+            <div className="mt-3 grid grid-cols-2 gap-1 p-1 rounded-xl bg-slate-200/60" role="group" aria-label="Billing period">
+              {(["monthly", "yearly"] as const).map((interval) => (
+                <button
+                  key={interval}
+                  type="button"
+                  aria-pressed={selfPacedInterval === interval}
+                  onClick={() => setSelfPacedInterval(interval)}
+                  className={`py-1.5 rounded-lg text-xs font-bold capitalize transition-colors ${
+                    selfPacedInterval === interval ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+                  }`}
+                >
+                  {interval}
+                </button>
+              ))}
+            </div>
+          )}
+          <button
+            onClick={() => subscribe("self_paced", selfPacedInterval)}
+            disabled={busy !== null}
+            className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-sm transition-all disabled:opacity-60 bg-slate-900 hover:bg-slate-800 text-white"
+          >
+            {busy === "self_paced" && <Loader2 className="w-4 h-4 animate-spin" />}
+            Subscribe {selfPacedInterval}
+          </button>
+        </div>
+      )}
+
       {error && <p className="text-sm text-red-600 text-center">{error}</p>}
 
       {online.size > 0 ? (
         <p className="text-xs text-slate-500 text-center">
-          Billed monthly by card through Flutterwave. Cancel any time from your dashboard.{" "}
+          Billed by card through Flutterwave. Cancel any time from your dashboard.{" "}
           <a href={WHATSAPP} target="_blank" rel="noreferrer" className="text-primary font-semibold hover:underline">
             Questions? Talk to us
           </a>

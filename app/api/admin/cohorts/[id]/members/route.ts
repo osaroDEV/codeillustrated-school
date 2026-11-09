@@ -16,7 +16,21 @@ export async function POST(req: NextRequest, { params }: Params) {
   const body = await parseBody(req, memberSchema);
   if (body.response) return body.response;
 
-  const { data, error } = await createAdminClient()
+  const admin = createAdminClient();
+  const { data: enrollment } = await admin
+    .from("enrollments")
+    .select("subscriptions(offerings(kind))")
+    .eq("id", body.data.enrollment_id)
+    .maybeSingle();
+  const kind = (enrollment?.subscriptions as unknown as { offerings: { kind: string } | null } | null)?.offerings?.kind;
+  if (kind === "self_paced") {
+    return NextResponse.json(
+      { error: "This learner has a self-paced subscription, which doesn't include live classes." },
+      { status: 409 }
+    );
+  }
+
+  const { data, error } = await admin
     .from("enrollments")
     .update({ cohort_id: id })
     .eq("id", body.data.enrollment_id)

@@ -13,7 +13,7 @@ const COURSE_SELECT = `
   id, slug, title, description, full_description, age, level, duration,
   icon, color, bg, position,
   course_modules ( title, position, lessons ( id, title, position, is_published, is_preview ) ),
-  offerings ( kind, price_usd, price_ngn, is_active )
+  offerings ( kind, price_usd, price_ngn, yearly_price_usd, yearly_price_ngn, is_active )
 `;
 
 export interface CourseRow {
@@ -41,6 +41,8 @@ export interface CourseRow {
         kind: OfferingKind;
         price_usd: number | string;
         price_ngn: number | string;
+        yearly_price_usd?: number | string | null;
+        yearly_price_ngn?: number | string | null;
         is_active: boolean;
       }[]
     | null;
@@ -55,6 +57,10 @@ export function mapCourseRow(row: CourseRow): Course {
     .map((o) => ({
       kind: o.kind,
       price: { usd: Number(o.price_usd), ngn: Number(o.price_ngn) } as PriceTier,
+      yearlyPrice:
+        Number(o.yearly_price_usd) > 0 && Number(o.yearly_price_ngn) > 0
+          ? { usd: Number(o.yearly_price_usd), ngn: Number(o.yearly_price_ngn) }
+          : undefined,
     }));
 
   const priceFor = (kind: OfferingKind) => offerings.find((o) => o.kind === kind)?.price;

@@ -851,3 +851,118 @@ describe("lesson blocks", () => {
     await expect(sql(`select public.replace_lesson_blocks('${L}', '[]'::jsonb)`, as("authenticated", U.admin))).rejects.toThrow(/permission denied/);
   });
 });
+
+describe("self-paced subscriptions", () => {
+  let OFFER: string;
+  let GROUP: string;
+  const MONTHLY = "61000000-0000-4000-8000-000000000001";
+  const YEARLY = "61000000-0000-4000-8000-000000000002";
+  const GROUP_PLAN = "61000000-0000-4000-8000-000000000003";
+  const COHORT = "62000000-0000-4000-8000-000000000001";
+  const L1 = "00000000-0000-4000-8000-0000000000e1";
+  const L2 = "00000000-0000-4000-8000-0000000000e2";
+  const L3 = "00000000-0000-4000-8000-0000000000e3";
+  const PAID = "2026-11-05T10:00:00+00:00";
+  let flw = 9000;
+
+  async function checkout(user: string, plan: string, offering: string, ref: string) {
+    await sql(`insert into public.orders (user_id, customer_email, kind, course_id, offering_id, plan_id, currency, amount, tx_ref)
+      values ('${user}', 'x@x.test', 'subscription', '${c2}', '${offering}', '${plan}', 'USD', 10, '${ref}')`);
+    const [row] = await sql<{ r: { outcome: string; subscription_id: string } }>(
+      `select public.fulfil_subscription_order('${ref}', ${++flw}, 10, '${PAID}') as r`
+    );
+    return row.r;
+  }
+  const periodEnd = async (id: string) =>
+    (await sql<{ e: string }>(`select to_char(current_period_end at time zone 'utc', 'YYYY-MM-DD') e from public.subscriptions where id = '${id}'`))[0].e;
+
+  beforeAll(async () => {
+    [{ id: OFFER }] = await sql<{ id: string }>(`
+      insert into public.offerings (course_id, kind, price_usd, price_ngn, yearly_price_usd, yearly_price_ngn)
+      values ('${c2}', 'self_paced', 10, 15000, 100, 150000)
+      on conflict (course_id, kind) do update set yearly_price_usd = 100, yearly_price_ngn = 150000
+      returning id
+    `);
+    [{ id: GROUP }] = await sql<{ id: string }>(`select id from public.offerings where course_id = '${c2}' and kind = 'cohort_group'`);
+    await sql(`
+      insert into auth.users (id, email) values ('${L1}', 'l1@x.test'), ('${L2}', 'l2@x.test'), ('${L3}', 'l3@x.test');
+      insert into public.payment_plans (id, offering_id, currency, amount, "interval", flw_plan_id) values
+        ('${MONTHLY}', '${OFFER}', 'USD', 10, 'monthly', 81),
+        ('${YEARLY}', '${OFFER}', 'USD', 100, 'yearly', 82),
+        ('${GROUP_PLAN}', '${GROUP}', 'USD', 50, 'monthly', 83);
+      insert into public.cohorts (id, course_id, name) values ('${COHORT}', '${c2}', 'Earlier');
+    `);
+  });
+
+  it("gives a yearly plan a year, and a monthly plan a month", async () => {
+    const yearly = await checkout(L1, YEARLY, OFFER, "sp_yearly");
+    expect(yearly.outcome).toBe("enrolled");
+    expect(await periodEnd(yearly.subscription_id)).toBe("2027-11-05");
+    const monthly = await checkout(L2, MONTHLY, OFFER, "sp_monthly");
+    expect(await periodEnd(monthly.subscription_id)).toBe("2026-12-05");
+  });
+
+  it("extends a yearly renewal by a year, once", async () => {
+    const [{ id }] = await sql<{ id: string }>(`select id from public.subscriptions where first_tx_ref = 'sp_yearly'`);
+    const renew = () => sql<{ r: { outcome: string } }>(`select public.record_renewal('${id}', 'rv', 7777, 100, '2027-11-05T09:00:00+00:00') as r`);
+    expect((await renew())[0].r.outcome).toBe("renewed");
+    expect(await periodEnd(id)).toBe("2028-11-05");
+    expect((await renew())[0].r.outcome).toBe("duplicate");
+    expect(await periodEnd(id)).toBe("2028-11-05");
+  });
+
+  it("keeps self-paced enrolments out of cohorts", async () => {
+    const [e] = await sql<{ cohort_id: string | null; source: string }>(
+      `select cohort_id, source from public.enrollments where user_id = '${L1}' and course_id = '${c2}'`
+    );
+    expect(e).toEqual({ cohort_id: null, source: "subscription" });
+  });
+
+  it("frees a cohort seat when a lapsed learner comes back as self-paced", async () => {
+    const seat = await checkout(L3, GROUP_PLAN, GROUP, "sp_seat");
+    await sql(`update public.enrollments set cohort_id = '${COHORT}' where user_id = '${L3}' and course_id = '${c2}'`);
+    await sql(`update public.subscriptions set status = 'expired' where id = '${seat.subscription_id}'`);
+    await sql(`update public.enrollments set status = 'paused' where user_id = '${L3}' and course_id = '${c2}'`);
+
+    expect((await checkout(L3, MONTHLY, OFFER, "sp_back")).outcome).toBe("reactivated");
+    const [e] = await sql<{ cohort_id: string | null; status: string }>(
+      `select cohort_id, status from public.enrollments where user_id = '${L3}' and course_id = '${c2}'`
+    );
+    expect(e).toEqual({ cohort_id: null, status: "active" });
+  });
+
+  it("keeps the cohort when a lapsed learner buys a live seat again", async () => {
+    await sql(`update public.subscriptions set status = 'expired' where user_id = '${L3}';
+      update public.enrollments set cohort_id = '${COHORT}', status = 'paused' where user_id = '${L3}' and course_id = '${c2}'`);
+    expect((await checkout(L3, GROUP_PLAN, GROUP, "sp_seat2")).outcome).toBe("reactivated");
+    const [e] = await sql<{ cohort_id: string | null }>(`select cohort_id from public.enrollments where user_id = '${L3}' and course_id = '${c2}'`);
+    expect(e.cohort_id).toBe(COHORT);
+  });
+
+  it("refuses unknown intervals and non-positive yearly prices", async () => {
+    await expect(
+      sql(`insert into public.payment_plans (offering_id, currency, amount, "interval", flw_plan_id) values ('${OFFER}', 'USD', 5, 'weekly', 84)`)
+    ).rejects.toThrow(/check constraint/);
+    await expect(sql(`update public.offerings set yearly_price_usd = 0 where id = '${OFFER}'`)).rejects.toThrow(/check constraint/);
+  });
+
+  it("keeps the period function away from API clients", async () => {
+    await expect(sql(`select public.plan_period('${YEARLY}')`, as("authenticated", U.admin))).rejects.toThrow(/permission denied/);
+  });
+});
+
+describe("shared recordings", () => {
+  it("start unshared, including recordings that already exist", async () => {
+    const K = "70000000-0000-4000-8000-000000000001";
+    const S = "71000000-0000-4000-8000-000000000001";
+    await sql(`
+      insert into public.cohorts (id, course_id, name) values ('${K}', '${c1}', 'Rec');
+      insert into public.class_sessions (id, cohort_id, starts_at, duration_min, recording_url)
+        values ('${S}', '${K}', now(), 60, 'https://rec.test/1');
+    `);
+    const [row] = await sql<{ shared_with_self_paced: boolean }>(`select shared_with_self_paced from public.class_sessions where id = '${S}'`);
+    expect(row.shared_with_self_paced).toBe(false);
+    const [{ n }] = await sql<{ n: number }>("select count(*)::int as n from public.class_sessions where shared_with_self_paced");
+    expect(n).toBe(0);
+  });
+});
