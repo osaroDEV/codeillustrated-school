@@ -10,6 +10,10 @@ import { joinState } from "@/lib/schedule";
 import { LocalTime } from "@/components/local-time";
 import { CompleteButton } from "@/components/lessons/complete-button";
 import { LessonMarkdown } from "@/components/lessons/lesson-markdown";
+import { QuizBlock } from "@/components/lessons/quiz-block";
+import { AssignmentBlock } from "@/components/lessons/assignment-block";
+import { publicQuiz } from "@/lib/assessments";
+import { getBlockStates, type BlockState } from "@/lib/assessments-server";
 
 export const metadata: Metadata = { title: "Lesson | Code Illustrated Dashboard" };
 export const dynamic = "force-dynamic";
@@ -64,6 +68,7 @@ export default async function LessonPage({ params }: Params) {
         ? getLessonRecordings(admin, lesson.id)
         : getLessonClasses(admin, lesson.id, seat.cohortId),
   ]);
+  const states = await getBlockStates(admin, user.id, blocks.filter((b) => b.kind === "quiz" || b.kind === "assignment").map((b) => b.id));
   const modules = outlines.get(courseId) ?? [];
   const flat = modules.flatMap((m) => m.lessons);
   const index = flat.findIndex((l) => l.id === lesson.id);
@@ -95,7 +100,7 @@ export default async function LessonPage({ params }: Params) {
           <div className="mt-6 space-y-6">
             {lesson.type === "live" && <LiveClasses classes={classes} enrolled={seat.access === "enrolled"} selfPaced={seat.selfPaced} />}
             {blocks.map((block) => (
-              <Block key={block.id} block={block} lessonTitle={lesson.title} />
+              <Block key={block.id} block={block} lessonTitle={lesson.title} interactive={canTrackProgress(seat.access)} state={states.get(block.id)} />
             ))}
             {empty && <p className="text-white/40 text-sm">The material for this lesson hasn&apos;t been added yet.</p>}
           </div>
@@ -123,8 +128,41 @@ export default async function LessonPage({ params }: Params) {
   );
 }
 
-function Block({ block, lessonTitle }: { block: LessonBlock; lessonTitle: string }) {
+function Block({
+  block,
+  lessonTitle,
+  interactive,
+  state,
+}: {
+  block: LessonBlock;
+  lessonTitle: string;
+  interactive: boolean;
+  state: BlockState | undefined;
+}) {
   if (block.kind === "text") return <LessonMarkdown>{block.content ?? ""}</LessonMarkdown>;
+
+  if (block.kind === "quiz") {
+    return (
+      <QuizBlock
+        blockId={block.id}
+        title={block.title}
+        questions={publicQuiz(block.quiz ?? [])}
+        passMark={block.pass_mark}
+        required={block.is_required}
+        interactive={interactive}
+        bestScore={state?.bestScore ?? null}
+        passed={state?.passed ?? false}
+      />
+    );
+  }
+
+  if (block.kind === "assignment") {
+    return (
+      <AssignmentBlock blockId={block.id} title={block.title} required={block.is_required} interactive={interactive} submission={state?.submission ?? null}>
+        <LessonMarkdown>{block.content ?? ""}</LessonMarkdown>
+      </AssignmentBlock>
+    );
+  }
 
   if (block.kind === "file") {
     return (

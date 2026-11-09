@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  BookOpen, CreditCard, GraduationCap, Inbox, Key, LayoutDashboard, LogOut, Megaphone,
+  BookOpen, ClipboardList, CreditCard, GraduationCap, Inbox, Key, LayoutDashboard, LogOut, Megaphone,
   Presentation, ShieldCheck, Users,
 } from "lucide-react";
 import { signOut } from "@/lib/auth";
@@ -12,13 +12,17 @@ const ADMIN_NAV = [
   { href: "/admin/learners", label: "Learners", icon: Users },
   { href: "/admin/cohorts", label: "Cohorts", icon: Presentation },
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
+  { href: "/admin/grading", label: "Grading", icon: ClipboardList },
   { href: "/admin/payments", label: "Payments", icon: CreditCard },
   { href: "/admin/messages", label: "Messages", icon: Inbox },
   { href: "/admin/codes", label: "Invite Codes", icon: Key },
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
 ];
 
-const INSTRUCTOR_NAV = [{ href: "/admin/cohorts", label: "My Cohorts", icon: Presentation }];
+const INSTRUCTOR_NAV = [
+  { href: "/admin/cohorts", label: "My Cohorts", icon: Presentation },
+  { href: "/admin/grading", label: "Grading", icon: ClipboardList },
+];
 
 export function AdminShell({
   role,

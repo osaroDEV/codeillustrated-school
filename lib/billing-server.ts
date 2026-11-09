@@ -13,6 +13,7 @@ import {
 import {
   chargeProblem,
   checkoutAmount,
+  newCertificateCode,
   formatMoney,
   intervalNoun,
   matchRenewal,
@@ -210,6 +211,7 @@ export type ChargeOutcome =
   | "duplicate"
   | "refunded"
   | "renewed"
+  | "issued"
   | "failed"
   | "rejected"
   | "unmatched"
@@ -255,7 +257,7 @@ interface OrderRow {
 }
 
 async function applyFirstCharge(admin: AdminClient, order: OrderRow, tx: FlwTransaction) {
-  if (order.kind !== "subscription" || order.is_renewal) {
+  if ((order.kind !== "subscription" && order.kind !== "one_off") || order.is_renewal) {
     return { outcome: "ignored" as const, detail: `Order kind ${order.kind}` };
   }
 
@@ -283,6 +285,8 @@ async function applyFirstCharge(admin: AdminClient, order: OrderRow, tx: FlwTran
     console.error("Rejected charge", tx.id, problem);
     return { outcome: "rejected" as const, detail: problem };
   }
+
+  if (order.kind === "one_off") return applyCertificateCharge(admin, order, tx);
 
   const { data, error } = await admin.rpc("fulfil_subscription_order", {
     p_tx_ref: order.tx_ref,
@@ -343,6 +347,34 @@ interface SubscriptionRow {
   current_period_end: string;
   customer_email: string;
   status: string;
+}
+
+async function applyCertificateCharge(admin: AdminClient, order: OrderRow, tx: FlwTransaction) {
+  const { data, error } = await admin.rpc("fulfil_certificate_order", {
+    p_tx_ref: order.tx_ref,
+    p_flw_transaction_id: tx.id,
+    p_amount_paid: tx.amount,
+    p_paid_at: tx.created_at || new Date().toISOString(),
+    p_code: newCertificateCode(),
+  });
+  if (error) throw new Error(`fulfil_certificate_order failed: ${error.message}`);
+  const result = data as { outcome: ChargeOutcome; code?: string };
+
+  if (result.outcome === "issued" && result.code) {
+    const { title, profile, name } = await subscriberDetails(admin, order.course_id, order.user_id);
+    await sendEmail({
+      to: order.customer_email,
+      toName: profile?.full_name,
+      subject: `Your certificate is ready: ${title}`,
+      paragraphs: [
+        `Hi${name ? ` ${name}` : ""},`,
+        `Congratulations on completing ${title}! We received your payment of ${formatMoney(tx.amount, tx.currency)} and your certificate is ready.`,
+        `View and download it: ${appUrl()}/certificates/${result.code}`,
+        "Code Illustrated",
+      ],
+    });
+  }
+  return { outcome: result.outcome };
 }
 
 async function applyRenewal(admin: AdminClient, tx: FlwTransaction) {

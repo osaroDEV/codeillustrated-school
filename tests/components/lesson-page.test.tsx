@@ -4,11 +4,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import LessonPage from "@/app/dashboard/courses/[courseId]/lessons/[lessonId]/page";
 import type { LessonBlock } from "@/lib/lessons";
 
-const { state, getLessonBlocks, getLessonClasses, getLessonRecordings } = vi.hoisted(() => ({
+const { state, getLessonBlocks, getLessonClasses, getLessonRecordings, getBlockStates } = vi.hoisted(() => ({
   state: { access: "enrolled", type: "text", selfPaced: false, blocks: [] as unknown[] },
   getLessonBlocks: vi.fn(),
   getLessonClasses: vi.fn(),
   getLessonRecordings: vi.fn(),
+  getBlockStates: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -17,6 +18,7 @@ vi.mock("next/navigation", () => ({
   },
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }));
+vi.mock("@/lib/assessments-server", () => ({ getBlockStates }));
 vi.mock("@/lib/supabase-server", () => ({ requireUser: async () => ({ id: "u1" }) }));
 vi.mock("@/lib/supabase", () => ({
   createAdminClient: () => ({
@@ -42,6 +44,9 @@ const block = (over: Partial<LessonBlock>): LessonBlock => ({
   content: null,
   video_url: null,
   file_path: null,
+  quiz: null,
+  pass_mark: 70,
+  is_required: true,
   ...over,
 });
 
@@ -54,6 +59,7 @@ beforeEach(() => {
   state.selfPaced = false;
   getLessonClasses.mockReset().mockResolvedValue([]);
   getLessonRecordings.mockReset().mockResolvedValue([]);
+  getBlockStates.mockReset().mockResolvedValue(new Map());
   state.blocks = [
     block({ id: "t1", content: "Intro words" }),
     block({ id: "v1", kind: "video", video_url: "https://youtu.be/abcdefg", title: "Watch this" }),
@@ -84,6 +90,32 @@ describe("lesson page", () => {
     const html = await render();
     expect(getLessonBlocks).not.toHaveBeenCalled();
     expect(html).not.toContain("Intro words");
+  });
+
+  it("never sends quiz answers to the browser", async () => {
+    state.blocks = [
+      block({
+        id: "q1",
+        kind: "quiz",
+        title: "Check",
+        quiz: [{ question: "Pick one", options: ["Alpha", "Beta"], correct: 1 }],
+      }),
+    ];
+    const html = await render();
+    expect(html).toContain("Pick one");
+    expect(html).toContain("Beta");
+    expect(html).not.toContain("correct");
+  });
+
+  it("shows an assignment's brief and its feedback", async () => {
+    state.blocks = [block({ id: "a1", kind: "assignment", title: "Build it", content: "Make a page" })];
+    getBlockStates.mockResolvedValue(
+      new Map([["a1", { bestScore: null, passed: false, submission: { id: "s", status: "needs_work", score: 40, feedback: "Add a footer", body: "x", file_path: null } }]])
+    );
+    const html = await render();
+    expect(html).toContain("Make a page");
+    expect(html).toContain("Add a footer");
+    expect(html).toContain("Needs more work");
   });
 
   it("says so when a lesson has no material", async () => {

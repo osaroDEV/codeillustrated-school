@@ -1,4 +1,4 @@
-import { nanoid } from "nanoid";
+import { customAlphabet, nanoid } from "nanoid";
 
 // Pure billing rules shared by checkout, the Flutterwave webhook, the daily
 // cron and the dashboard. Database and HTTP work lives in lib/billing-server.ts.
@@ -56,6 +56,17 @@ export function monthlyEquivalent(amount: number, interval: BillingInterval | nu
 
 export function newTxRef(): string {
   return `sub_${nanoid(20)}`;
+}
+
+export function newCertificateTxRef(): string {
+  return `cert_${nanoid(20)}`;
+}
+
+// Printed and typed by people, so no characters that are easily confused.
+const certificateCode = customAlphabet("23456789ABCDEFGHJKLMNPQRSTUVWXYZ", 10);
+
+export function newCertificateCode(): string {
+  return `CI-${certificateCode()}`;
 }
 
 /**

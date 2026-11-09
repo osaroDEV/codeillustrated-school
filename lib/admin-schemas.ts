@@ -87,6 +87,7 @@ export const coursePatchSchema = z
     bg: text.max(100),
     certificate_price_usd: nullableMoney,
     certificate_price_ngn: nullableMoney,
+    completion_min_attendance: z.preprocess(emptyToNull, z.coerce.number().int().min(1).max(100).nullable()),
     position: z.coerce.number().int(),
     is_published: z.boolean(),
   })
@@ -128,11 +129,43 @@ export const lessonCreateSchema = z
 
 const blockTitle = text.max(200).optional();
 
+// Existing blocks send their id, so saving keeps the learner work attached.
+const blockId = z.string().uuid().optional();
+
+const quizQuestion = z
+  .object({
+    question: text.min(1).max(1000),
+    options: z.array(text.min(1).max(500)).min(2).max(8),
+    correct: z.number().int().min(0),
+  })
+  .refine((q) => q.correct < q.options.length, { message: "Choose the correct answer for every question." });
+
 export const lessonBlockSchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("text"), content: text.min(1).max(100_000) }),
-  z.object({ kind: z.literal("video"), video_url: httpUrl, title: blockTitle }),
-  z.object({ kind: z.literal("file"), file_path: text.min(1).max(500), title: blockTitle }),
+  z.object({ id: blockId, kind: z.literal("text"), content: text.min(1).max(100_000) }),
+  z.object({ id: blockId, kind: z.literal("video"), video_url: httpUrl, title: blockTitle }),
+  z.object({ id: blockId, kind: z.literal("file"), file_path: text.min(1).max(500), title: blockTitle }),
+  z.object({
+    id: blockId,
+    kind: z.literal("quiz"),
+    title: blockTitle,
+    quiz: z.array(quizQuestion).min(1).max(50),
+    pass_mark: z.coerce.number().int().min(1).max(100).default(70),
+    is_required: z.boolean().default(true),
+  }),
+  z.object({
+    id: blockId,
+    kind: z.literal("assignment"),
+    title: blockTitle,
+    content: text.min(1).max(20_000),
+    is_required: z.boolean().default(true),
+  }),
 ]);
+
+export const gradeSchema = z.object({
+  status: z.enum(["passed", "needs_work"]),
+  score: z.preprocess(emptyToNull, z.coerce.number().int().min(0).max(100).nullable()).optional(),
+  feedback: nullableText.optional(),
+});
 
 export const MAX_LESSON_BLOCKS = 50;
 
