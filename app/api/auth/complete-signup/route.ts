@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase";
 import { findUsableInvite, redeemInvite } from "@/lib/invites";
+import { safeRedirectPath } from "@/lib/utils";
 
 const bodySchema = z.object({
   email: z.string().trim().toLowerCase().email(),
@@ -10,6 +11,9 @@ const bodySchema = z.object({
   fullName: z.string().trim().max(120).optional(),
   // Optional scholarship / comp code; signup itself is open.
   inviteCode: z.string().trim().max(40).optional(),
+  // Where the verification link should land them, e.g. the course they were
+  // enrolling in. Only paths on this site are kept.
+  redirectTo: z.string().max(300).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -19,6 +23,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Please provide a valid email and a password of at least 8 characters." }, { status: 400 });
     }
     const { email, password, fullName, inviteCode } = parsed.data;
+    const nextPath = safeRedirectPath(parsed.data.redirectTo, "") || null;
 
     const supabase = createAdminClient();
 
@@ -53,7 +58,9 @@ export async function POST(req: NextRequest) {
       email,
       password,
       options: {
-        data: { full_name: fullName || null },
+        // next_path is read back by /auth/confirm: the email templates link
+        // there directly, so emailRedirectTo can't carry it.
+        data: { full_name: fullName || null, ...(nextPath ? { next_path: nextPath } : {}) },
         emailRedirectTo: `${req.nextUrl.origin}/academy/auth/confirm`,
       },
     });

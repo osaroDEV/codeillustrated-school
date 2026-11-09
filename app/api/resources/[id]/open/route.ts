@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase";
 import { getCurrentUser, isEmailVerified } from "@/lib/supabase-server";
 import { courseSeat, signedFileUrl } from "@/lib/lessons";
 import { BASE_PATH } from "@/lib/seo";
+import { loginPath } from "@/lib/routes";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -13,7 +14,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   if (!user || !isEmailVerified(user)) {
     return new NextResponse(null, {
       status: 303,
-      headers: { Location: `${BASE_PATH}/auth/login?redirectTo=/dashboard/courses` },
+      headers: { Location: `${BASE_PATH}${loginPath("/dashboard/courses")}` },
     });
   }
 

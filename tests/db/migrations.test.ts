@@ -1174,3 +1174,50 @@ describe("notifications and replies", () => {
     expect(row.email_notifications).toBe(false);
   });
 });
+
+describe("remove-learners.sql", () => {
+  const SCRIPT = readFileSync(join(__dirname, "../../supabase/sql/remove-learners.sql"), "utf8");
+
+  it("refuses to run while a learner has a live subscription", async () => {
+    const live = await sql<{ n: number }>(`select count(*)::int as n from public.subscriptions where status in ('active', 'past_due')`);
+    if (live[0].n === 0) {
+      await sql(`
+        insert into public.subscriptions (user_id, course_id, offering_id, plan_id, currency, amount, customer_email, first_tx_ref, current_period_end)
+        select '${U.s2}', o.course_id, o.id, p.id, p.currency, p.amount, 's2@x.test', 'live-guard', now() + interval '1 month'
+        from public.payment_plans p join public.offerings o on o.id = p.offering_id limit 1
+      `);
+    }
+    await expect(db.exec(SCRIPT)).rejects.toThrow(/live subscription/);
+    await db.exec("rollback");
+    expect((await sql<{ n: number }>("select count(*)::int as n from auth.users"))[0].n).toBeGreaterThan(1);
+  });
+
+  it("removes every non-admin account and its data, keeping admins and content", async () => {
+    // production's hand-made invite_codes.used_by has no ON DELETE action
+    await sql(`
+      alter table public.invite_codes drop constraint invite_codes_used_by_fkey;
+      alter table public.invite_codes add constraint invite_codes_used_by_fkey foreign key (used_by) references public.profiles (id);
+      insert into public.invite_codes (code, course_id, used_by, used_at) values ('USED-BY-S1', '${c1}', '${U.s1}', now());
+      insert into public.email_outbox (dedupe_key, to_email, subject, paragraphs) values ('to-s1', 'S1@x.test', 'S', '["p"]');
+      update public.subscriptions set status = 'cancelled' where status in ('active', 'past_due');
+    `);
+    const count = async (q: string) => (await sql<{ n: number }>(`select count(*)::int as n from ${q}`))[0].n;
+    const coursesBefore = await count("public.courses");
+    const cohortsBefore = await count("public.cohorts");
+    expect(await count("public.orders")).toBeGreaterThan(0);
+
+    await db.exec(SCRIPT);
+
+    const left = await sql<{ id: string }>("select id from auth.users");
+    expect(left.map((r) => r.id)).toEqual([U.admin]);
+    for (const table of ["enrollments", "lesson_progress", "attendance", "quiz_attempts", "assignment_submissions", "learner_notes", "certificates", "orders", "subscriptions"]) {
+      expect(await count(`public.${table} where user_id is distinct from '${U.admin}'`), table).toBe(0);
+    }
+    expect(await count("public.email_outbox where lower(to_email) = 's1@x.test'")).toBe(0);
+    const [code] = await sql<{ used_by: string | null; used_at: string | null }>(`select used_by, used_at from public.invite_codes where code = 'USED-BY-S1'`);
+    expect(code.used_by).toBeNull();
+    expect(code.used_at).not.toBeNull();
+    expect(await count("public.courses")).toBe(coursesBefore);
+    expect(await count("public.cohorts")).toBe(cohortsBefore);
+  });
+});

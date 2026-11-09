@@ -96,7 +96,7 @@ describe("lesson files", () => {
     state.user = null;
     const res = await getFile(req, ctx);
     expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toContain("/academy/auth/login");
+    expect(res.headers.get("location")).toContain("/academy/login?redirectTo=");
     expect(signedFileUrl).not.toHaveBeenCalled();
   });
 

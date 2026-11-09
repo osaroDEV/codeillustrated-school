@@ -10,6 +10,7 @@ import { nextSessionAt } from "@/lib/schedule";
 import { hasSeatAccess, type SubscriptionState } from "@/lib/billing";
 import { getCourseOutlines, getCourseRecordings, getCourseResources, type CourseRecording, type CourseResource, type OutlineModule } from "@/lib/lessons";
 import Link from "next/link";
+import { COURSE_FINDER_PATH } from "@/lib/routes";
 import { Award, Calendar, CheckCircle2, ChevronDown, Circle, Clock, BookOpen, ExternalLink, FileText, PlayCircle } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -99,7 +100,13 @@ export default async function CoursesPage() {
         <div className="text-center py-16 bg-white/[0.03] border border-white/[0.08] rounded-2xl">
           <BookOpen className="w-12 h-12 text-white/15 mx-auto mb-4" />
           <p className="text-white/40 font-medium">No courses enrolled yet</p>
-          <p className="text-white/25 text-sm mt-1">Browse our courses, or redeem an invite code below</p>
+          <p className="text-white/25 text-sm mt-1">Choose a course to get started, or redeem an invite code below.</p>
+          <Link
+            href={COURSE_FINDER_PATH}
+            className="inline-flex items-center gap-2 mt-5 rounded-xl bg-gradient-to-r from-[#c31d24] to-[#e53535] px-4 py-2.5 text-sm font-semibold text-white"
+          >
+            Find your course
+          </Link>
         </div>
       ) : (
         <div className="space-y-6">

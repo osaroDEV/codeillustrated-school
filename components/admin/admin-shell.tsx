@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  BarChart3, BookOpen, ClipboardList, CreditCard, GraduationCap, Inbox, Key, LayoutDashboard, LogOut, Megaphone,
-  Presentation, ShieldCheck, Users,
+  BarChart3, BookOpen, ClipboardList, CreditCard, Inbox, Key, LayoutDashboard, LogOut, Megaphone,
+  Presentation, Users,
 } from "lucide-react";
 import { signOut } from "@/lib/auth";
+import { BrandLogo } from "@/components/brand-logo";
+import { LOGIN_PATH } from "@/lib/routes";
 
 const ADMIN_NAV = [
   { href: "/admin/learners", label: "Learners", icon: Users },
@@ -38,7 +40,7 @@ export function AdminShell({
 
   async function handleSignOut() {
     await signOut();
-    router.push("/auth/login");
+    router.push(LOGIN_PATH);
     router.refresh();
   }
 
@@ -46,20 +48,11 @@ export function AdminShell({
     <div className="min-h-screen">
       <header className="border-b border-white/[0.08] bg-[#0d0d14]/80 backdrop-blur sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#1a596c] to-[#0f2e38] rounded-xl flex items-center justify-center shadow-md shadow-[#1a596c]/30">
-              <ShieldCheck className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <p className="text-white font-bold text-sm leading-tight">
-                {role === "admin" ? "Admin Panel" : "Teaching"}
-              </p>
-              <div className="flex items-center gap-1.5">
-                <GraduationCap className="w-3 h-3 text-white/30" />
-                <p className="text-white/30 text-[10px]">Code Illustrated</p>
-              </div>
-            </div>
-          </div>
+          <BrandLogo
+            href={role === "admin" ? "/admin" : "/admin/cohorts"}
+            size={44}
+            subtitle={role === "admin" ? "Admin panel" : "Teaching"}
+          />
           <div className="flex items-center gap-5">
             <Link
               href="/dashboard"

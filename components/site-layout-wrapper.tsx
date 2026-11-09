@@ -6,6 +6,7 @@ import Footer from "@/components/site-footer";
 import { ContactFormPopup } from "@/components/contact-form-popup";
 import { ChatBot } from "@/components/chatbot/chat-bot";
 import type { CourseLink } from "@/lib/course-types";
+import { isAppChromeFree } from "@/lib/routes";
 
 export function SiteLayoutWrapper({
   children,
@@ -15,12 +16,9 @@ export function SiteLayoutWrapper({
   footerCourses: CourseLink[];
 }) {
   const pathname = usePathname();
-  // Check if we are inside auth, admin, or dashboard routes (accounting for possible sub-pages)
-  // Note: base path "/academy" is handled by Next.js usePathname automatically (it strips basePath or includes it depending on config, but standard usePathname in app router excludes basePath)
-  const isAppRoute =
-    pathname?.startsWith("/auth") ||
-    pathname?.startsWith("/admin") ||
-    pathname?.startsWith("/dashboard");
+  // Signed-in areas and account pages have their own chrome. usePathname()
+  // excludes the /academy base path.
+  const isAppRoute = isAppChromeFree(pathname);
 
   if (isAppRoute) {
     return <>{children}</>;

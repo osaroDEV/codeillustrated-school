@@ -3,7 +3,9 @@
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { GraduationCap, Loader2, Mail } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
+import { LOGIN_PATH } from "@/lib/routes";
+import { Loader2, Mail } from "lucide-react";
 import { ResendVerification } from "@/components/auth/resend-verification";
 
 // Where requireUser() sends signed-in but unverified learners, and where
@@ -21,15 +23,7 @@ function VerifyEmailContent() {
 
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-3 group">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#c31d24] to-[#9b161c] rounded-xl flex items-center justify-center shadow-lg shadow-[#c31d24]/30 group-hover:scale-105 transition-transform">
-              <GraduationCap className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-left">
-              <p className="text-white font-bold text-lg leading-tight">Code Illustrated</p>
-              <p className="text-white/40 text-xs">Online School</p>
-            </div>
-          </Link>
+          <BrandLogo href="/" size={56} priority />
         </div>
 
         <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-8 backdrop-blur-sm shadow-2xl text-center">
@@ -59,7 +53,7 @@ function VerifyEmailContent() {
 
           <p className="text-white/30 text-xs mt-6">
             Already verified?{" "}
-            <Link href="/auth/login" className="text-white/50 hover:text-white underline transition-colors">
+            <Link href={LOGIN_PATH} className="text-white/50 hover:text-white underline transition-colors">
               Sign in
             </Link>
           </p>

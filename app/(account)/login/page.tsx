@@ -3,9 +3,11 @@
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand-logo";
+import { FORGOT_PASSWORD_PATH, signupPath } from "@/lib/routes";
 import { signIn } from "@/lib/auth";
 import { ResendVerification } from "@/components/auth/resend-verification";
-import { Eye, EyeOff, Loader2, GraduationCap } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { safeRedirectPath } from "@/lib/utils";
 
 function LoginForm() {
@@ -13,7 +15,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const redirectTo = safeRedirectPath(searchParams.get("redirectTo"), "/dashboard");
   // Keep the visitor's place when they move between login and signup.
-  const signupHref = redirectTo === "/dashboard" ? "/auth/signup" : `/auth/signup?redirectTo=${encodeURIComponent(redirectTo)}`;
+  const signupHref = signupPath(redirectTo === "/dashboard" ? null : redirectTo);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -73,15 +75,7 @@ function LoginForm() {
       <div className="w-full max-w-md relative z-10">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-3 group">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#c31d24] to-[#9b161c] rounded-xl flex items-center justify-center shadow-lg shadow-[#c31d24]/30 group-hover:scale-105 transition-transform">
-              <GraduationCap className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-left">
-              <p className="text-white font-bold text-lg leading-tight">Code Illustrated</p>
-              <p className="text-white/40 text-xs">Online School</p>
-            </div>
-          </Link>
+          <BrandLogo href="/" size={56} priority />
         </div>
 
         {/* Card */}
@@ -125,7 +119,7 @@ function LoginForm() {
               <div className="flex items-center justify-between mb-2">
                 <label className="text-white/70 text-sm font-medium">Password</label>
                 <Link
-                  href="/auth/forgot-password"
+                  href={FORGOT_PASSWORD_PATH}
                   className="text-white/40 hover:text-white/70 text-xs transition-colors"
                 >
                   Forgot password?

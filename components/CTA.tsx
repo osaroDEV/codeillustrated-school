@@ -2,6 +2,7 @@
 
 import { Send } from "lucide-react";
 import Link from "next/link";
+import { COURSE_FINDER_PATH } from "@/lib/routes";
 
 export default function CTA() {
   return (
@@ -27,22 +28,22 @@ export default function CTA() {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              <Link
+                href={COURSE_FINDER_PATH}
+                className="group relative overflow-hidden bg-secondary-500 text-secondary-950 w-full sm:w-auto px-10 py-5 rounded-2xl font-black text-xl hover:bg-secondary-400 transition-all shadow-xl shadow-black/20 hover:shadow-secondary-500/20 active:scale-95 flex items-center justify-center"
+              >
+                <span className="relative z-10">Find your course</span>
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+              </Link>
               <a
                 href="https://wa.me/447405786279"
                 target="_blank"
                 rel="noreferrer"
-                className="group relative overflow-hidden bg-secondary-500 text-secondary-950 w-full sm:w-auto px-10 py-5 rounded-2xl font-black text-xl hover:bg-secondary-400 transition-all shadow-xl shadow-black/20 hover:shadow-secondary-500/20 active:scale-95 flex items-center justify-center"
-              >
-                <span className="relative z-10">Enroll Now</span>
-                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-              </a>
-              <Link
-                href="mailto:admin@codeillustrated.com"
                 className="group bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 hover:border-white/40 w-full sm:w-auto px-10 py-5 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all text-white"
               >
-                Contact Support
+                Talk to an advisor
                 <Send className="hidden sm:block w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              </a>
             </div>
 
             <p className="mt-12 text-primary-200 text-sm font-medium flex items-center justify-center gap-2">

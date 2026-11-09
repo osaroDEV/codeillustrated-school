@@ -3,12 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getSession } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
-import codeillIcon from "../public/code-ill.svg";
+import { BrandLogo } from "@/components/brand-logo";
+import { COURSE_FINDER_PATH, LOGIN_PATH } from "@/lib/routes";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -47,22 +47,7 @@ export function Navbar() {
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <Image
-              src={codeillIcon}
-              alt="Code Illustrated Online School logo – beginner coding training"
-              width={40}
-              height={40}
-              className="h-10 w-10"
-              priority
-            />
-            <span className="hidden sm:block lg:text-xl font-bold bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
-              Code Illustrated Online School
-            </span>
-            <span className="sm:hidden text-xl font-bold bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
-              Code Illustrated
-            </span>
-          </Link>
+          <BrandLogo href="/" size={44} tone="light" priority className="min-w-0" />
 
           {/* Desktop Navigation */}
           <nav
@@ -92,7 +77,7 @@ export function Navbar() {
             ) : (
               <>
                 <Link
-                  href="/auth/login"
+                  href={LOGIN_PATH}
                   className="text-sm font-medium transition-colors hover:text-primary-500 dark:hover:text-primary-400"
                 >
                   Log in
@@ -101,7 +86,7 @@ export function Navbar() {
                   asChild
                   className="bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
                 >
-                  <Link href="/auth/signup">Get Started</Link>
+                  <Link href={COURSE_FINDER_PATH}>Get Started</Link>
                 </Button>
               </>
             )}
@@ -146,7 +131,7 @@ export function Navbar() {
               ))}
               {!signedIn && (
                 <Link
-                  href="/auth/login"
+                  href={LOGIN_PATH}
                   className="block text-sm font-medium transition-colors hover:text-primary-500 dark:hover:text-primary-400"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -158,7 +143,7 @@ export function Navbar() {
                 className="w-full bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
               >
                 <Link
-                  href={signedIn ? "/dashboard" : "/auth/signup"}
+                  href={signedIn ? "/dashboard" : COURSE_FINDER_PATH}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {signedIn ? "My Dashboard" : "Get Started"}

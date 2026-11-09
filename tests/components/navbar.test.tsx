@@ -80,8 +80,8 @@ describe("Navbar account links", () => {
   it("shows visitors Log in and Get Started on desktop", async () => {
     await render();
     expect(desktop()).toEqual([
-      ["Log in", "/auth/login"],
-      ["Get Started", "/auth/signup"],
+      ["Log in", "/login"],
+      ["Get Started", "/start"],
     ]);
   });
 
@@ -90,8 +90,8 @@ describe("Navbar account links", () => {
     await openMobileMenu();
     expect(mobile()).toEqual(
       expect.arrayContaining([
-        ["Log in", "/auth/login"],
-        ["Get Started", "/auth/signup"],
+        ["Log in", "/login"],
+        ["Get Started", "/start"],
       ])
     );
     expect(host.innerHTML).not.toContain("wa.me");
@@ -112,7 +112,7 @@ describe("Navbar account links", () => {
     await act(async () => auth.listener!("SIGNED_IN", { user: { id: "u1" } }));
     expect(desktop()).toEqual([["My Dashboard", "/dashboard"]]);
     await act(async () => auth.listener!("SIGNED_OUT", null));
-    expect(desktop()[0]).toEqual(["Log in", "/auth/login"]);
+    expect(desktop()[0]).toEqual(["Log in", "/login"]);
   });
 
   it("stops listening when it unmounts", async () => {

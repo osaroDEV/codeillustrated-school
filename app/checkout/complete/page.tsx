@@ -91,7 +91,7 @@ export default async function CheckoutCompletePage({
           <State
             icon={<CheckCircle2 className="w-12 h-12 text-accent-500" />}
             title={`You're enrolled in ${title}!`}
-            body={`We received ${formatMoney(order.amount, order.currency)}. Your subscription renews every ${intervalNoun(interval)} and you can cancel any time. ${selfPaced ? "Your lessons are ready in your dashboard." : "We'll place you in a class group and your schedule will appear in your dashboard."}`}
+            body={`We received ${formatMoney(order.amount, order.currency)}. Your subscription renews every ${intervalNoun(interval)} and you can cancel any time. ${selfPaced ? "Your lessons are ready in your dashboard." : "Next, we'll place you in a class and email your schedule. It also appears under Schedule in your dashboard."}`}
           />
         ) : order.status === "pending" ? (
           <>

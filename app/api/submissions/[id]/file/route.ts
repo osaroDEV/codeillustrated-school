@@ -4,6 +4,7 @@ import { getCurrentUser, getRole, isEmailVerified } from "@/lib/supabase-server"
 import { loadSubmissionForStaff } from "@/lib/assessments-server";
 import { signedFileUrl } from "@/lib/lessons";
 import { BASE_PATH } from "@/lib/seo";
+import { loginPath } from "@/lib/routes";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -13,7 +14,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   const { id } = await params;
   const user = await getCurrentUser();
   if (!user || !isEmailVerified(user)) {
-    return new NextResponse(null, { status: 303, headers: { Location: `${BASE_PATH}/auth/login?redirectTo=/dashboard/courses` } });
+    return new NextResponse(null, { status: 303, headers: { Location: `${BASE_PATH}${loginPath("/dashboard/courses")}` } });
   }
 
   const admin = createAdminClient();

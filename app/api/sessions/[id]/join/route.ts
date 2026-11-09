@@ -5,6 +5,7 @@ import { canManageCohort, type ClassSession, type Cohort } from "@/lib/cohorts";
 import { joinState } from "@/lib/schedule";
 import { hasSeatAccess, type SubscriptionState } from "@/lib/billing";
 import { BASE_PATH } from "@/lib/seo";
+import { loginPath } from "@/lib/routes";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -26,7 +27,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   if (!user || !isEmailVerified(user)) {
     return new NextResponse(null, {
       status: 303,
-      headers: { Location: `${BASE_PATH}/auth/login?redirectTo=/dashboard/schedule` },
+      headers: { Location: `${BASE_PATH}${loginPath("/dashboard/schedule")}` },
     });
   }
 
