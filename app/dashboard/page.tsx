@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase";
 import { getCourses } from "@/lib/courses";
 import { CourseIcon } from "@/components/course-icon";
 import { RedeemCodeCard } from "@/components/dashboard/redeem-code-card";
+import { AwaitingPlacement, GettingStarted } from "@/components/dashboard/getting-started";
 import { LocalTime } from "@/components/local-time";
 import { UpcomingSessions } from "@/components/schedule/session-list";
 import { getLearnerSessions } from "@/lib/cohorts";
@@ -13,6 +14,7 @@ import {
   Clock, ChevronRight, Zap, FileText,
 } from "lucide-react";
 import Link from "next/link";
+import { COURSE_FINDER_PATH } from "@/lib/routes";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -28,7 +30,7 @@ async function getDashboardData() {
 
     const [profileRes, enrollmentsRes, announcementsRes, notesRes, sessions] = await Promise.all([
       admin.from("profiles").select("full_name").eq("id", user.id).single(),
-      admin.from("enrollments").select("*").eq("user_id", user.id),
+      admin.from("enrollments").select("*, subscriptions(offerings(kind))").eq("user_id", user.id),
       admin.from("announcements").select("*").order("created_at", { ascending: false }).limit(3),
       admin.from("learner_notes").select("*, learner_note_replies(id, author_id, body, created_at)").eq("user_id", user.id).order("created_at", { ascending: false }),
       getLearnerSessions(admin, user.id).catch(() => []),
@@ -66,6 +68,19 @@ export default async function DashboardPage() {
   const notes = data?.notes || [];
   const sessions = data?.sessions || [];
   const courseTitles = Object.fromEntries(courses.map((c) => [c.id, c.title]));
+  // A brand-new learner (or one whose seats have all lapsed) gets the
+  // getting-started checklist instead of a page of empty cards.
+  const isNew = !enrollments.some((e) => e.status === "active" || e.status === "completed");
+  // Paid for a live seat but not placed in a class yet.
+  const awaitingPlacement = enrollments
+    .filter(
+      (e) =>
+        e.status === "active" &&
+        !e.cohort_id &&
+        e.source === "subscription" &&
+        (e.subscriptions as { offerings: { kind: string } | null } | null)?.offerings?.kind !== "self_paced"
+    )
+    .map((e) => courseTitles[e.course_id] ?? e.course_id);
 
   return (
     <div className="p-6 lg:p-8 max-w-6xl mx-auto">
@@ -75,11 +90,24 @@ export default async function DashboardPage() {
         <h1 className="text-3xl font-bold text-white">
           {firstName} 👋
         </h1>
-        <p className="text-white/40 text-sm mt-1">Here&apos;s your learning progress at a glance</p>
+        <p className="text-white/40 text-sm mt-1">
+          {isNew ? "Welcome! Here's how to get going." : "Here's your learning progress at a glance"}
+        </p>
       </div>
 
+      {isNew && (
+        <div className="mb-8">
+          <GettingStarted />
+        </div>
+      )}
+      {awaitingPlacement.length > 0 && (
+        <div className="mb-8">
+          <AwaitingPlacement courseTitles={awaitingPlacement} />
+        </div>
+      )}
+
       {/* Stats row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className={`grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 ${isNew ? "hidden" : ""}`}>
         <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-5">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-9 h-9 bg-[#c31d24]/15 rounded-xl flex items-center justify-center">
@@ -145,9 +173,9 @@ export default async function DashboardPage() {
           {enrollments.length === 0 ? (
             <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-8 text-center">
               <Zap className="w-8 h-8 text-white/20 mx-auto mb-3" />
-              <p className="text-white/40 text-sm">No courses enrolled yet</p>
-              <Link href="/courses" className="inline-block mt-3 text-[#ffbd59] hover:text-[#f5a623] text-xs font-medium transition-colors">
-                Browse courses →
+              <p className="text-white/40 text-sm">Your courses will appear here once you enrol.</p>
+              <Link href={COURSE_FINDER_PATH} className="inline-block mt-3 text-[#ffbd59] hover:text-[#f5a623] text-xs font-medium transition-colors">
+                Find your course →
               </Link>
             </div>
           ) : (

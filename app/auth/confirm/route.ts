@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { BASE_PATH } from "@/lib/seo";
+import { LOGIN_PATH, RESET_PASSWORD_PATH } from "@/lib/routes";
+import { safeRedirectPath } from "@/lib/utils";
 
 const OTP_TYPES: EmailOtpType[] = ["email", "signup", "magiclink", "recovery", "invite", "email_change"];
 
 // Target of the links in supabase/templates/. Verifying the token_hash also
 // signs the learner in, so a verification link lands them straight on their
-// dashboard and a password-reset link on the page that sets a new password.
+// dashboard (or back on the course they were enrolling in, saved as next_path
+// at signup) and a password-reset link on the page that sets a new password.
 export async function GET(req: NextRequest) {
   const tokenHash = req.nextUrl.searchParams.get("token_hash");
   const type = req.nextUrl.searchParams.get("type") as EmailOtpType | null;
@@ -24,7 +27,7 @@ export async function GET(req: NextRequest) {
   const redirectTo = (path: string) =>
     new NextResponse(null, { status: 307, headers: { Location: `${BASE_PATH}${path}` } });
 
-  if (!tokenHash && !code) return redirectTo("/auth/login?notice=verified");
+  if (!tokenHash && !code) return redirectTo(`${LOGIN_PATH}?notice=verified`);
 
   const supabase = await createServerSupabase();
   let failed = true;
@@ -39,6 +42,12 @@ export async function GET(req: NextRequest) {
     if (error) console.error("exchangeCodeForSession error:", error.message);
   }
 
-  if (failed) return redirectTo("/auth/login?error=link_invalid");
-  return redirectTo(type === "recovery" ? "/auth/reset-password" : "/dashboard");
+  if (failed) return redirectTo(`${LOGIN_PATH}?error=link_invalid`);
+  if (type === "recovery") return redirectTo(RESET_PASSWORD_PATH);
+  if (type === "email" || type === "signup") {
+    const { data } = await supabase.auth.getUser();
+    const next = data.user?.user_metadata?.next_path;
+    return redirectTo(safeRedirectPath(typeof next === "string" ? next : null, "/dashboard"));
+  }
+  return redirectTo("/dashboard");
 }

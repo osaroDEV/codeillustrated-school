@@ -6,6 +6,7 @@ import type { BillingInterval } from "@/lib/billing";
 import type { Course, OfferingKind } from "@/lib/course-types";
 import { useCurrency } from "@/hooks/use-currency";
 import { PriceDisplay } from "./price-display";
+import { signupPath } from "@/lib/routes";
 
 const WHATSAPP = "https://wa.me/447405786279";
 
@@ -44,7 +45,9 @@ export function EnrollOptions({ course }: { course: Course }) {
       });
       const data = await res.json().catch(() => ({}));
       if (res.status === 401) {
-        window.location.href = `/academy/auth/login?redirectTo=${encodeURIComponent(`/courses/${course.slug}#enroll`)}`;
+        // Most people buying are new here; the signup page links to Log in
+        // and both bring them back to this course afterwards.
+        window.location.href = `/academy${signupPath(`/courses/${course.slug}#enroll`)}`;
         return;
       }
       if (!res.ok || !data.link) throw new Error(data.error || "Couldn't start the payment. Please try again.");
@@ -57,6 +60,18 @@ export function EnrollOptions({ course }: { course: Course }) {
 
   return (
     <div id="enroll" className="space-y-4 scroll-mt-32">
+      {online.size > 0 && (
+        <ol className="grid grid-cols-3 gap-2 text-center" aria-label="How enrolling works">
+          {["Create your free account", "Pay monthly by card", "We place you in a class and email your schedule"].map((step, i) => (
+            <li key={step} className="rounded-xl bg-white px-2 py-2.5 border border-slate-100">
+              <span className="mx-auto mb-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                {i + 1}
+              </span>
+              <span className="block text-[11px] leading-snug text-slate-600">{step}</span>
+            </li>
+          ))}
+        </ol>
+      )}
       {OPTIONS.map(({ kind, label, blurb, Icon, featured }) => {
         const price = online.get(kind) ?? (kind === "cohort_group" ? course.price.group : course.price.oneOnOne);
         const buyable = online.has(kind) && price.usd > 0 && price.ngn > 0;
@@ -111,7 +126,7 @@ export function EnrollOptions({ course }: { course: Course }) {
               className="text-xl"
             />
           </div>
-          <p className="text-xs text-slate-500">Lessons at your own pace, plus selected class recordings. No live classes.</p>
+          <p className="text-xs text-slate-500">Lessons at your own pace, plus selected class recordings. No live classes. Starts as soon as you pay.</p>
           {selfPaced.yearlyPrice && (
             <div className="mt-3 grid grid-cols-2 gap-1 p-1 rounded-xl bg-slate-200/60" role="group" aria-label="Billing period">
               {(["monthly", "yearly"] as const).map((interval) => (

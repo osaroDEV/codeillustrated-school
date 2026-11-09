@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ArrowRight, Award, Clock, Play, Users } from "lucide-react";
 import Link from "next/link";
+import { COURSE_FINDER_PATH } from "@/lib/routes";
 
 export function HeroSection() {
   const stats = [
@@ -68,23 +69,34 @@ export function HeroSection() {
                 size="lg"
                 className="bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500 text-white"
               >
-                <Link href="/courses" className="flex items-center">
-                  Browse Courses
+                <Link href={COURSE_FINDER_PATH} className="flex items-center">
+                  Find your course
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
 
               <Button
+                asChild
                 variant="outline"
                 size="lg"
-                className="border-primary-200 bg-gradient-to-br from-slate-700 via-accent-800 to-slate-800 text-white hover:bg-slate-900 dark:border-primary-800 dark:hover:bg-primary-950/20"
+                className="border-white/20 bg-white/5 text-white hover:bg-white/15 hover:text-white"
               >
-                <Link href="https://wa.me/447405786279" target="_blank" rel="noopener noreferrer" className="flex items-center">
-                  Talk to Advisor
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                <Link href="/courses" className="flex items-center">
+                  Browse all courses
                 </Link>
               </Button>
             </motion.div>
+            <p className="text-sm text-white/70">
+              Questions first?{" "}
+              <a
+                href="https://wa.me/447405786279"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-white underline underline-offset-4 hover:text-secondary-300"
+              >
+                Talk to an advisor on WhatsApp
+              </a>
+            </p>
 
             {/* Stats */}
             <motion.div

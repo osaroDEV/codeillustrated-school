@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { loginPath } from "@/lib/routes";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -34,9 +35,9 @@ export async function middleware(request: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) {
-    const loginUrl = new URL("/academy/auth/login", request.url);
-    loginUrl.searchParams.set("redirectTo", pathname);
-    return NextResponse.redirect(loginUrl);
+    // Middleware sees the path without the /academy base path, and redirects
+    // must be absolute here.
+    return NextResponse.redirect(new URL(`/academy${loginPath(pathname)}`, request.url));
   }
 
   return response;

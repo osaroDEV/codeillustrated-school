@@ -73,3 +73,15 @@ describe("EnrollOptions self-paced", () => {
     expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ kind: "cohort_group", interval: "monthly" });
   });
 });
+
+describe("EnrollOptions for signed-out visitors", () => {
+  it("sends them to sign up, returning to this course afterwards", async () => {
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 }));
+    const location = { href: "" };
+    vi.stubGlobal("location", location);
+    await render(course([group]));
+    expect(host.textContent).toContain("Create your free account");
+    await act(async () => button("Subscribe monthly")!.click());
+    expect(location.href).toBe("/academy/signup?redirectTo=%2Fcourses%2Fc%23enroll");
+  });
+});

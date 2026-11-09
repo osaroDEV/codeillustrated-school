@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { User } from "@supabase/supabase-js";
 import { createAdminClient } from "./supabase";
+import { LOGIN_PATH, loginPath, verifyEmailPath as verifyEmailPathFor } from "@/lib/routes";
 
 // Server-side auth helpers for server components and route handlers. Only
 // import this from server code — it reads request cookies.
@@ -52,7 +53,7 @@ export function isEmailVerified(user: Pick<User, "email_confirmed_at">): boolean
 }
 
 function verifyEmailPath(user: User) {
-  return `/auth/verify-email?email=${encodeURIComponent(user.email ?? "")}`;
+  return verifyEmailPathFor(user.email);
 }
 
 export type Role = "student" | "instructor" | "admin";
@@ -74,14 +75,14 @@ export async function isAdmin(userId: string): Promise<boolean> {
 // For server components: redirects instead of returning null.
 export async function requireUser(): Promise<User> {
   const user = await getCurrentUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect(LOGIN_PATH);
   if (!isEmailVerified(user)) redirect(verifyEmailPath(user));
   return user;
 }
 
 export async function requireAdmin(): Promise<User> {
   const user = await getCurrentUser();
-  if (!user) redirect("/auth/login?redirectTo=/admin");
+  if (!user) redirect(loginPath("/admin"));
   if (!isEmailVerified(user)) redirect(verifyEmailPath(user));
   if (!(await isAdmin(user.id))) redirect("/dashboard");
   return user;
@@ -91,7 +92,7 @@ export async function requireAdmin(): Promise<User> {
 // routes that are admin-only still call requireAdmin / rejectNonAdmin.
 export async function requireStaff(): Promise<{ user: User; role: StaffRole }> {
   const user = await getCurrentUser();
-  if (!user) redirect("/auth/login?redirectTo=/admin");
+  if (!user) redirect(loginPath("/admin"));
   if (!isEmailVerified(user)) redirect(verifyEmailPath(user));
   const role = await getRole(user.id);
   if (role === "student") redirect("/dashboard");

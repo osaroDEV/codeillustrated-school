@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { GraduationCap, KeyRound, Loader2, MailCheck } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
+import { LOGIN_PATH } from "@/lib/routes";
+import { KeyRound, Loader2, MailCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 // Emails a password-reset link (supabase/templates/recovery.html). Supabase
@@ -37,15 +39,7 @@ export default function ForgotPasswordPage() {
 
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-3 group">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#c31d24] to-[#9b161c] rounded-xl flex items-center justify-center shadow-lg shadow-[#c31d24]/30 group-hover:scale-105 transition-transform">
-              <GraduationCap className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-left">
-              <p className="text-white font-bold text-lg leading-tight">Code Illustrated</p>
-              <p className="text-white/40 text-xs">Online School</p>
-            </div>
-          </Link>
+          <BrandLogo href="/" size={56} priority />
         </div>
 
         <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-8 backdrop-blur-sm shadow-2xl">
@@ -102,7 +96,7 @@ export default function ForgotPasswordPage() {
           )}
 
           <p className="text-center text-white/40 text-sm mt-6">
-            <Link href="/auth/login" className="text-[#ffbd59] hover:text-[#f5a623] font-medium transition-colors">
+            <Link href={LOGIN_PATH} className="text-[#ffbd59] hover:text-[#f5a623] font-medium transition-colors">
               Back to sign in
             </Link>
           </p>

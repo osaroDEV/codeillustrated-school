@@ -2,10 +2,10 @@
 
 import type { CourseLink } from "@/lib/course-types";
 import { Instagram, Mail, MapPin, Phone, Twitter } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import codeillIcon from "../public/code-ill.svg";
+import { BrandLogo } from "@/components/brand-logo";
+import { COURSE_FINDER_PATH, LOGIN_PATH, SIGNUP_PATH } from "@/lib/routes";
 
 export default function Footer({ courses }: { courses: CourseLink[] }) {
   const currentYear = new Date().getFullYear();
@@ -15,21 +15,7 @@ export default function Footer({ courses }: { courses: CourseLink[] }) {
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
           <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center space-x-2">
-              <Image
-                src={codeillIcon}
-                alt="Code Illustrated Online School logo – 1-on-1 beginner coding training"
-                width={40}
-                height={40}
-                className="h-10 w-10"
-              />
-              <span className="hidden sm:block lg:text-xl font-bold bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
-                Code Illustrated Online School
-              </span>
-              <span className="sm:hidden text-xl font-bold bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
-                Code Illustrated
-              </span>
-            </Link>
+            <BrandLogo href="/" size={48} className="mb-6" />
             <p className="text-sm sm:text-base text-white/75 leading-relaxed mb-8">
               Empowering the next generation of builders through visual
               illustration and interactive mentorship.
@@ -71,8 +57,9 @@ export default function Footer({ courses }: { courses: CourseLink[] }) {
                   name: c.title,
                   href: `/courses/${c.slug}`,
                 })),
-                { name: "Log in", href: "/auth/login" },
-                { name: "Create account", href: "/auth/signup" },
+                { name: "Find your course", href: COURSE_FINDER_PATH },
+                { name: "Log in", href: LOGIN_PATH },
+                { name: "Create account", href: SIGNUP_PATH },
               ].map((link) => (
                 <li key={link.name}>
                   <Link

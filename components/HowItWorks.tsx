@@ -1,30 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Calendar, MessageSquare, Trophy, Video } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { ENROL_STEPS } from "@/components/enrol-steps";
+import { COURSE_FINDER_PATH, SIGNUP_PATH } from "@/lib/routes";
 
-const steps = [
-  {
-    title: "Enroll Now",
-    desc: "Meet your guide and discover which path is right for your goals.",
-    icon: Calendar,
-  },
-  {
-    title: "Live Virtual Sessions",
-    desc: "Join high-energy, live classes with professional instructors.",
-    icon: Video,
-  },
-  {
-    title: "Build & Collaborate",
-    desc: "Work on real projects and get instant help through our discord.",
-    icon: MessageSquare,
-  },
-  {
-    title: "Earn Certifications",
-    desc: "Complete challenges and earn recognized proof of your skills.",
-    icon: Trophy,
-  },
-];
+const steps = ENROL_STEPS.map((s) => ({ title: s.title, desc: s.body, icon: s.icon }));
 
 export default function HowItWorks() {
   return (
@@ -41,11 +23,11 @@ export default function HowItWorks() {
             The Process
           </p>
           <h2 className="text-3xl sm:text-4xl lg:text-6xl font-heading font-black mb-6">
-            Simple 4-Step Journey
+            How to get started
           </h2>
           <p className="text-sm sm:text-base text-zinc-400 max-w-2xl mx-auto">
-            We've streamlined the learning experience to make it as engaging as
-            a game but as effective as a university degree.
+            Four steps from your first visit to your certificate. Not sure which
+            course fits? The course finder suggests one in under a minute.
           </p>
         </div>
 
@@ -61,7 +43,7 @@ export default function HowItWorks() {
             >
               {/* Connector line for desktop */}
               {idx < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-10 left-[80%] w-full h-[2px] bg-linear-to-r from-primary/30 to-transparent" />
+                <div className="hidden lg:block absolute top-10 left-[80%] w-full h-[2px] bg-gradient-to-r from-primary/30 to-transparent" />
               )}
 
               <div className="bg-zinc-900 border border-white/5 p-8 rounded-[2.5rem] h-full transition-transform group-hover:-translate-y-2">
@@ -74,12 +56,27 @@ export default function HowItWorks() {
                 <h3 className="text-xl sm:text-2xl font-bold mb-4">
                   {step.title}
                 </h3>
-                <p className="text-sm sm:text-base text-zinc-400 leading-relaxed italic">
+                <p className="text-sm sm:text-base text-zinc-400 leading-relaxed">
                   {step.desc}
                 </p>
               </div>
             </motion.div>
           ))}
+        </div>
+
+        <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link
+            href={COURSE_FINDER_PATH}
+            className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-primary-500 to-secondary-400 px-8 py-4 font-bold text-white shadow-xl shadow-primary/20 transition-all hover:from-primary-700 hover:to-secondary-500"
+          >
+            Find your course <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link
+            href={SIGNUP_PATH}
+            className="inline-flex w-full sm:w-auto items-center justify-center rounded-2xl border border-white/15 px-8 py-4 font-bold text-white transition-colors hover:bg-white/10"
+          >
+            Create a free account
+          </Link>
         </div>
       </div>
     </section>

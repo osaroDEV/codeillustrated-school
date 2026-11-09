@@ -9,21 +9,30 @@ import {
   User,
   Megaphone,
   LogOut,
-  GraduationCap,
   Menu,
   X,
   ShieldCheck,
   CalendarDays,
   Presentation,
   CreditCard,
+  Compass,
+  ArrowUpRight,
+  type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { BrandLogo } from "@/components/brand-logo";
+import { COURSE_FINDER_PATH, LOGIN_PATH } from "@/lib/routes";
 
-const navItems = [
+type NavItem = { href: string; label: string; icon: LucideIcon };
+
+const learnItems: NavItem[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/courses", label: "My Courses", icon: BookOpen },
   { href: "/dashboard/schedule", label: "Schedule", icon: CalendarDays },
   { href: "/dashboard/announcements", label: "Announcements", icon: Megaphone },
+];
+
+const accountItems: NavItem[] = [
   { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
   { href: "/dashboard/profile", label: "Profile", icon: User },
 ];
@@ -35,6 +44,11 @@ interface SidebarProps {
   role?: "student" | "instructor" | "admin";
 }
 
+function isActive(pathname: string | null, href: string) {
+  if (!pathname) return false;
+  return href === "/dashboard" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function DashboardSidebar({ userName, userEmail, avatarUrl, role }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -42,7 +56,7 @@ export function DashboardSidebar({ userName, userEmail, avatarUrl, role }: Sideb
 
   async function handleSignOut() {
     await signOut();
-    router.push("/auth/login");
+    router.push(LOGIN_PATH);
     router.refresh();
   }
 
@@ -50,84 +64,103 @@ export function DashboardSidebar({ userName, userEmail, avatarUrl, role }: Sideb
     ? userName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "?";
 
+  const staffItems: NavItem[] =
+    role === "admin"
+      ? [{ href: "/admin", label: "Admin panel", icon: ShieldCheck }]
+      : role === "instructor"
+        ? [{ href: "/admin/cohorts", label: "Teaching", icon: Presentation }]
+        : [];
+
+  const NavLink = ({ item }: { item: NavItem }) => {
+    const active = isActive(pathname, item.href);
+    return (
+      <Link
+        href={item.href}
+        onClick={() => setMobileOpen(false)}
+        aria-current={active ? "page" : undefined}
+        className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+          active
+            ? "bg-[#c31d24]/[0.14] text-white"
+            : "text-white/55 hover:bg-white/[0.05] hover:text-white"
+        }`}
+      >
+        {active && <span aria-hidden className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-[#c31d24]" />}
+        <item.icon className={`h-[18px] w-[18px] shrink-0 ${active ? "text-[#ff5a5f]" : ""}`} />
+        {item.label}
+      </Link>
+    );
+  };
+
+  const Group = ({ title, items }: { title: string; items: NavItem[] }) =>
+    items.length ? (
+      <div>
+        <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/30">{title}</p>
+        <div className="space-y-0.5">
+          {items.map((item) => (
+            <NavLink key={item.href} item={item} />
+          ))}
+        </div>
+      </div>
+    ) : null;
+
   const SidebarContent = () => (
-    <div className="flex flex-col h-full">
-      {/* Logo */}
-      <div className="px-6 py-6 border-b border-white/10">
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-9 h-9 bg-gradient-to-br from-[#c31d24] to-[#9b161c] rounded-xl flex items-center justify-center shadow-md shadow-[#c31d24]/30 group-hover:scale-105 transition-transform flex-shrink-0">
-            <GraduationCap className="w-4 h-4 text-white" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-white font-bold text-sm leading-tight truncate">Code Illustrated</p>
-            <p className="text-white/40 text-[10px]">Online School</p>
-          </div>
-        </Link>
+    <div className="flex h-full flex-col">
+      {/* Brand */}
+      <div className="relative overflow-hidden border-b border-white/[0.08] px-5 pb-5 pt-6">
+        <div aria-hidden className="pointer-events-none absolute -left-16 -top-20 h-44 w-44 rounded-full bg-[#1a596c]/30 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -right-20 -top-10 h-36 w-36 rounded-full bg-[#c31d24]/20 blur-3xl" />
+        <BrandLogo href="/dashboard" size={52} subtitle="Learner dashboard" className="relative" priority />
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${
-                isActive
-                  ? "bg-gradient-to-r from-[#c31d24]/20 to-[#c31d24]/10 text-white border border-[#c31d24]/30"
-                  : "text-white/50 hover:text-white hover:bg-white/[0.06]"
-              }`}
-            >
-              <item.icon className={`w-4 h-4 flex-shrink-0 transition-colors ${isActive ? "text-[#c31d24]" : "group-hover:text-white"}`} />
-              {item.label}
-              {isActive && (
-                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#c31d24]" />
-              )}
-            </Link>
-          );
-        })}
-        {(role === "admin" || role === "instructor") && (
-          <Link
-            href={role === "admin" ? "/admin" : "/admin/cohorts"}
-            onClick={() => setMobileOpen(false)}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-white/50 hover:text-white hover:bg-white/[0.06]"
-          >
-            {role === "admin" ? (
-              <ShieldCheck className="w-4 h-4 flex-shrink-0" />
-            ) : (
-              <Presentation className="w-4 h-4 flex-shrink-0" />
-            )}
-            {role === "admin" ? "Admin panel" : "Teaching"}
-          </Link>
-        )}
+      <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-6" aria-label="Dashboard">
+        <Group title="Learn" items={learnItems} />
+        <Group title="Account" items={accountItems} />
+        <Group title="Staff" items={staffItems} />
       </nav>
 
-      {/* User section */}
-      <div className="px-3 py-4 border-t border-white/10">
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/[0.04] mb-2">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#1a596c] to-[#0f2e38] flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden">
+      {/* Discover + user */}
+      <div className="space-y-3 border-t border-white/[0.08] px-3 py-4">
+        <div className="space-y-0.5">
+          <Link
+            href={COURSE_FINDER_PATH}
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[#ffbd59] transition-colors hover:bg-[#ffbd59]/10"
+          >
+            <Compass className="h-[18px] w-[18px] shrink-0" />
+            Find a course
+          </Link>
+          <Link
+            href="/"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-white/45 transition-colors hover:bg-white/[0.05] hover:text-white"
+          >
+            <ArrowUpRight className="h-[18px] w-[18px] shrink-0" />
+            Back to website
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-3 rounded-xl bg-white/[0.04] px-3 py-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#1a596c] to-[#0f2e38] text-xs font-bold text-white ring-2 ring-white/10">
             {avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
             ) : (
               initials
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-white text-sm font-medium truncate">{userName || "Learner"}</p>
-            <p className="text-white/40 text-xs truncate">{userEmail}</p>
+            <p className="truncate text-sm font-medium text-white">{userName || "Learner"}</p>
+            <p className="truncate text-xs text-white/40">{userEmail}</p>
           </div>
+          <button
+            id="dashboard-signout-btn"
+            onClick={handleSignOut}
+            title="Sign out"
+            aria-label="Sign out"
+            className="rounded-lg p-2 text-white/45 transition-colors hover:bg-red-500/10 hover:text-red-400"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
         </div>
-        <button
-          id="dashboard-signout-btn"
-          onClick={handleSignOut}
-          className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-white/50 hover:text-red-400 hover:bg-red-500/10 text-sm font-medium transition-all duration-200 group"
-        >
-          <LogOut className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-          Sign out
-        </button>
       </div>
     </div>
   );
@@ -135,24 +168,19 @@ export function DashboardSidebar({ userName, userEmail, avatarUrl, role }: Sideb
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 h-screen bg-[#0d0d14] border-r border-white/[0.08] fixed left-0 top-0 z-30">
+      <aside className="fixed left-0 top-0 z-30 hidden h-screen w-64 flex-col border-r border-white/[0.08] bg-[#0d0d14] lg:flex">
         <SidebarContent />
       </aside>
 
-      {/* Mobile topbar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-[#0d0d14]/95 backdrop-blur border-b border-white/[0.08] px-4 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-[#c31d24] to-[#9b161c] rounded-lg flex items-center justify-center">
-            <GraduationCap className="w-4 h-4 text-white" />
-          </div>
-          <span className="text-white font-bold text-sm">Code Illustrated</span>
-        </Link>
+      {/* Mobile top bar (64px; the layout pads for it) */}
+      <div className="fixed left-0 right-0 top-0 z-40 flex h-16 items-center justify-between border-b border-white/[0.08] bg-[#0d0d14]/95 px-4 backdrop-blur lg:hidden">
+        <BrandLogo href="/dashboard" size={40} subtitle="Learner dashboard" />
         <button
           onClick={() => setMobileOpen(true)}
-          className="text-white/60 hover:text-white transition-colors p-1"
+          className="rounded-lg p-2 text-white/60 transition-colors hover:bg-white/[0.06] hover:text-white"
           aria-label="Open menu"
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="h-5 w-5" />
         </button>
       </div>
 
@@ -160,16 +188,16 @@ export function DashboardSidebar({ userName, userEmail, avatarUrl, role }: Sideb
       {mobileOpen && (
         <>
           <div
-            className="lg:hidden fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="lg:hidden fixed left-0 top-0 bottom-0 w-72 bg-[#0d0d14] border-r border-white/[0.08] z-50 shadow-2xl">
+          <aside className="fixed bottom-0 left-0 top-0 z-50 w-72 border-r border-white/[0.08] bg-[#0d0d14] shadow-2xl lg:hidden">
             <button
               onClick={() => setMobileOpen(false)}
-              className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors"
+              className="absolute right-4 top-4 z-10 text-white/40 transition-colors hover:text-white"
               aria-label="Close menu"
             >
-              <X className="w-5 h-5" />
+              <X className="h-5 w-5" />
             </button>
             <SidebarContent />
           </aside>

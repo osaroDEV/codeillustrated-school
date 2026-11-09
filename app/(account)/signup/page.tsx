@@ -4,10 +4,11 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ResendVerification } from "@/components/auth/resend-verification";
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand-logo";
+import { loginPath } from "@/lib/routes";
 import { safeRedirectPath } from "@/lib/utils";
 import {
-  Eye, EyeOff, Loader2, GraduationCap,
-  CheckCircle2, ArrowRight, Key, User, Mail, Lock,
+  Eye, EyeOff, Loader2, CheckCircle2, ArrowRight, Key, User, Mail, Lock,
 } from "lucide-react";
 
 type Step = "register" | "success";
@@ -17,7 +18,9 @@ function SignupForm() {
   const searchParams = useSearchParams();
   const redirectTo = safeRedirectPath(searchParams.get("redirectTo"), "/dashboard");
   // Keep the visitor's place when they move between login and signup.
-  const loginHref = redirectTo === "/dashboard" ? "/auth/login" : `/auth/login?redirectTo=${encodeURIComponent(redirectTo)}`;
+  const loginHref = loginPath(redirectTo === "/dashboard" ? null : redirectTo);
+  // Signed out visitors are sent here from a course's Subscribe button.
+  const fromCourse = redirectTo.startsWith("/courses/");
 
   const [step, setStep] = useState<Step>("register");
   const [inviteCode, setInviteCode] = useState("");
@@ -56,6 +59,8 @@ function SignupForm() {
           password,
           fullName,
           inviteCode: inviteCode.trim() || undefined,
+          // the verification link brings them back here
+          redirectTo: redirectTo === "/dashboard" ? undefined : redirectTo,
         }),
       });
 
@@ -94,15 +99,7 @@ function SignupForm() {
       <div className="w-full max-w-md relative z-10">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-3 group">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#c31d24] to-[#9b161c] rounded-xl flex items-center justify-center shadow-lg shadow-[#c31d24]/30 group-hover:scale-105 transition-transform">
-              <GraduationCap className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-left">
-              <p className="text-white font-bold text-lg leading-tight">Code Illustrated</p>
-              <p className="text-white/40 text-xs">Online School</p>
-            </div>
-          </Link>
+          <BrandLogo href="/" size={56} priority />
         </div>
 
         {/* Card */}
@@ -116,7 +113,11 @@ function SignupForm() {
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-white">Create your account</h1>
-                  <p className="text-white/40 text-xs">Start learning with Code Illustrated</p>
+                  <p className="text-white/40 text-xs">
+                    {fromCourse
+                      ? "Then you'll come back to the course to finish enrolling"
+                      : "Free to create. You choose a course next."}
+                  </p>
                 </div>
               </div>
 
@@ -252,7 +253,11 @@ function SignupForm() {
                 {enrolled ? " and you’ve been enrolled in your course" : ""}. We&apos;ve sent a
                 verification link to <span className="text-white">{email}</span>.
               </p>
-              <p className="text-white/50 text-sm mb-6">Click it to activate your account and sign in.</p>
+              <p className="text-white/50 text-sm mb-6">
+                {fromCourse
+                  ? "Click it to activate your account. It brings you straight back to the course to finish enrolling."
+                  : "Click it to activate your account. It takes you to your dashboard, where you can choose your course."}
+              </p>
               <div className="mb-4">
                 <ResendVerification email={email.trim()} />
               </div>

@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff, GraduationCap, KeyRound, Loader2 } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
+import { FORGOT_PASSWORD_PATH } from "@/lib/routes";
+import { Eye, EyeOff, KeyRound, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 const MIN_PASSWORD_LENGTH = 8;
 
-// Where /auth/confirm sends a learner after they click a password-reset link.
+// Where /auth/confirm (the email link handler) sends a learner after they click a password-reset link.
 // That click already signed them in, so this page only sets the new password.
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -58,15 +60,7 @@ export default function ResetPasswordPage() {
 
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-3 group">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#c31d24] to-[#9b161c] rounded-xl flex items-center justify-center shadow-lg shadow-[#c31d24]/30 group-hover:scale-105 transition-transform">
-              <GraduationCap className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-left">
-              <p className="text-white font-bold text-lg leading-tight">Code Illustrated</p>
-              <p className="text-white/40 text-xs">Online School</p>
-            </div>
-          </Link>
+          <BrandLogo href="/" size={56} priority />
         </div>
 
         <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-8 backdrop-blur-sm shadow-2xl">
@@ -85,7 +79,7 @@ export default function ResetPasswordPage() {
                 This password-reset link is invalid or has expired. Request a new one to continue.
               </p>
               <Link
-                href="/auth/forgot-password"
+                href={FORGOT_PASSWORD_PATH}
                 className="inline-block w-full bg-gradient-to-r from-[#c31d24] to-[#e53535] text-white font-semibold py-3 rounded-xl"
               >
                 Send a new link

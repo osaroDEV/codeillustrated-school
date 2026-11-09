@@ -42,7 +42,9 @@ Every account must click an emailed link before it can sign in:
 
 - **Signup** goes through `supabase.auth.signUp`, which sends the link.
 - The link is built from `templates/confirmation.html` and points at `/auth/confirm`, which verifies it and signs the learner in.
-- **Accounts created before this change** are reset to unverified by migration `…000400`. Learners get a new link from the login page ("Resend verification link"), from `/auth/verify-email`, or from the admin panel's **Email verification links to all unverified** button.
+- **Accounts created before this change** are reset to unverified by migration `…000400`. Learners get a new link from the login page ("Resend verification link"), from `/verify-email`, or from the admin panel's **Email verification links to all unverified** button.
+- **Account pages** live at `/login`, `/signup`, `/forgot-password`, `/reset-password` and `/verify-email`. The old `/auth/<page>` addresses redirect there permanently. `/auth/confirm` stays where it is, because the email templates and the redirect URLs below point at it.
+- **Returning to a course:** a visitor who signs up from a course page has that page saved as `next_path` in their account metadata, and `/auth/confirm` sends them back to it after verification.
 
 ## Rolling out to the hosted project
 
@@ -51,7 +53,7 @@ Every account must click an emailed link before it can sign in:
    - Site URL: `https://codeillustrated.com/academy`. Add `https://codeillustrated.com/academy/auth/confirm` to the redirect URLs.
    - Set up custom SMTP first (Brevo: `smtp-relay.brevo.com:587`, using your Brevo SMTP login and key). Supabase's built-in mailer only sends to project team members, and free-plan projects can't edit email templates until custom SMTP is on.
    - Set the "Confirm signup" template to the contents of `templates/confirmation.html`. If you skip this, the default link still verifies the account, but `/auth/confirm` can't sign the learner in, so they're sent to the login page instead.
-   - Set the "Reset password" template to the contents of `templates/recovery.html`. Its link signs the learner in through `/auth/confirm` and opens `/auth/reset-password`; the default template's link can't, so "Forgot password?" wouldn't work without it.
+   - Set the "Reset password" template to the contents of `templates/recovery.html`. Its link signs the learner in through `/auth/confirm` and opens `/reset-password`; the default template's link can't, so "Forgot password?" wouldn't work without it.
    - Raise Rate Limits → "emails sent per hour" from the default (2) to something like 30.
 2. **Apply the migrations before the code that needs them is deployed**, so before merging to `main`. The migrations only add things, so the code already live keeps working. If you deploy first, the live site queries tables that don't exist yet; that happened with Phase 2. To push to production without re-linking the CLI away from staging, run `pnpm exec supabase db push --linked --project-ref <production ref>`. Add `--dry-run` first to see what it will apply.
 3. **Deploy the code** by merging to `main`.
@@ -91,3 +93,12 @@ Refunds are made in the Flutterwave dashboard; Admin → Payments → "Mark refu
 - To run the app against staging, put its URL, anon key and service-role key in `.env.local`, which overrides `.env`.
 - Its SMTP points at an Ethereal test mailbox (`smtp.ethereal.email`), which catches every email and delivers none.
 - Its Site URL is `http://localhost:3000/academy`, so verification links point at a local dev server on port 3000.
+
+## Resetting for a round of testing
+
+`sql/remove-learners.sql` deletes every account that isn't an admin, with its enrolments, progress, quiz and assignment work, notes, certificates, orders, subscriptions, payment events and queued emails. Admins and everything they made (courses, lessons, cohorts, class sessions, announcements, invite codes, contact messages) stay. It can't be undone.
+
+1. Run `sql/remove-learners-preview.sql` the same way and check the numbers.
+2. If `live_subscriptions` isn't 0, cancel those in Admin → Payments first so Flutterwave stops charging the cards. The script refuses to run until then.
+3. Run `pnpm exec supabase db query --linked [--project-ref <ref>] -f supabase/sql/remove-learners.sql`.
+4. Delete the files the preview listed in `files_to_remove` with `pnpm exec supabase storage rm --experimental --linked ss:///course-files/<path> …`.
