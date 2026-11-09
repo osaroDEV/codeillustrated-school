@@ -33,7 +33,7 @@ const SOURCE_LABEL: Record<Enrollment["source"], string> = {
   manual: "Added by admin",
   code: "Scholarship code",
   purchase: "Paid",
-  subscription: "Paid monthly",
+  subscription: "Subscription",
 };
 
 interface Learner {

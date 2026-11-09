@@ -92,12 +92,20 @@ export const coursePatchSchema = z
   })
   .partial();
 
-export const offeringUpsertSchema = z.object({
-  kind: z.enum(OFFERING_KINDS),
-  price_usd: money,
-  price_ngn: money,
-  is_active: z.boolean().default(true),
-});
+export const offeringUpsertSchema = z
+  .object({
+    kind: z.enum(OFFERING_KINDS),
+    price_usd: money,
+    price_ngn: money,
+    is_active: z.boolean().default(true),
+    // Optional, and only sold on self-paced offerings.
+    yearly_price_usd: z.preprocess(emptyToNull, z.coerce.number().positive().nullable()).optional(),
+    yearly_price_ngn: z.preprocess(emptyToNull, z.coerce.number().positive().nullable()).optional(),
+  })
+  .refine((o) => (o.yearly_price_usd == null) === (o.yearly_price_ngn == null), {
+    message: "Set the yearly price in both USD and NGN, or leave both empty.",
+    path: ["yearly_price_usd"],
+  });
 
 export const moduleCreateSchema = z.object({
   course_id: text.min(1),
@@ -179,12 +187,13 @@ const sessionFields = {
   lesson_id: nullableUuid,
   meeting_url: nullableUrl,
   recording_url: nullableUrl,
+  shared_with_self_paced: z.boolean(),
 };
 
 export const sessionsCreateSchema = z.object({
   sessions: z
     .array(
-      z.object(sessionFields).partial({ title: true, lesson_id: true, meeting_url: true, recording_url: true })
+      z.object(sessionFields).partial({ title: true, lesson_id: true, meeting_url: true, recording_url: true, shared_with_self_paced: true })
     )
     .min(1)
     .max(MAX_GENERATED_SESSIONS),

@@ -33,6 +33,8 @@ export interface CourseSeat {
   access: LessonAccess;
   source: string | null;
   cohortId: string | null;
+  /** Subscribed to lessons and recordings only, with no live classes. */
+  selfPaced: boolean;
 }
 
 /** The user's standing in a course, for a lesson that is or isn't a preview. */
@@ -46,7 +48,7 @@ export async function courseSeat(
     getRole(user.id),
     admin
       .from("enrollments")
-      .select("status, source, cohort_id, subscriptions(status, current_period_end)")
+      .select("status, source, cohort_id, subscriptions(status, current_period_end, offerings(kind))")
       .eq("user_id", user.id)
       .eq("course_id", courseId)
       .maybeSingle(),
@@ -58,7 +60,13 @@ export async function courseSeat(
     subscription: enrollment?.subscriptions as unknown as SubscriptionState | null,
     isPreview,
   });
-  return { access, source: enrollment?.source ?? null, cohortId: enrollment?.cohort_id ?? null };
+  const subscription = enrollment?.subscriptions as unknown as { offerings: { kind: string } | null } | null;
+  return {
+    access,
+    source: enrollment?.source ?? null,
+    cohortId: enrollment?.cohort_id ?? null,
+    selfPaced: enrollment?.source === "subscription" && subscription?.offerings?.kind === "self_paced",
+  };
 }
 
 interface LessonRow {
@@ -180,6 +188,55 @@ export async function getLessonClasses(
     .eq("cohort_id", cohortId)
     .order("starts_at");
   return (data ?? []) as LessonClass[];
+}
+
+/** The latest recording of a lesson an admin has shared with self-paced subscribers. */
+export async function getLessonRecordings(admin: AdminClient, lessonId: string): Promise<LessonClass[]> {
+  const { data } = await admin
+    .from("class_sessions")
+    .select("id, title, starts_at, duration_min, recording_url")
+    .eq("lesson_id", lessonId)
+    .eq("shared_with_self_paced", true)
+    .not("recording_url", "is", null)
+    .order("starts_at", { ascending: false })
+    .limit(1);
+  return (data ?? []) as LessonClass[];
+}
+
+export interface CourseRecording {
+  id: string;
+  course_id: string;
+  title: string;
+  starts_at: string;
+  recording_url: string;
+}
+
+/** Every recording in these courses an admin has shared with self-paced subscribers, newest first. */
+export async function getCourseRecordings(admin: AdminClient, courseIds: string[]): Promise<CourseRecording[]> {
+  if (courseIds.length === 0) return [];
+  const { data } = await admin
+    .from("class_sessions")
+    .select("id, title, starts_at, recording_url, lessons(title), cohorts!inner(course_id)")
+    .in("cohorts.course_id", courseIds)
+    .eq("shared_with_self_paced", true)
+    .not("recording_url", "is", null)
+    .order("starts_at", { ascending: false })
+    .limit(200);
+  type Row = {
+    id: string;
+    title: string | null;
+    starts_at: string;
+    recording_url: string;
+    lessons: { title: string } | null;
+    cohorts: { course_id: string };
+  };
+  return ((data ?? []) as unknown as Row[]).map((r) => ({
+    id: r.id,
+    course_id: r.cohorts.course_id,
+    title: r.title || r.lessons?.title || "Live class",
+    starts_at: r.starts_at,
+    recording_url: r.recording_url,
+  }));
 }
 
 export interface CourseResource {

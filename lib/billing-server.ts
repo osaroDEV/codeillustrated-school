@@ -12,10 +12,14 @@ import {
 } from "./flutterwave";
 import {
   chargeProblem,
+  checkoutAmount,
   formatMoney,
+  intervalNoun,
   matchRenewal,
   newTxRef,
   PURCHASABLE_KINDS,
+  SUBSCRIPTION_GRACE_DAYS,
+  type BillingInterval,
   type Currency,
   type PurchasableKind,
 } from "./billing";
@@ -37,6 +41,7 @@ export function appUrl(): string {
 const KIND_LABEL: Record<PurchasableKind, string> = {
   cohort_group: "Group classes",
   cohort_1on1: "1-on-1 classes",
+  self_paced: "Self-paced",
 };
 
 export class CheckoutError extends Error {
@@ -53,19 +58,23 @@ export class CheckoutError extends Error {
 export async function startCheckout(
   admin: AdminClient,
   user: User,
-  input: { courseId: string; kind: string; currency: Currency }
+  input: { courseId: string; kind: string; currency: Currency; interval?: BillingInterval }
 ): Promise<{ link: string; txRef: string }> {
   if (!(PURCHASABLE_KINDS as readonly string[]).includes(input.kind)) {
     throw new CheckoutError("That option can't be bought online yet.", 400);
   }
   const kind = input.kind as PurchasableKind;
+  const interval = input.interval ?? "monthly";
+  if (interval === "yearly" && kind !== "self_paced") {
+    throw new CheckoutError("Live classes are billed monthly.", 400);
+  }
   if (!user.email) throw new CheckoutError("Your account has no email address.", 400);
 
   const [{ data: course }, { data: offering }, { data: profile }] = await Promise.all([
     admin.from("courses").select("id, title, is_published").eq("id", input.courseId).maybeSingle(),
     admin
       .from("offerings")
-      .select("id, kind, price_usd, price_ngn, is_active")
+      .select("id, kind, price_usd, price_ngn, yearly_price_usd, yearly_price_ngn, is_active")
       .eq("course_id", input.courseId)
       .eq("kind", kind)
       .maybeSingle(),
@@ -76,14 +85,15 @@ export async function startCheckout(
 
   await assertNoCurrentAccess(admin, user.id, input.courseId);
 
-  const amount = Number(input.currency === "NGN" ? offering.price_ngn : offering.price_usd);
-  if (!(amount > 0)) throw new CheckoutError("That option has no price set yet. Please contact us.", 409);
+  const amount = checkoutAmount(offering, input.currency, interval);
+  if (amount === null) throw new CheckoutError("That option has no price set yet. Please contact us.", 409);
 
   const plan = await getOrCreatePlan(admin, {
     offeringId: offering.id,
     currency: input.currency,
     amount,
-    name: `${course.title} – ${KIND_LABEL[kind]} (${input.currency})`,
+    interval,
+    name: `${course.title} – ${KIND_LABEL[kind]}, ${interval} (${input.currency})`,
   });
 
   const txRef = newTxRef();
@@ -113,7 +123,7 @@ export async function startCheckout(
       customer: { email: user.email, name: profile?.full_name },
       paymentPlan: plan.flw_plan_id,
       title: course.title,
-      description: `${KIND_LABEL[kind]}, billed monthly`,
+      description: `${KIND_LABEL[kind]}, billed ${interval}`,
       meta: { order_id: order.id, course_id: course.id },
     });
     return { link, txRef };
@@ -149,7 +159,7 @@ async function assertNoCurrentAccess(admin: AdminClient, userId: string, courseI
 
 async function getOrCreatePlan(
   admin: AdminClient,
-  input: { offeringId: string; currency: Currency; amount: number; name: string }
+  input: { offeringId: string; currency: Currency; amount: number; interval: BillingInterval; name: string }
 ): Promise<{ id: string; flw_plan_id: number }> {
   const find = () =>
     admin
@@ -158,7 +168,7 @@ async function getOrCreatePlan(
       .eq("offering_id", input.offeringId)
       .eq("currency", input.currency)
       .eq("amount", input.amount)
-      .eq("interval", "monthly")
+      .eq("interval", input.interval)
       .maybeSingle();
 
   const { data: existing } = await find();
@@ -168,7 +178,7 @@ async function getOrCreatePlan(
     name: input.name,
     amount: input.amount,
     currency: input.currency,
-    interval: "monthly",
+    interval: input.interval,
   });
   const { data, error } = await admin
     .from("payment_plans")
@@ -176,7 +186,7 @@ async function getOrCreatePlan(
       offering_id: input.offeringId,
       currency: input.currency,
       amount: input.amount,
-      interval: "monthly",
+      interval: input.interval,
       flw_plan_id: flwPlanId,
     })
     .select("id, flw_plan_id")
@@ -311,6 +321,7 @@ async function applyFirstCharge(admin: AdminClient, order: OrderRow, tx: FlwTran
     }
 
     await sendReceipt(admin, {
+      subscriptionId: result.subscription_id,
       email: order.customer_email,
       userId: order.user_id,
       courseId: order.course_id,
@@ -349,11 +360,14 @@ async function applyRenewal(admin: AdminClient, tx: FlwTransaction) {
   }
 
   if (tx.status !== "successful") {
-    await admin
+    const { data: nowPastDue } = await admin
       .from("subscriptions")
       .update({ status: "past_due", updated_at: new Date().toISOString() })
       .eq("id", sub.id)
-      .eq("status", "active");
+      .eq("status", "active")
+      .select("id");
+    // Only on the first failure, not on every retry.
+    if (nowPastDue?.length) await sendPaymentFailedNotice(admin, sub);
     return { outcome: "failed" as const, detail: `Renewal ${tx.status}; subscription past due` };
   }
 
@@ -369,6 +383,7 @@ async function applyRenewal(admin: AdminClient, tx: FlwTransaction) {
 
   if (outcome === "renewed") {
     await sendReceipt(admin, {
+      subscriptionId: sub.id,
       email: sub.customer_email,
       userId: sub.user_id,
       courseId: sub.course_id,
@@ -512,6 +527,14 @@ export async function cancelCohortSubscriptions(
  * still pending after 15 minutes, in case a webhook was missed.
  */
 export async function runDailyBilling(admin: AdminClient, now = new Date()) {
+  // Read before expiring, so the notice goes only to people who were still paying.
+  const graceCutoff = new Date(now.getTime() - SUBSCRIPTION_GRACE_DAYS * DAY_MS).toISOString();
+  const { data: ending } = await admin
+    .from("subscriptions")
+    .select(SUBSCRIBER_FIELDS)
+    .in("status", ["active", "past_due"])
+    .lt("current_period_end", graceCutoff);
+
   const { data: expired, error } = await admin.rpc("expire_subscriptions", { p_now: now.toISOString() });
   if (error) throw new Error(`expire_subscriptions failed: ${error.message}`);
 
@@ -543,24 +566,128 @@ export async function runDailyBilling(admin: AdminClient, now = new Date()) {
     .eq("status", "pending")
     .lt("created_at", new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString());
 
-  return { expired: Number(expired ?? 0), reconciled };
+  for (const sub of (ending ?? []) as unknown as Subscriber[]) {
+    await sendExpiredNotice(admin, sub);
+  }
+  const reminders = await sendYearlyReminders(admin, now);
+
+  return { expired: Number(expired ?? 0), reconciled, reminders };
 }
 
 // ─── Receipts ───
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const YEARLY_REMINDER_DAYS = 7;
+const SUBSCRIBER_FIELDS = "id, user_id, course_id, customer_email, current_period_end";
+
+interface Subscriber {
+  id: string;
+  user_id: string | null;
+  course_id: string;
+  customer_email: string;
+  current_period_end: string;
+}
+
+const longDate = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+
+async function subscriberDetails(admin: AdminClient, courseId: string, userId: string | null) {
+  const [{ data: course }, { data: profile }] = await Promise.all([
+    admin.from("courses").select("title").eq("id", courseId).maybeSingle(),
+    userId ? admin.from("profiles").select("full_name").eq("id", userId).maybeSingle() : Promise.resolve({ data: null }),
+  ]);
+  return { title: course?.title ?? courseId, profile, name: profile?.full_name?.split(" ")[0] as string | undefined };
+}
+
+async function notify(admin: AdminClient, sub: Subscriber, subject: (title: string) => string, body: (title: string) => string[]) {
+  const { title, profile, name } = await subscriberDetails(admin, sub.course_id, sub.user_id);
+  return sendEmail({
+    to: sub.customer_email,
+    toName: profile?.full_name,
+    subject: subject(title),
+    paragraphs: [`Hi${name ? ` ${name}` : ""},`, ...body(title), `Dashboard: ${appUrl()}/dashboard/billing`, "Code Illustrated"],
+  });
+}
+
+function sendPaymentFailedNotice(admin: AdminClient, sub: Subscriber) {
+  return notify(
+    admin,
+    sub,
+    (title) => `Your payment for ${title} didn't go through`,
+    (title) => [
+      `We couldn't take your latest payment for ${title}, so please check your card with your bank.`,
+      `We'll keep your access for ${SUBSCRIPTION_GRACE_DAYS} days after ${longDate(sub.current_period_end)} while the payment is retried.`,
+    ]
+  );
+}
+
+function sendExpiredNotice(admin: AdminClient, sub: Subscriber) {
+  return notify(
+    admin,
+    sub,
+    (title) => `Your subscription to ${title} has ended`,
+    (title) => [
+      `Your subscription to ${title} has ended because we couldn't take payment.`,
+      "Your progress is saved. Subscribe again from the course page and you'll pick up where you left off.",
+    ]
+  );
+}
+
+/** One reminder per renewal, about a week before a yearly charge. */
+async function sendYearlyReminders(admin: AdminClient, now: Date): Promise<number> {
+  const { data } = await admin
+    .from("subscriptions")
+    .select(`${SUBSCRIBER_FIELDS}, amount, currency, renewal_reminder_for, payment_plans!inner(interval)`)
+    .eq("status", "active")
+    .eq("cancel_at_period_end", false)
+    .eq("payment_plans.interval", "yearly")
+    .gt("current_period_end", now.toISOString())
+    .lt("current_period_end", new Date(now.getTime() + YEARLY_REMINDER_DAYS * DAY_MS).toISOString());
+
+  type Row = Subscriber & { amount: number | string; currency: string; renewal_reminder_for: string | null };
+  const due = ((data ?? []) as unknown as Row[]).filter(
+    (s) => !s.renewal_reminder_for || new Date(s.renewal_reminder_for).getTime() !== new Date(s.current_period_end).getTime()
+  );
+
+  let sent = 0;
+  for (const sub of due) {
+    const ok = await notify(
+      admin,
+      sub,
+      (title) => `Your yearly subscription to ${title} renews soon`,
+      (title) => [
+        `Your yearly subscription to ${title} renews on ${longDate(sub.current_period_end)}, and we'll charge ${formatMoney(sub.amount, sub.currency)} to your card.`,
+        "To keep learning, you don't need to do anything. If you'd rather stop, you can cancel from your dashboard before that date.",
+      ]
+    );
+    // Left unmarked if the email failed, so tomorrow's run tries again.
+    if (ok) {
+      await admin.from("subscriptions").update({ renewal_reminder_for: sub.current_period_end }).eq("id", sub.id);
+      sent++;
+    }
+  }
+  return sent;
+}
+
 async function sendReceipt(
   admin: AdminClient,
-  r: { email: string; userId: string | null; courseId: string; amount: number; currency: string; first: boolean }
+  r: {
+    subscriptionId: string;
+    email: string;
+    userId: string | null;
+    courseId: string;
+    amount: number;
+    currency: string;
+    first: boolean;
+  }
 ) {
-  const [{ data: course }, { data: profile }] = await Promise.all([
-    admin.from("courses").select("title").eq("id", r.courseId).maybeSingle(),
-    r.userId
-      ? admin.from("profiles").select("full_name").eq("id", r.userId).maybeSingle()
-      : Promise.resolve({ data: null }),
+  const [{ title, profile, name }, { data: plan }] = await Promise.all([
+    subscriberDetails(admin, r.courseId, r.userId),
+    admin.from("subscriptions").select("offerings(kind), payment_plans(interval)").eq("id", r.subscriptionId).maybeSingle(),
   ]);
-  const title = course?.title ?? r.courseId;
-  const name = profile?.full_name?.split(" ")[0];
   const paid = formatMoney(r.amount, r.currency);
+  const interval = (plan?.payment_plans as unknown as { interval: BillingInterval } | null)?.interval ?? "monthly";
+  const selfPaced = (plan?.offerings as unknown as { kind: string } | null)?.kind === "self_paced";
 
   await sendEmail({
     to: r.email,
@@ -569,11 +696,15 @@ async function sendReceipt(
     paragraphs: [
       `Hi${name ? ` ${name}` : ""},`,
       r.first
-        ? `Thanks for joining ${title}. We received your payment of ${paid}. Your subscription renews monthly and you can cancel any time from your dashboard.`
-        : `We received your monthly payment of ${paid} for ${title}. Thank you!`,
-      r.first
-        ? "We'll place you in a class group shortly and your schedule will appear in your dashboard."
-        : "Your classes continue as normal.",
+        ? `Thanks for joining ${title}. We received your payment of ${paid}. Your subscription renews every ${intervalNoun(interval)} and you can cancel any time from your dashboard.`
+        : `We received your ${interval} payment of ${paid} for ${title}. Thank you!`,
+      selfPaced
+        ? r.first
+          ? "Your lessons are ready in your dashboard."
+          : "Your access continues as normal."
+        : r.first
+          ? "We'll place you in a class group shortly and your schedule will appear in your dashboard."
+          : "Your classes continue as normal.",
       `Dashboard: ${appUrl()}/dashboard/billing`,
       "Code Illustrated",
     ],

@@ -18,6 +18,8 @@ These migrations cover Phases 1–4 of the LMS, plus editable course addresses a
 | `20261108000000_contact_messages.sql` | Keeps messages from the public contact forms for Admin → Messages. Only `/api/contact` (service role) writes them; only admins can read them. |
 | `20261109000000_lessons_and_progress.sql` | Phase 4. `lesson_progress`, `course_resources` and the private `course-files` bucket. Triggers recalculate `enrollments.progress` from completed lessons and attendance; earlier hand-set values are kept in `progress_baseline` as a starting credit. |
 | `20261110000000_lesson_blocks.sql` | A lesson becomes an ordered list of `lesson_blocks` (text, video or file) and existing lesson material is carried over. Only server code reads blocks, after the access check. `lessons.content`, `video_url` and `file_path` are no longer read. |
+| `20261111000000_self_paced.sql` | Phase 5. Self-paced subscriptions per course: optional yearly prices on `offerings`, yearly payment plans, and billing functions that extend each period by the plan's interval. |
+| `20261112000000_shared_recordings.sql` | Adds `class_sessions.shared_with_self_paced`, off by default. Self-paced subscribers only see recordings an admin has shared. |
 
 ## Local development
 

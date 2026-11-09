@@ -61,12 +61,16 @@ export default async function CohortPage({ params }: { params: Promise<{ id: str
     const [{ data: openRows }, { data: staffRows }] = await Promise.all([
       admin
         .from("enrollments")
-        .select("id, user_id, profiles(full_name, email)")
+        .select("id, user_id, profiles(full_name, email), subscriptions(offerings(kind))")
         .eq("course_id", cohort.course_id)
         .is("cohort_id", null),
       admin.from("profiles").select("id, full_name, email").in("role", ["instructor", "admin"]).order("full_name"),
     ]);
-    unassigned = (openRows ?? []).map(toMember).sort((a, b) => a.name.localeCompare(b.name));
+    // Self-paced subscriptions don't include live classes.
+    unassigned = (openRows ?? [])
+      .filter((r) => (r.subscriptions as unknown as { offerings: { kind: string } | null } | null)?.offerings?.kind !== "self_paced")
+      .map(toMember)
+      .sort((a, b) => a.name.localeCompare(b.name));
     staffOptions = (staffRows ?? []).map((p) => ({ id: p.id, name: p.full_name || p.email || p.id }));
   }
 

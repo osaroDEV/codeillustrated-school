@@ -43,6 +43,8 @@ export interface AdminOffering {
   kind: "cohort_group" | "cohort_1on1" | "self_paced";
   price_usd: number;
   price_ngn: number;
+  yearly_price_usd: number | null;
+  yearly_price_ngn: number | null;
   is_active: boolean;
 }
 
@@ -107,6 +109,8 @@ function normalize(row: AdminCourse): AdminCourse {
       ...o,
       price_usd: Number(o.price_usd),
       price_ngn: Number(o.price_ngn),
+      yearly_price_usd: o.yearly_price_usd === null ? null : Number(o.yearly_price_usd),
+      yearly_price_ngn: o.yearly_price_ngn === null ? null : Number(o.yearly_price_ngn),
     })),
   };
 }

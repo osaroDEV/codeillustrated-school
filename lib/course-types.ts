@@ -37,7 +37,7 @@ export interface Course {
    * Active offerings from the database, used for online checkout. Absent on
    * the bundled STATIC_COURSES fallback, which only offers WhatsApp enrolment.
    */
-  offerings?: { kind: OfferingKind; price: PriceTier }[];
+  offerings?: { kind: OfferingKind; price: PriceTier; yearlyPrice?: PriceTier }[];
 }
 
 /** Just enough of a course for admin dropdowns. */

@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Loader2, RefreshCw, Undo2, XCircle } from "lucide-react";
 import { LocalTime } from "@/components/local-time";
-import { formatMoney } from "@/lib/billing";
+import { formatMoney, monthlyEquivalent, type BillingInterval } from "@/lib/billing";
 import { cardClass, errorClass, request, secondaryButtonClass } from "./ui";
 
 export interface AdminSubscription {
+  interval: BillingInterval;
+  selfPaced: boolean;
   id: string;
   status: "active" | "past_due" | "cancelled" | "expired";
   amount: number;
@@ -90,7 +92,7 @@ export function PaymentsPanel({
   const [error, setError] = useState("");
 
   const live = subscriptions.filter((s) => s.status === "active" || s.status === "past_due");
-  const mrr = live.reduce<Record<string, number>>((acc, s) => ({ ...acc, [s.currency]: (acc[s.currency] ?? 0) + s.amount }), {});
+  const mrr = live.reduce<Record<string, number>>((acc, s) => ({ ...acc, [s.currency]: (acc[s.currency] ?? 0) + monthlyEquivalent(s.amount, s.interval) }), {});
 
   async function act(key: string, path: string, confirmText?: string) {
     if (confirmText && !confirm(confirmText)) return;
@@ -209,7 +211,7 @@ export function PaymentsPanel({
                     {s.learner} <span className="text-white/30 text-xs">{s.email}</span>
                   </p>
                   <p className="text-white/40 text-xs">
-                    {s.course} · {formatMoney(s.amount, s.currency)}/mo · paid to <LocalTime iso={s.current_period_end} format={DATE} />
+                    {s.course}{s.selfPaced ? " (self-paced)" : ""} · {formatMoney(s.amount, s.currency)}/{s.interval === "yearly" ? "yr" : "mo"} · paid to <LocalTime iso={s.current_period_end} format={DATE} />
                   </p>
                 </div>
                 <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${SUB_BADGE[s.status]}`}>

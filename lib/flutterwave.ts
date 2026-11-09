@@ -68,7 +68,7 @@ export async function createPaymentPlan(input: {
   name: string;
   amount: number;
   currency: "NGN" | "USD";
-  interval: "monthly";
+  interval: "monthly" | "yearly";
 }): Promise<number> {
   const data = await call<{ id: number }>("/payment-plans", { method: "POST", body: input });
   return data.id;

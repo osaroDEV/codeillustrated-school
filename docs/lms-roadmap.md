@@ -131,6 +131,8 @@ Decisions so far:
 
 ## Phase 5: Subscriptions per course
 
+**Status:** shipped. Migration `20261111000000_self_paced.sql`. A self-paced subscriber is an enrolment on a `self_paced` offering with no cohort. Yearly prices are optional columns on `offerings`, and each renewal follows its plan's interval through `plan_period()`. Self-paced subscribers only see recordings an admin has shared, class by class (`class_sessions.shared_with_self_paced`, migration `20261112000000_shared_recordings.sql`, off by default because recordings can show children). To switch between self-paced and a live seat, a learner cancels first and buys the other when ready.
+
 **Goal:** a learner can subscribe to one course, monthly or yearly, and keeps its self-paced content and recordings for as long as they pay.
 
 **Builds on Phase 3:** the tables (`payment_plans`, `subscriptions`, `orders`, `payment_events`), the webhook, renewal matching, expiry cron, Billing page and admin Payments page already exist for monthly cohort seats. This phase:

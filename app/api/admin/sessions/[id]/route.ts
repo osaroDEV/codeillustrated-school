@@ -30,6 +30,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         { status: 403 }
       );
     }
+    // A new video needs its own approval before self-paced subscribers see it.
+    if ("recording_url" in updates && updates.recording_url !== found.session.recording_url) {
+      updates.shared_with_self_paced = false;
+    }
   }
 
   const { data, error } = await supabase.from("class_sessions").update(updates).eq("id", id).select().single();

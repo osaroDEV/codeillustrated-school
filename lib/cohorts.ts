@@ -36,6 +36,7 @@ export interface ClassSession {
   duration_min: number;
   meeting_url: string | null;
   recording_url: string | null;
+  shared_with_self_paced: boolean;
 }
 
 export type AttendanceStatus = "present" | "late" | "absent";

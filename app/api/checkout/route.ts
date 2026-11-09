@@ -10,9 +10,10 @@ const schema = z.object({
   course_id: z.string().trim().min(1),
   kind: z.string().trim().min(1),
   currency: z.enum(["NGN", "USD"]),
+  interval: z.enum(["monthly", "yearly"]).default("monthly"),
 });
 
-// POST — start a monthly subscription checkout for a course offering.
+// POST — start a monthly or yearly subscription checkout for a course offering.
 // Returns Flutterwave's hosted payment link for the browser to open.
 export async function POST(req: NextRequest) {
   const auth = await requireVerifiedUserApi();
@@ -27,6 +28,7 @@ export async function POST(req: NextRequest) {
       courseId: body.data.course_id,
       kind: body.data.kind,
       currency,
+      interval: body.data.interval,
     });
     return NextResponse.json({ link, currency });
   } catch (err) {

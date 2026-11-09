@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CreditCard, Receipt } from "lucide-react";
 import { requireUser } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase";
-import { formatMoney, subscriptionCovers, SUBSCRIPTION_GRACE_DAYS } from "@/lib/billing";
+import { formatMoney, subscriptionCovers, SUBSCRIPTION_GRACE_DAYS, intervalNoun, type BillingInterval } from "@/lib/billing";
 import { LocalTime } from "@/components/local-time";
 import { CancelSubscriptionButton } from "@/components/billing/cancel-subscription-button";
 
@@ -20,6 +20,8 @@ interface Sub {
   current_period_end: string;
   created_at: string;
   courses: { title: string; slug: string } | null;
+  payment_plans: { interval: BillingInterval } | null;
+  offerings: { kind: string } | null;
 }
 
 interface Order {
@@ -39,7 +41,7 @@ export default async function BillingPage() {
   const [{ data: subs }, { data: orders }] = await Promise.all([
     admin
       .from("subscriptions")
-      .select("id, course_id, status, currency, amount, current_period_end, created_at, courses(title, slug)")
+      .select("id, course_id, status, currency, amount, current_period_end, created_at, courses(title, slug), payment_plans(interval), offerings(kind)")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
     admin
@@ -88,7 +90,9 @@ export default async function BillingPage() {
                   <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div>
                       <p className="text-white font-semibold">{s.courses?.title ?? s.course_id}</p>
-                      <p className="text-white/40 text-sm">{formatMoney(s.amount, s.currency)} / month · card</p>
+                      <p className="text-white/40 text-sm">{formatMoney(s.amount, s.currency)} / {intervalNoun(s.payment_plans?.interval)} · card
+                        {s.offerings?.kind === "self_paced" && " · Self-paced"}
+                      </p>
                     </div>
                     <StatusBadge status={s.status} covers={covers} />
                   </div>
@@ -98,13 +102,13 @@ export default async function BillingPage() {
                     )}
                     {s.status === "past_due" && (
                       <>
-                        Your last payment didn&apos;t go through. Flutterwave will retry your card; your seat is kept for{" "}
+                        Your last payment didn&apos;t go through. Flutterwave will retry your card; your access is kept for{" "}
                         {SUBSCRIPTION_GRACE_DAYS} days after <LocalTime iso={s.current_period_end} format={DATE} />.
                       </>
                     )}
                     {s.status === "cancelled" &&
                       (covers ? (
-                        <>Cancelled. You keep your seat until <LocalTime iso={s.current_period_end} format={DATE} />.</>
+                        <>Cancelled. You keep access until <LocalTime iso={s.current_period_end} format={DATE} />.</>
                       ) : (
                         <>Cancelled.</>
                       ))}

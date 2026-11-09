@@ -482,6 +482,7 @@ function SessionRow({
 
   const [recording, setRecording] = useState(session.recording_url ?? "");
   const [meeting, setMeeting] = useState(session.meeting_url ?? "");
+  const [shared, setShared] = useState(session.shared_with_self_paced);
   const [draft, setDraft] = useState<Record<string, AttendanceStatus | null>>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -491,7 +492,12 @@ function SessionRow({
     setSaving(true);
     setError("");
     setSaved("");
-    const err = await send(`/sessions/${session.id}`, "PATCH", { recording_url: recording, meeting_url: meeting });
+    const err = await send(`/sessions/${session.id}`, "PATCH", {
+      recording_url: recording,
+      meeting_url: meeting,
+      // Admin only: the route refuses this field from instructors.
+      ...(isAdmin ? { shared_with_self_paced: shared && recording.trim() !== "" } : {}),
+    });
     setSaving(false);
     if (err) return setError(err);
     setSaved("Links saved.");
@@ -537,6 +543,7 @@ function SessionRow({
         </div>
         <span className="hidden sm:flex items-center gap-3 text-xs text-white/40">
           {session.recording_url && <span className="text-[#3da3bc]">Recording</span>}
+          {session.recording_url && session.shared_with_self_paced && <span className="text-[#ffbd59]">Shared</span>}
           {state !== "upcoming" && (
             <span>
               {markedCount}/{members.length} marked
@@ -555,6 +562,21 @@ function SessionRow({
               <input id={`meet-${session.id}`} type="url" value={meeting} onChange={(e) => setMeeting(e.target.value)} placeholder="Uses the cohort's link" className={inputClass} />
             </Field>
           </div>
+          {isAdmin && (
+            <div>
+              <label className="flex items-center gap-2 text-sm text-white/70">
+                <input
+                  type="checkbox"
+                  checked={shared && recording.trim() !== ""}
+                  disabled={recording.trim() === ""}
+                  onChange={(e) => setShared(e.target.checked)}
+                  className="accent-[#3da3bc]"
+                />
+                Share recording with self-paced subscribers
+              </label>
+              <p className="text-white/30 text-[11px] mt-1">Only share if everyone on the recording, or their parents, has agreed.</p>
+            </div>
+          )}
           <div className="flex gap-2 flex-wrap">
             <button onClick={saveLinks} disabled={saving} className={secondaryButtonClass}>
               <Check className="w-3.5 h-3.5" /> Save links

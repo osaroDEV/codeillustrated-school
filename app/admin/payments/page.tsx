@@ -18,7 +18,7 @@ export default async function PaymentsPage() {
   const [subs, orders, events, unplaced] = await Promise.all([
     admin
       .from("subscriptions")
-      .select("id, status, currency, amount, current_period_end, created_at, customer_email, course_id, profiles(full_name, email), courses(title)")
+      .select("id, status, currency, amount, current_period_end, created_at, customer_email, course_id, profiles(full_name, email), courses(title), payment_plans(interval), offerings(kind)")
       .order("created_at", { ascending: false })
       .limit(200),
     admin
@@ -34,7 +34,7 @@ export default async function PaymentsPage() {
       .limit(50),
     admin
       .from("enrollments")
-      .select("id, enrolled_at, course_id, profiles(full_name, email), courses(title)")
+      .select("id, enrolled_at, course_id, profiles(full_name, email), courses(title), subscriptions(offerings(kind))")
       .eq("source", "subscription")
       .eq("status", "active")
       .is("cohort_id", null)
@@ -57,6 +57,8 @@ export default async function PaymentsPage() {
           learner: person(s.profiles),
           email: s.customer_email,
           course: title(s.courses),
+          interval: (s.payment_plans as unknown as { interval: AdminSubscription["interval"] } | null)?.interval ?? "monthly",
+          selfPaced: (s.offerings as unknown as { kind: string } | null)?.kind === "self_paced",
         })
       )}
       charges={(orders.data ?? []).map(
@@ -75,7 +77,9 @@ export default async function PaymentsPage() {
         })
       )}
       events={(events.data ?? []) as AdminEvent[]}
-      unplaced={(unplaced.data ?? []).map(
+      unplaced={(unplaced.data ?? [])
+        // Self-paced subscribers never join a cohort.
+        .filter((e) => (e.subscriptions as unknown as { offerings: { kind: string } | null } | null)?.offerings?.kind !== "self_paced").map(
         (e): Unplaced => ({
           id: e.id,
           course_id: e.course_id,

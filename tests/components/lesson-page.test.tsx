@@ -4,9 +4,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import LessonPage from "@/app/dashboard/courses/[courseId]/lessons/[lessonId]/page";
 import type { LessonBlock } from "@/lib/lessons";
 
-const { state, getLessonBlocks } = vi.hoisted(() => ({
-  state: { access: "enrolled", type: "text", blocks: [] as unknown[] },
+const { state, getLessonBlocks, getLessonClasses, getLessonRecordings } = vi.hoisted(() => ({
+  state: { access: "enrolled", type: "text", selfPaced: false, blocks: [] as unknown[] },
   getLessonBlocks: vi.fn(),
+  getLessonClasses: vi.fn(),
+  getLessonRecordings: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -25,10 +27,11 @@ vi.mock("@/lib/lessons", () => ({
   loadLesson: async () => ({
     lesson: { id: "l1", title: "Lesson one", type: state.type, is_preview: false, is_published: true, duration_min: null },
     courseId: "c1",
-    seat: { access: state.access, source: "manual", cohortId: null },
+    seat: { access: state.access, source: "manual", cohortId: null, selfPaced: state.selfPaced },
   }),
   getCourseOutlines: async () => new Map(),
-  getLessonClasses: async () => [],
+  getLessonClasses,
+  getLessonRecordings,
   getLessonBlocks,
 }));
 
@@ -48,6 +51,9 @@ const render = async () =>
 beforeEach(() => {
   state.access = "enrolled";
   state.type = "text";
+  state.selfPaced = false;
+  getLessonClasses.mockReset().mockResolvedValue([]);
+  getLessonRecordings.mockReset().mockResolvedValue([]);
   state.blocks = [
     block({ id: "t1", content: "Intro words" }),
     block({ id: "v1", kind: "video", video_url: "https://youtu.be/abcdefg", title: "Watch this" }),
@@ -83,6 +89,25 @@ describe("lesson page", () => {
   it("says so when a lesson has no material", async () => {
     state.blocks = [];
     expect(await render()).toContain("hasn&#x27;t been added yet");
+  });
+
+  it("shows self-paced subscribers the recording, never a Join button", async () => {
+    state.type = "live";
+    state.selfPaced = true;
+    getLessonRecordings.mockResolvedValue([
+      { id: "r1", title: "Week 1", starts_at: new Date(Date.now() - 60_000).toISOString(), duration_min: 60, recording_url: "https://rec.test/1" },
+    ]);
+    const html = await render();
+    expect(getLessonClasses).not.toHaveBeenCalled();
+    expect(html).toContain("https://rec.test/1");
+    expect(html).not.toContain("Join class");
+    expect(html).not.toContain("/api/sessions/");
+  });
+
+  it("doesn't promise self-paced subscribers a recording", async () => {
+    state.type = "live";
+    state.selfPaced = true;
+    expect(await render()).toContain("If a recording is shared");
   });
 
   it("keeps the live class notice alongside blocks", async () => {

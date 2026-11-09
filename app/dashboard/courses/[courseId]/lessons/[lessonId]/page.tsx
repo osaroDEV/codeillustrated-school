@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, Circle, Download, ExternalLink, Lo
 import { createAdminClient } from "@/lib/supabase";
 import { requireUser } from "@/lib/supabase-server";
 import { canTrackProgress, canViewLesson, storedFileName, videoEmbedUrl } from "@/lib/lesson-access";
-import { getCourseOutlines, getLessonBlocks, getLessonClasses, loadLesson, type LessonBlock, type LessonClass, type OutlineModule } from "@/lib/lessons";
+import { getCourseOutlines, getLessonBlocks, getLessonClasses, getLessonRecordings, loadLesson, type LessonBlock, type LessonClass, type OutlineModule } from "@/lib/lessons";
 import { joinState } from "@/lib/schedule";
 import { LocalTime } from "@/components/local-time";
 import { CompleteButton } from "@/components/lessons/complete-button";
@@ -58,7 +58,11 @@ export default async function LessonPage({ params }: Params) {
   const [outlines, blocks, classes] = await Promise.all([
     getCourseOutlines(admin, user.id, [courseId]),
     getLessonBlocks(admin, lesson.id),
-    seat.access === "enrolled" ? getLessonClasses(admin, lesson.id, seat.cohortId) : Promise.resolve([]),
+    seat.access !== "enrolled"
+      ? Promise.resolve([])
+      : seat.selfPaced
+        ? getLessonRecordings(admin, lesson.id)
+        : getLessonClasses(admin, lesson.id, seat.cohortId),
   ]);
   const modules = outlines.get(courseId) ?? [];
   const flat = modules.flatMap((m) => m.lessons);
@@ -89,7 +93,7 @@ export default async function LessonPage({ params }: Params) {
           )}
 
           <div className="mt-6 space-y-6">
-            {lesson.type === "live" && <LiveClasses classes={classes} enrolled={seat.access === "enrolled"} />}
+            {lesson.type === "live" && <LiveClasses classes={classes} enrolled={seat.access === "enrolled"} selfPaced={seat.selfPaced} />}
             {blocks.map((block) => (
               <Block key={block.id} block={block} lessonTitle={lesson.title} />
             ))}
@@ -158,7 +162,15 @@ function Block({ block, lessonTitle }: { block: LessonBlock; lessonTitle: string
   );
 }
 
-function LiveClasses({ classes, enrolled }: { classes: LessonClass[]; enrolled: boolean }) {
+function LiveClasses({ classes, enrolled, selfPaced }: { classes: LessonClass[]; enrolled: boolean; selfPaced: boolean }) {
+  if (classes.length === 0 && selfPaced) {
+    return (
+      <div className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white/60">
+        <Video className="w-5 h-5 text-[#3da3bc] shrink-0" />
+        <span>This lesson is taught in our live classes. If a recording is shared, it will appear here.</span>
+      </div>
+    );
+  }
   if (classes.length === 0) {
     return (
       <div className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white/60">
@@ -181,7 +193,7 @@ function LiveClasses({ classes, enrolled }: { classes: LessonClass[]; enrolled: 
               <LocalTime iso={c.starts_at} className="text-white/50 text-xs" />
             </div>
             <div className="flex items-center gap-3 text-sm">
-              {state === "open" && (
+              {state === "open" && !selfPaced && (
                 <a href={`/academy/api/sessions/${c.id}/join`} className="px-4 py-2 rounded-xl font-semibold text-white bg-gradient-to-r from-[#c31d24] to-[#f5a623]">
                   Join class
                 </a>
