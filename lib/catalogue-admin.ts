@@ -6,18 +6,27 @@ import type { createAdminClient } from "./supabase";
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 
+export interface AdminLessonBlock {
+  id: string;
+  lesson_id: string;
+  position: number;
+  kind: "text" | "video" | "file";
+  title: string | null;
+  content: string | null;
+  video_url: string | null;
+  file_path: string | null;
+}
+
 export interface AdminLesson {
   id: string;
   module_id: string;
   title: string;
   position: number;
   type: "live" | "video" | "text" | "file";
-  content: string | null;
-  video_url: string | null;
-  file_path: string | null;
   is_preview: boolean;
   duration_min: number | null;
   is_published: boolean;
+  lesson_blocks: AdminLessonBlock[];
 }
 
 export interface AdminModule {
@@ -73,7 +82,7 @@ export interface AdminCourse {
   course_resources: AdminResource[];
 }
 
-const SELECT = "*, course_modules(*, lessons(*)), offerings(*), course_slug_redirects(slug, created_at), course_resources(*)";
+const SELECT = "*, course_modules(*, lessons(*, lesson_blocks(*))), offerings(*), course_slug_redirects(slug, created_at), course_resources(*)";
 
 const byPosition = (a: { position: number }, b: { position: number }) => a.position - b.position;
 
@@ -84,7 +93,12 @@ function normalize(row: AdminCourse): AdminCourse {
     certificate_price_ngn: row.certificate_price_ngn === null ? null : Number(row.certificate_price_ngn),
     course_modules: [...(row.course_modules ?? [])]
       .sort(byPosition)
-      .map((m) => ({ ...m, lessons: [...(m.lessons ?? [])].sort(byPosition) })),
+      .map((m) => ({
+        ...m,
+        lessons: [...(m.lessons ?? [])]
+          .sort(byPosition)
+          .map((l) => ({ ...l, lesson_blocks: [...(l.lesson_blocks ?? [])].sort(byPosition) })),
+      })),
     course_slug_redirects: [...(row.course_slug_redirects ?? [])].sort((a, b) =>
       b.created_at.localeCompare(a.created_at)
     ),

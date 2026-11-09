@@ -9,6 +9,7 @@ import {
 import type { AdminCourse, AdminLesson, AdminModule, AdminOffering, AdminResource } from "@/lib/catalogue-admin";
 import { storedFileName } from "@/lib/lesson-access";
 import { FileUpload } from "./file-upload";
+import { blockProblem, LessonBlocksEditor, toBlockPayload, toDraftBlocks, type DraftBlock } from "./lesson-blocks-editor";
 import { COURSE_ICONS } from "@/lib/course-icons";
 import {
   cardClass, dangerButtonClass, errorClass, inputClass, labelClass,
@@ -20,8 +21,6 @@ const OFFERING_LABELS: Record<AdminOffering["kind"], string> = {
   cohort_1on1: "1-on-1",
   self_paced: "Self-paced",
 };
-
-const LESSON_TYPES: AdminLesson["type"][] = ["live", "video", "text", "file"];
 
 export function CourseEditor({ course }: { course: AdminCourse }) {
   return (
@@ -469,22 +468,28 @@ function LessonRow({
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     title: lesson.title,
-    type: lesson.type,
+    live: lesson.type === "live",
     duration_min: lesson.duration_min?.toString() ?? "",
-    video_url: lesson.video_url ?? "",
-    file_path: lesson.file_path ?? "",
-    content: lesson.content ?? "",
     is_preview: lesson.is_preview,
     is_published: lesson.is_published,
   });
+  const [blocks, setBlocks] = useState<DraftBlock[]>(() => toDraftBlocks(lesson.lesson_blocks));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
+    const problem = blockProblem(blocks);
+    if (problem) return setError(problem);
     setSaving(true);
     setError("");
-    const err = await send(`/lessons/${lesson.id}`, "PATCH", form);
+    const { live, ...fields } = form;
+    const err = await send(`/lessons/${lesson.id}`, "PATCH", {
+      ...fields,
+      // Only "live" still means anything; a lesson's formats come from its blocks.
+      type: live ? "live" : "text",
+      blocks: toBlockPayload(blocks),
+    });
     setSaving(false);
     if (err) return setError(err);
     setEditing(false);
@@ -504,7 +509,9 @@ function LessonRow({
         <p className={`flex-1 text-sm truncate ${lesson.is_published ? "text-white/80" : "text-white/30 line-through"}`}>
           {lesson.title}
         </p>
-        <span className="text-[10px] text-white/30 uppercase">{lesson.type}</span>
+        <span className="text-[10px] text-white/30 uppercase">
+          {[lesson.type === "live" ? "live" : null, `${lesson.lesson_blocks.length} block${lesson.lesson_blocks.length === 1 ? "" : "s"}`].filter(Boolean).join(" · ")}
+        </span>
         {lesson.is_preview && <span className="text-[10px] text-[#3da3bc]">preview</span>}
         <IconButton label="Move lesson up" disabled={first || busy} onClick={() => onMove(-1)}><ArrowUp className="w-3 h-3" /></IconButton>
         <IconButton label="Move lesson down" disabled={last || busy} onClick={() => onMove(1)}><ArrowDown className="w-3 h-3" /></IconButton>
@@ -516,42 +523,18 @@ function LessonRow({
           <Field label="Title" id={`l-title-${lesson.id}`} className="sm:col-span-3">
             <input id={`l-title-${lesson.id}`} required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={inputClass} />
           </Field>
-          <Field label="Type" id={`l-type-${lesson.id}`}>
-            <select id={`l-type-${lesson.id}`} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as AdminLesson["type"] })} className={inputClass}>
-              {LESSON_TYPES.map((t) => (
-                <option key={t} value={t} className="bg-[#0d0d14]">{t}</option>
-              ))}
-            </select>
-          </Field>
           <Field label="Length (minutes)" id={`l-dur-${lesson.id}`}>
             <input id={`l-dur-${lesson.id}`} type="number" min="1" value={form.duration_min} onChange={(e) => setForm({ ...form, duration_min: e.target.value })} className={inputClass} />
           </Field>
-          <Field label="Video link" id={`l-video-${lesson.id}`}>
-            <input id={`l-video-${lesson.id}`} type="url" value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="https://…" className={inputClass} />
-            <p className="text-white/30 text-[11px] mt-1">YouTube or Vimeo links play inside the lesson. Other links open in a new tab.</p>
-          </Field>
-          {(form.type === "file" || form.file_path) && (
-            <Field label="Lesson file (private; up to 50 MB)" id={`l-file-${lesson.id}`} className="sm:col-span-3">
-              <div className="flex items-center gap-3 flex-wrap">
-                {form.file_path && <span className="text-white/70 text-xs">{storedFileName(form.file_path)}</span>}
-                <FileUpload
-                  scope="lessons"
-                  label={form.file_path ? "Replace file" : "Upload file"}
-                  onUploaded={(path) => setForm((f) => ({ ...f, file_path: path }))}
-                />
-                {form.file_path && (
-                  <button type="button" onClick={() => setForm({ ...form, file_path: "" })} className="text-white/40 hover:text-white text-xs">
-                    Remove
-                  </button>
-                )}
-              </div>
-              <p className="text-white/30 text-[11px] mt-1">Click Save lesson to keep the change.</p>
-            </Field>
-          )}
-          <Field label="Lesson text (Markdown; only people with access can read it)" id={`l-content-${lesson.id}`} className="sm:col-span-3">
-            <textarea id={`l-content-${lesson.id}`} rows={4} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className={`${inputClass} resize-y`} />
-          </Field>
+          <div className="sm:col-span-3">
+            <p className={labelClass}>Lesson content</p>
+            <LessonBlocksEditor blocks={blocks} onChange={setBlocks} />
+          </div>
           <div className="sm:col-span-3 flex items-center gap-5 text-xs text-white/60">
+            <label className="flex items-center gap-1.5">
+              <input type="checkbox" checked={form.live} onChange={(e) => setForm({ ...form, live: e.target.checked })} className="accent-[#3da3bc]" />
+              Taught in a live class
+            </label>
             <label className="flex items-center gap-1.5">
               <input type="checkbox" checked={form.is_published} onChange={(e) => setForm({ ...form, is_published: e.target.checked })} className="accent-[#3da3bc]" />
               Shown in curriculum

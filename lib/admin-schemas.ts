@@ -109,9 +109,6 @@ export const modulePatchSchema = z.object({ title: text.min(1).max(200) });
 const lessonFields = {
   title: text.min(1).max(200),
   type: z.enum(LESSON_TYPES),
-  content: nullableText,
-  video_url: nullableUrl,
-  file_path: nullableText,
   is_preview: z.boolean(),
   duration_min: z.preprocess(emptyToNull, z.coerce.number().int().positive().nullable()),
   is_published: z.boolean(),
@@ -119,9 +116,21 @@ const lessonFields = {
 
 export const lessonCreateSchema = z
   .object({ module_id: z.string().uuid(), ...lessonFields })
-  .partial({ type: true, content: true, video_url: true, file_path: true, is_preview: true, duration_min: true, is_published: true });
+  .partial({ type: true, is_preview: true, duration_min: true, is_published: true });
 
-export const lessonPatchSchema = z.object(lessonFields).partial();
+const blockTitle = text.max(200).optional();
+
+export const lessonBlockSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("text"), content: text.min(1).max(100_000) }),
+  z.object({ kind: z.literal("video"), video_url: httpUrl, title: blockTitle }),
+  z.object({ kind: z.literal("file"), file_path: text.min(1).max(500), title: blockTitle }),
+]);
+
+export const MAX_LESSON_BLOCKS = 50;
+
+export const lessonPatchSchema = z
+  .object({ ...lessonFields, blocks: z.array(lessonBlockSchema).max(MAX_LESSON_BLOCKS) })
+  .partial();
 
 export const reorderSchema = z.object({
   kind: z.enum(["modules", "lessons"]),

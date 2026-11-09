@@ -3,10 +3,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
 
 import { DELETE, POST } from "@/app/api/lessons/[id]/progress/route";
-import { GET as getFile } from "@/app/api/lessons/[id]/file/route";
+import { GET as getFile } from "@/app/api/lesson-blocks/[id]/file/route";
 
 const { state, upsert, del, signedFileUrl } = vi.hoisted(() => ({
-  state: { user: { id: "u1", email_confirmed_at: "2026-01-01" } as object | null, found: null as unknown },
+  state: {
+    user: { id: "u1", email_confirmed_at: "2026-01-01" } as object | null,
+    found: null as unknown,
+    block: null as null | { lesson_id: string; file_path: string | null },
+  },
   upsert: vi.fn(async () => ({ error: null })),
   del: vi.fn(),
   signedFileUrl: vi.fn(async () => "https://storage.test/signed?token=abc"),
@@ -14,7 +18,11 @@ const { state, upsert, del, signedFileUrl } = vi.hoisted(() => ({
 
 vi.mock("@/lib/supabase", () => ({
   createAdminClient: () => ({
-    from: () => ({ upsert, delete: () => ({ eq: () => ({ eq: del }) }) }),
+    from: () => ({
+      upsert,
+      delete: () => ({ eq: () => ({ eq: del }) }),
+      select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: async () => ({ data: state.block }) }) }) }),
+    }),
   }),
 }));
 vi.mock("@/lib/supabase-server", () => ({
@@ -28,8 +36,8 @@ vi.mock("@/lib/lessons", () => ({ loadLesson: async () => state.found, signedFil
 const LESSON = "11111111-1111-4111-8111-111111111111";
 const ctx = { params: Promise.resolve({ id: LESSON }) };
 const req = new NextRequest(`https://x.test/academy/api/lessons/${LESSON}/progress`, { method: "POST" });
-const found = (access: string, file_path: string | null = "lessons/abc-notes.pdf") => ({
-  lesson: { id: LESSON, file_path },
+const found = (access: string) => ({
+  lesson: { id: LESSON },
   courseId: "c1",
   seat: { access, source: "manual", cohortId: null },
 });
@@ -37,6 +45,7 @@ const found = (access: string, file_path: string | null = "lessons/abc-notes.pdf
 beforeEach(() => {
   state.user = { id: "u1", email_confirmed_at: "2026-01-01" };
   state.found = found("enrolled");
+  state.block = { lesson_id: LESSON, file_path: "lessons/abc-notes.pdf" };
   upsert.mockClear();
   del.mockReset().mockResolvedValue({ error: null });
   signedFileUrl.mockClear();
@@ -102,8 +111,15 @@ describe("lesson files", () => {
     expect((await getFile(req, ctx)).status).toBe(303);
   });
 
-  it("404s a lesson with no file", async () => {
-    state.found = found("enrolled", null);
+  it("404s a block that isn't a file", async () => {
+    state.block = null;
     expect((await getFile(req, ctx)).status).toBe(404);
+    expect(signedFileUrl).not.toHaveBeenCalled();
+  });
+
+  it("404s a file in a lesson hidden from this person", async () => {
+    state.found = null;
+    expect((await getFile(req, ctx)).status).toBe(404);
+    expect(signedFileUrl).not.toHaveBeenCalled();
   });
 });

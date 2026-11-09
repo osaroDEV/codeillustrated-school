@@ -774,3 +774,80 @@ describe("course resources", () => {
     expect(await sql("select id from public.course_resources", as("authenticated", U.s1))).toHaveLength(0);
   });
 });
+
+describe("lesson blocks", () => {
+  const FILE = "20261110000000_lesson_blocks.sql";
+  const M = "50000000-0000-4000-8000-000000000001";
+  const L = "51000000-0000-4000-8000-000000000001";
+  const OLD = "51000000-0000-4000-8000-000000000002";
+  const blocks = async (id = L) =>
+    sql<{ position: number; kind: string; title: string | null; content: string | null; video_url: string | null; file_path: string | null }>(
+      `select position, kind, title, content, video_url, file_path from public.lesson_blocks where lesson_id = '${id}' order by position`
+    );
+  const replace = async (value: unknown[], id = L) => {
+    const [row] = await sql<{ unused: string[] }>(
+      `select public.replace_lesson_blocks('${id}', '${JSON.stringify(value)}'::jsonb) as unused`
+    );
+    return row.unused;
+  };
+
+  beforeAll(async () => {
+    await sql(`
+      insert into public.course_modules (id, course_id, title, position) values ('${M}', '${c2}', 'Blocks', 900);
+      insert into public.lessons (id, module_id, title, position) values ('${L}', '${M}', 'Mixed', 1);
+      insert into public.lessons (id, module_id, title, position, content, video_url, file_path)
+        values ('${OLD}', '${M}', 'Old', 2, 'Old text', 'https://youtu.be/abcdefg', 'lessons/old.pdf');
+    `);
+  });
+
+  it("carries over an existing lesson once, in the order the player showed it", async () => {
+    const migration = readFileSync(join(MIGRATIONS, FILE), "utf8");
+    await db.exec(migration);
+    await db.exec(migration);
+    const rows = await blocks(OLD);
+    expect(rows.map((b) => [b.position, b.kind])).toEqual([[1, "video"], [2, "file"], [3, "text"]]);
+    expect(rows[1].file_path).toBe("lessons/old.pdf");
+  });
+
+  it("holds several of each kind, in the order given", async () => {
+    await replace([
+      { kind: "text", content: "Intro" },
+      { kind: "video", video_url: "https://youtu.be/one", title: "Cap" },
+      { kind: "file", file_path: "lessons/a.pdf" },
+      { kind: "text", content: "More" },
+      { kind: "video", video_url: "https://youtu.be/two" },
+    ]);
+    const rows = await blocks();
+    expect(rows.map((b) => b.position)).toEqual([1, 2, 3, 4, 5]);
+    expect(rows.map((b) => b.kind)).toEqual(["text", "video", "file", "text", "video"]);
+    expect(rows[1].title).toBe("Cap");
+  });
+
+  it("reports only the files no longer used", async () => {
+    await replace([{ kind: "file", file_path: "lessons/a.pdf" }, { kind: "file", file_path: "lessons/b.pdf" }]);
+    expect(await replace([{ kind: "file", file_path: "lessons/b.pdf" }])).toEqual(["lessons/a.pdf"]);
+    expect(await replace([])).toEqual(["lessons/b.pdf"]);
+    expect(await blocks()).toHaveLength(0);
+  });
+
+  it("changes nothing if any block is invalid", async () => {
+    await replace([{ kind: "text", content: "Keep me" }]);
+    await expect(replace([{ kind: "text", content: "Fine" }, { kind: "video" }])).rejects.toThrow(/check constraint/);
+    expect((await blocks()).map((b) => b.content)).toEqual(["Keep me"]);
+  });
+
+  it("refuses an unknown lesson", async () => {
+    await expect(replace([], "59999999-0000-4000-8000-000000000000")).rejects.toThrow(/Unknown lesson/);
+  });
+
+  it("go with their lesson", async () => {
+    await sql(`delete from public.lessons where id = '${OLD}'`);
+    expect(await blocks(OLD)).toHaveLength(0);
+  });
+
+  it("can't be read or changed by any API client", async () => {
+    expect(await sql("select id from public.lesson_blocks", as("anon"))).toHaveLength(0);
+    expect(await sql("select id from public.lesson_blocks", as("authenticated", U.admin))).toHaveLength(0);
+    await expect(sql(`select public.replace_lesson_blocks('${L}', '[]'::jsonb)`, as("authenticated", U.admin))).rejects.toThrow(/permission denied/);
+  });
+});
