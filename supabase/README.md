@@ -2,7 +2,7 @@
 
 Supabase config (`config.toml`), email templates (`templates/`) and SQL migrations (`migrations/`, applied in filename order). The Supabase CLI is a dev dependency, so run it with `pnpm exec supabase …` or the `db:*` scripts.
 
-These migrations cover Phases 1–6 of the LMS, plus editable course addresses and the contact inbox. The later phases are planned in [`docs/lms-roadmap.md`](../docs/lms-roadmap.md).
+These migrations cover Phases 1–7 of the LMS, plus editable course addresses and the contact inbox. The later phases are planned in [`docs/lms-roadmap.md`](../docs/lms-roadmap.md).
 
 | Migration | What it does |
 | --- | --- |
@@ -21,6 +21,7 @@ These migrations cover Phases 1–6 of the LMS, plus editable course addresses a
 | `20261111000000_self_paced.sql` | Phase 5. Self-paced subscriptions per course: optional yearly prices on `offerings`, yearly payment plans, and billing functions that extend each period by the plan's interval. |
 | `20261112000000_shared_recordings.sql` | Adds `class_sessions.shared_with_self_paced`, off by default. Self-paced subscribers only see recordings an admin has shared. |
 | `20261113000000_assessments_and_certificates.sql` | Phase 6. Quiz and assignment blocks, `quiz_attempts`, `assignment_submissions`, the course completion rule and `certificates`. Saving a lesson now keeps block IDs, so learner work stays attached. |
+| `20261114000000_notifications_and_replies.sql` | Phase 7. `email_outbox`, the course-email preference on `profiles`, replies on learner notes, and the token Supabase's scheduler uses. After applying it to production, run `supabase/sql/schedule-notifications.sql` once there to start the 15-minute job. |
 
 ## Local development
 

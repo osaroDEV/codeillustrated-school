@@ -14,6 +14,7 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const [courseEmails, setCourseEmails] = useState(true);
   const [saving, setSaving] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState(false);
@@ -31,13 +32,14 @@ export default function ProfilePage() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("full_name, created_at")
+        .select("full_name, created_at, email_notifications")
         .eq("id", user.id)
         .single();
 
       if (profile) {
         setFullName(profile.full_name || "");
         setEnrolledAt(profile.created_at);
+        setCourseEmails(profile.email_notifications !== false);
       }
     }
     load();
@@ -52,7 +54,7 @@ export default function ProfilePage() {
 
     const { error: profileError } = await supabase
       .from("profiles")
-      .update({ full_name: fullName })
+      .update({ full_name: fullName, email_notifications: courseEmails })
       .eq("id", userId);
 
     setSaving(false);
@@ -154,6 +156,13 @@ export default function ProfilePage() {
             </div>
             <p className="text-white/25 text-xs mt-1.5">Email cannot be changed</p>
           </div>
+          <label className="flex items-start gap-2.5 text-sm text-white/70">
+            <input type="checkbox" checked={courseEmails} onChange={(e) => setCourseEmails(e.target.checked)} className="mt-0.5 accent-[#c31d24]" />
+            <span>
+              Email me class reminders, announcements and feedback
+              <span className="block text-white/35 text-xs">Payment receipts and account emails are always sent.</span>
+            </span>
+          </label>
           <button
             id="save-profile-btn"
             type="submit"

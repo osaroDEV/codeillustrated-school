@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
 import { rejectNonAdmin } from "@/lib/supabase-server";
+import { enqueueAnnouncement } from "@/lib/notifications";
 
 export async function GET() {
   const denied = await rejectNonAdmin();
@@ -33,6 +34,13 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // The announcement is already posted, so an email problem mustn't fail this.
+  try {
+    await enqueueAnnouncement(supabase, data);
+  } catch (err) {
+    console.error("Announcement emails not queued:", err);
+  }
   return NextResponse.json(data, { status: 201 });
 }
 

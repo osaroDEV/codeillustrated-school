@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("learner_notes")
-    .select("*")
+    .select("*, learner_note_replies(id, author_id, body, created_at)")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 

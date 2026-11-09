@@ -1133,3 +1133,44 @@ describe("assessments and completion", () => {
     ).rejects.toThrow(/row-level security/);
   });
 });
+
+describe("notifications and replies", () => {
+  it("can't queue the same email twice", async () => {
+    const insert = `insert into public.email_outbox (dedupe_key, to_email, subject, paragraphs) values ('k1', 'a@x.test', 'S', '["p"]')`;
+    await sql(insert);
+    await expect(sql(insert)).rejects.toThrow(/duplicate key/);
+  });
+
+  it("have course emails on by default", async () => {
+    const rows = await sql<{ n: number }>("select count(*)::int as n from public.profiles where not email_notifications");
+    expect(rows[0].n).toBe(0);
+  });
+
+  it("generate a long scheduler token that stays the same when re-run", async () => {
+    const read = async () => (await sql<{ value: string }>(`select value from public.internal_settings where key = 'cron_token'`))[0].value;
+    const token = await read();
+    expect(token).toHaveLength(64);
+    await db.exec(readFileSync(join(MIGRATIONS, "20261114000000_notifications_and_replies.sql"), "utf8"));
+    expect(await read()).toBe(token);
+  });
+
+  it("keep replies with their note", async () => {
+    const [{ id }] = await sql<{ id: string }>(`insert into public.learner_notes (user_id, body) values ('${U.s1}', 'Hello') returning id`);
+    await sql(`insert into public.learner_note_replies (note_id, author_id, body) values ('${id}', '${U.s1}', 'Thanks')`);
+    await sql(`delete from public.learner_notes where id = '${id}'`);
+    expect(await sql(`select 1 from public.learner_note_replies where note_id = '${id}'`)).toHaveLength(0);
+  });
+
+  it("keep the outbox, token and replies away from API clients", async () => {
+    for (const table of ["email_outbox", "internal_settings", "learner_note_replies"]) {
+      expect(await sql(`select 1 from public.${table}`, as("authenticated", U.admin))).toHaveLength(0);
+      expect(await sql(`select 1 from public.${table}`, as("anon"))).toHaveLength(0);
+    }
+  });
+
+  it("let a learner change their own email preference", async () => {
+    await sql(`update public.profiles set email_notifications = false where id = auth.uid()`, as("authenticated", U.s1));
+    const [row] = await sql<{ email_notifications: boolean }>(`select email_notifications from public.profiles where id = '${U.s1}'`);
+    expect(row.email_notifications).toBe(false);
+  });
+});

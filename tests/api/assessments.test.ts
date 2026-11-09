@@ -46,6 +46,7 @@ vi.mock("@/lib/lessons", () => ({
   loadLesson: async () => (state.found ? { lesson: {}, courseId: "c", seat: { access: state.access } } : null),
   removeCourseFile,
 }));
+vi.mock("@/lib/notifications", () => ({ enqueueGradeEmail: vi.fn() }));
 vi.mock("@/lib/assessments-server", () => ({ loadSubmissionForStaff: async () => state.staffSubmission }));
 
 const BLOCK = "11111111-1111-4111-8111-111111111111";

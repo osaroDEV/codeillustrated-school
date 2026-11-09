@@ -69,6 +69,7 @@ export function AnnouncementsTab({ courses }: { courses: CourseSummary[] }) {
         <h2 className="text-white font-semibold mb-5 flex items-center gap-2">
           <Send className="w-4 h-4 text-[#ffbd59]" /> Post Announcement
         </h2>
+        <p className="text-white/35 text-xs -mt-3 mb-4">Also emailed to those learners, unless they&apos;ve turned course emails off.</p>
         <div className="space-y-4">
           <div>
             <label className="block text-white/50 text-xs mb-2 uppercase tracking-wider">Title</label>

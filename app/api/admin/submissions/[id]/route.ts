@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase";
 import { requireStaffApi } from "@/lib/supabase-server";
 import { gradeSchema } from "@/lib/admin-schemas";
 import { loadSubmissionForStaff } from "@/lib/assessments-server";
+import { enqueueGradeEmail } from "@/lib/notifications";
 import { dbErrorResponse, parseBody } from "@/lib/cohorts";
 
 type Params = { params: Promise<{ id: string }> };
@@ -20,10 +21,18 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const submission = await loadSubmissionForStaff(admin, staff, id);
   if (!submission) return NextResponse.json({ error: "Submission not found" }, { status: 404 });
 
+  const gradedAt = new Date().toISOString();
   const { error } = await admin
     .from("assignment_submissions")
-    .update({ ...body.data, graded_by: staff.user.id, graded_at: new Date().toISOString() })
+    .update({ ...body.data, graded_by: staff.user.id, graded_at: gradedAt })
     .eq("id", id);
   if (error) return dbErrorResponse(error);
+
+  // The grade is saved, so an email problem mustn't fail this.
+  try {
+    await enqueueGradeEmail(admin, submission, body.data.status, gradedAt);
+  } catch (err) {
+    console.error("Grade email not queued:", err);
+  }
   return NextResponse.json({ success: true });
 }
