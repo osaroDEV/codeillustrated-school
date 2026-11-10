@@ -13,7 +13,7 @@ export function CompleteButton({ lessonId, done, nextHref }: { lessonId: string;
     setBusy(true);
     setError("");
     try {
-      const res = await fetch(`/academy/api/lessons/${lessonId}/progress`, { method: done ? "DELETE" : "POST" });
+      const res = await fetch(`/api/lessons/${lessonId}/progress`, { method: done ? "DELETE" : "POST" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Couldn't save that. Please try again.");

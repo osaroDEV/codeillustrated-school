@@ -38,7 +38,7 @@ export function EnrollOptions({ course }: { course: Course }) {
     setBusy(kind);
     setError("");
     try {
-      const res = await fetch("/academy/api/checkout", {
+      const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ course_id: course.id, kind, currency, interval }),
@@ -47,7 +47,7 @@ export function EnrollOptions({ course }: { course: Course }) {
       if (res.status === 401) {
         // Most people buying are new here; the signup page links to Log in
         // and both bring them back to this course afterwards.
-        window.location.href = `/academy${signupPath(`/courses/${course.slug}#enroll`)}`;
+        window.location.href = `${signupPath(`/courses/${course.slug}#enroll`)}`;
         return;
       }
       if (!res.ok || !data.link) throw new Error(data.error || "Couldn't start the payment. Please try again.");

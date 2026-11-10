@@ -82,6 +82,6 @@ describe("EnrollOptions for signed-out visitors", () => {
     await render(course([group]));
     expect(host.textContent).toContain("Create your free account");
     await act(async () => button("Subscribe monthly")!.click());
-    expect(location.href).toBe("/academy/signup?redirectTo=%2Fcourses%2Fc%23enroll");
+    expect(location.href).toBe("/signup?redirectTo=%2Fcourses%2Fc%23enroll");
   });
 });

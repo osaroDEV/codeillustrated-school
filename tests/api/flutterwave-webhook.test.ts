@@ -13,7 +13,7 @@ vi.mock("@/lib/supabase", () => ({ createAdminClient: () => ({}) }));
 
 const post = (body: unknown, hash: string | null = "test-hash") =>
   POST(
-    new NextRequest("https://x.test/academy/api/payments/flutterwave/webhook", {
+    new NextRequest("https://x.test/api/payments/flutterwave/webhook", {
       method: "POST",
       headers: { "content-type": "application/json", ...(hash ? { "verif-hash": hash } : {}) },
       body: JSON.stringify(body),

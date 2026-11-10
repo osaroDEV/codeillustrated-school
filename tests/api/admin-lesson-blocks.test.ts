@@ -31,7 +31,7 @@ vi.mock("@/lib/catalogue-admin", () => ({ refreshCatalogue: vi.fn() }));
 
 const ctx = { params: Promise.resolve({ id: "l1" }) };
 const patch = (body: unknown) =>
-  PATCH(new NextRequest("https://x.test/academy/api/admin/lessons/l1", { method: "PATCH", body: JSON.stringify(body) }), ctx);
+  PATCH(new NextRequest("https://x.test/api/admin/lessons/l1", { method: "PATCH", body: JSON.stringify(body) }), ctx);
 
 const blocks = [
   { kind: "text", content: "Intro" },

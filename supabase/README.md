@@ -50,7 +50,7 @@ Every account must click an emailed link before it can sign in:
 
 1. **Configure auth on the hosted project** in Dashboard → Authentication. Don't use `supabase config push`: it would copy the local `localhost` site URL from `config.toml` onto the hosted project.
    - Turn on "Confirm email".
-   - Site URL: `https://codeillustrated.com/academy`. Add `https://codeillustrated.com/academy/auth/confirm` to the redirect URLs.
+   - Site URL: `https://codeillustrated.com`. Add `https://codeillustrated.com/auth/confirm` to the redirect URLs.
    - Set up custom SMTP first (Brevo: `smtp-relay.brevo.com:587`, using your Brevo SMTP login and key). Supabase's built-in mailer only sends to project team members, and free-plan projects can't edit email templates until custom SMTP is on.
    - Set the "Confirm signup" template to the contents of `templates/confirmation.html`. If you skip this, the default link still verifies the account, but `/auth/confirm` can't sign the learner in, so they're sent to the login page instead.
    - Set the "Reset password" template to the contents of `templates/recovery.html`. Its link signs the learner in through `/auth/confirm` and opens `/reset-password`; the default template's link can't, so "Forgot password?" wouldn't work without it.
@@ -70,14 +70,14 @@ Cohort seats are monthly card subscriptions through Flutterwave (v3 API). To tur
 
 1. **Flutterwave dashboard** → Settings → API keys: copy the secret key. Use test keys on staging.
 2. **Settings → Webhooks:**
-   - URL: `https://codeillustrated.com/academy/api/payments/flutterwave/webhook`
+   - URL: `https://codeillustrated.com/api/payments/flutterwave/webhook`
    - Secret hash: a long random string.
    - Make sure v3 webhooks and "retry on failure" are on, and enable the charge and subscription-cancellation events.
 3. **Vercel env vars:**
    - `FLW_SECRET_KEY` and `FLW_SECRET_HASH` (the same hash as step 2).
    - `CRON_SECRET` (any long random string; Vercel Cron sends it to `/api/cron/billing` every day at 06:00 UTC).
    - `BREVO_API_KEY` (already set for the newsletter) for receipts. `RECEIPT_FROM_EMAIL` must be a sender verified in Brevo and defaults to `info@codeillustrated.com`.
-   - Optional: `APP_URL`, the base used for the Flutterwave redirect. It defaults to `https://codeillustrated.com/academy`. Set it per environment, e.g. `http://localhost:3000/academy` locally or the staging URL.
+   - Optional: `APP_URL`, the base used for the Flutterwave redirect. It defaults to `https://codeillustrated.com`. Set it per environment, e.g. `http://localhost:3000` locally or the staging URL.
 4. **Prices:** in Admin → Courses, set the group and 1-on-1 prices (monthly, in USD and NGN) and tick "On sale". Only offerings that are on sale and priced in both currencies show a Subscribe button.
 
 Refunds are made in the Flutterwave dashboard; Admin → Payments → "Mark refunded" only records them. Charges the webhook couldn't match to a subscription show under Admin → Payments → Needs attention.
@@ -92,7 +92,7 @@ Refunds are made in the Flutterwave dashboard; Admin → Payments → "Mark refu
 
 - To run the app against staging, put its URL, anon key and service-role key in `.env.local`, which overrides `.env`.
 - Its SMTP points at an Ethereal test mailbox (`smtp.ethereal.email`), which catches every email and delivers none.
-- Its Site URL is `http://localhost:3000/academy`, so verification links point at a local dev server on port 3000.
+- Its Site URL is `http://localhost:3000`, so verification links point at a local dev server on port 3000.
 
 ## Resetting for a round of testing
 

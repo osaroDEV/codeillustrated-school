@@ -581,7 +581,7 @@ function SessionRow({
             <button onClick={saveLinks} disabled={saving} className={secondaryButtonClass}>
               <Check className="w-3.5 h-3.5" /> Save links
             </button>
-            <a href={`/academy/api/sessions/${session.id}/join`} target="_blank" rel="noopener" className={secondaryButtonClass}>
+            <a href={`/api/sessions/${session.id}/join`} target="_blank" rel="noopener" className={secondaryButtonClass}>
               <ExternalLink className="w-3.5 h-3.5" /> Open meeting
             </a>
             {isAdmin && (

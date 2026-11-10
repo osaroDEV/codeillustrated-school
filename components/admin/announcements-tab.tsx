@@ -23,7 +23,7 @@ export function AnnouncementsTab({ courses }: { courses: CourseSummary[] }) {
 
   const fetchAnnouncements = useCallback(async () => {
     setLoadingAnnouncements(true);
-    const res = await fetch("/academy/api/admin/announcements");
+    const res = await fetch("/api/admin/announcements");
     if (res.ok) setAnnouncements(await res.json());
     setLoadingAnnouncements(false);
   }, []);
@@ -36,7 +36,7 @@ export function AnnouncementsTab({ courses }: { courses: CourseSummary[] }) {
     if (!annTitle || !annBody) return;
     setPostingAnn(true);
     setAnnError("");
-    const res = await fetch("/academy/api/admin/announcements", {
+    const res = await fetch("/api/admin/announcements", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: annTitle, body: annBody, course_id: annCourseId || null }),
@@ -54,7 +54,7 @@ export function AnnouncementsTab({ courses }: { courses: CourseSummary[] }) {
   }
 
   async function deleteAnnouncement(id: string) {
-    await fetch("/academy/api/admin/announcements", {
+    await fetch("/api/admin/announcements", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),

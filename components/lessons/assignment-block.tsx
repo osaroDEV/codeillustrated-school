@@ -49,7 +49,7 @@ export function AssignmentBlock({
     if (file.size > MAX_COURSE_FILE_BYTES) return setError("Files can be up to 50 MB.");
     setBusy(true);
     try {
-      const res = await fetch(`/academy/api/lesson-blocks/${blockId}/submission/upload`, {
+      const res = await fetch(`/api/lesson-blocks/${blockId}/submission/upload`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ file_name: file.name }),
@@ -69,7 +69,7 @@ export function AssignmentBlock({
     setBusy(true);
     setError("");
     try {
-      const res = await fetch(`/academy/api/lesson-blocks/${blockId}/submission`, {
+      const res = await fetch(`/api/lesson-blocks/${blockId}/submission`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ body, file_path: filePath }),

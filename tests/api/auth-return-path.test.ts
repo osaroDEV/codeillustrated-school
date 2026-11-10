@@ -30,7 +30,7 @@ vi.mock("@/lib/supabase", () => ({
   }),
 }));
 
-const link = (type: string) => new NextRequest(`https://x.test/academy/auth/confirm?token_hash=abc&type=${type}`);
+const link = (type: string) => new NextRequest(`https://x.test/auth/confirm?token_hash=abc&type=${type}`);
 
 beforeEach(() => {
   state.verifyError = null;
@@ -40,30 +40,30 @@ beforeEach(() => {
 
 describe("verification link", () => {
   it("lands a new learner on the dashboard", async () => {
-    expect((await confirm(link("email"))).headers.get("location")).toBe("/academy/dashboard");
+    expect((await confirm(link("email"))).headers.get("location")).toBe("/dashboard");
   });
 
   it("brings them back to the course they were enrolling in", async () => {
     state.nextPath = "/courses/junior-web-creator#enroll";
-    expect((await confirm(link("signup"))).headers.get("location")).toBe("/academy/courses/junior-web-creator#enroll");
+    expect((await confirm(link("signup"))).headers.get("location")).toBe("/courses/junior-web-creator#enroll");
   });
 
   it("ignores a return path to another site", async () => {
     state.nextPath = "//evil.test/phish";
-    expect((await confirm(link("email"))).headers.get("location")).toBe("/academy/dashboard");
+    expect((await confirm(link("email"))).headers.get("location")).toBe("/dashboard");
   });
 
   it("sends password resets and bad links to the new account pages", async () => {
-    expect((await confirm(link("recovery"))).headers.get("location")).toBe("/academy/reset-password");
+    expect((await confirm(link("recovery"))).headers.get("location")).toBe("/reset-password");
     state.verifyError = { message: "expired" };
-    expect((await confirm(link("email"))).headers.get("location")).toBe("/academy/login?error=link_invalid");
+    expect((await confirm(link("email"))).headers.get("location")).toBe("/login?error=link_invalid");
   });
 });
 
 describe("signup", () => {
   const post = (body: object) =>
     completeSignup(
-      new NextRequest("https://x.test/academy/api/auth/complete-signup", { method: "POST", body: JSON.stringify(body) })
+      new NextRequest("https://x.test/api/auth/complete-signup", { method: "POST", body: JSON.stringify(body) })
     );
   const base = { email: "new@x.test", password: "password123", fullName: "New Learner" };
 

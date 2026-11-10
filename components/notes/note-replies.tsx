@@ -39,7 +39,7 @@ export function NoteReplies({
     setBusy(true);
     setError("");
     try {
-      const res = await fetch(`/academy/api/notes/${noteId}/replies`, {
+      const res = await fetch(`/api/notes/${noteId}/replies`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ body }),

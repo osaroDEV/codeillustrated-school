@@ -80,8 +80,8 @@ describe("lesson page", () => {
 
   it("links files by block, without exposing where they're stored", async () => {
     const html = await render();
-    expect(html).toContain('href="/academy/api/lesson-blocks/f1/file"');
-    expect(html).toContain('href="/academy/api/lesson-blocks/f2/file"');
+    expect(html).toContain('href="/api/lesson-blocks/f1/file"');
+    expect(html).toContain('href="/api/lesson-blocks/f2/file"');
     expect(html).not.toContain("lessons/a1b2c3d4e5f6");
   });
 

@@ -27,7 +27,7 @@ vi.mock("@/lib/supabase-server", () => ({
   getRole: async () => state.role,
 }));
 vi.mock("@/lib/notifications", () => ({ enqueueEmails }));
-vi.mock("@/lib/billing-server", () => ({ appUrl: () => "https://x.test/academy" }));
+vi.mock("@/lib/billing-server", () => ({ appUrl: () => "https://x.test" }));
 
 const reply = (body: unknown = { body: "Thank you" }) =>
   POST(new NextRequest("https://x.test/x", { method: "POST", body: JSON.stringify(body) }), { params: Promise.resolve({ id: "n1" }) });

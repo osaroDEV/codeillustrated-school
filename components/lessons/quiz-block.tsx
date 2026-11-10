@@ -35,7 +35,7 @@ export function QuizBlock({
     setBusy(true);
     setError("");
     try {
-      const res = await fetch(`/academy/api/lesson-blocks/${blockId}/quiz`, {
+      const res = await fetch(`/api/lesson-blocks/${blockId}/quiz`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answers }),

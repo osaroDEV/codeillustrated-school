@@ -167,7 +167,7 @@ function Block({
   if (block.kind === "file") {
     return (
       <a
-        href={`/academy/api/lesson-blocks/${block.id}/file`}
+        href={`/api/lesson-blocks/${block.id}/file`}
         className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-white/10 hover:bg-white/15 border border-white/10"
       >
         <Download className="w-4 h-4" /> {block.title || storedFileName(block.file_path ?? "")}
@@ -232,7 +232,7 @@ function LiveClasses({ classes, enrolled, selfPaced }: { classes: LessonClass[];
             </div>
             <div className="flex items-center gap-3 text-sm">
               {state === "open" && !selfPaced && (
-                <a href={`/academy/api/sessions/${c.id}/join`} className="px-4 py-2 rounded-xl font-semibold text-white bg-gradient-to-r from-[#c31d24] to-[#f5a623]">
+                <a href={`/api/sessions/${c.id}/join`} className="px-4 py-2 rounded-xl font-semibold text-white bg-gradient-to-r from-[#c31d24] to-[#f5a623]">
                   Join class
                 </a>
               )}

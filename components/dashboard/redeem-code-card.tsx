@@ -19,7 +19,7 @@ export function RedeemCodeCard() {
     setSuccess(false);
 
     try {
-      const res = await fetch("/academy/api/enrollments/redeem", {
+      const res = await fetch("/api/enrollments/redeem", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: code.trim() }),

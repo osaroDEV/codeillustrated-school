@@ -83,7 +83,7 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
   const fetchLearners = useCallback(async () => {
     setLoadingLearners(true);
     setLearnersError("");
-    const res = await fetch("/academy/api/admin/learners");
+    const res = await fetch("/api/admin/learners");
     if (res.ok) {
       setLearners(await res.json());
     } else {
@@ -98,7 +98,7 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
   }, [fetchLearners]);
 
   async function setCourseStatus(enrollmentId: string, status: "active" | "completed") {
-    await fetch("/academy/api/admin/learners", {
+    await fetch("/api/admin/learners", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ enrollment_id: enrollmentId, status }),
@@ -108,7 +108,7 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
 
   async function saveEnrollment(enrollment: Enrollment) {
     setSavingEnrollment(true);
-    await fetch("/academy/api/admin/learners", {
+    await fetch("/api/admin/learners", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -125,7 +125,7 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
 
   async function changeRole(userId: string, role: Role) {
     setLearnersError("");
-    const res = await fetch("/academy/api/admin/roles", {
+    const res = await fetch("/api/admin/roles", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user_id: userId, role }),
@@ -139,7 +139,7 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
   }
 
   async function deleteEnrollment(enrollmentId: string) {
-    await fetch("/academy/api/admin/learners", {
+    await fetch("/api/admin/learners", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ enrollment_id: enrollmentId }),
@@ -148,7 +148,7 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
   }
 
   async function fetchNotes(userId: string) {
-    const res = await fetch(`/academy/api/admin/notes?user_id=${userId}`);
+    const res = await fetch(`/api/admin/notes?user_id=${userId}`);
     if (res.ok) {
       const data = await res.json();
       setNotesByUser((prev) => ({ ...prev, [userId]: data }));
@@ -159,7 +159,7 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
     const body = newNoteBody[userId]?.trim();
     if (!body) return;
     setSavingNote(true);
-    const res = await fetch("/academy/api/admin/notes", {
+    const res = await fetch("/api/admin/notes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user_id: userId, title: newNoteTitle[userId]?.trim() || null, body }),
@@ -175,7 +175,7 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
   async function saveNoteEdit(userId: string) {
     if (!editingNoteId || !editingNoteBody.trim()) return;
     setSavingNote(true);
-    const res = await fetch("/academy/api/admin/notes", {
+    const res = await fetch("/api/admin/notes", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: editingNoteId, title: editingNoteTitle || null, body: editingNoteBody }),
@@ -188,7 +188,7 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
   }
 
   async function deleteNote(userId: string, noteId: string) {
-    await fetch("/academy/api/admin/notes", {
+    await fetch("/api/admin/notes", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: noteId }),
@@ -199,7 +199,7 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
   async function createEnrollment(userId: string) {
     setCreatingEnrollment(true);
     setLearnersError("");
-    const res = await fetch("/academy/api/admin/learners", {
+    const res = await fetch("/api/admin/learners", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user_id: userId, course_id: enrollCourseId }),
@@ -218,7 +218,7 @@ export function LearnersTab({ courses }: { courses: CourseSummary[] }) {
     setSendingVerification(true);
     setVerificationResult("");
     try {
-      const res = await fetch("/academy/api/admin/send-verification", {
+      const res = await fetch("/api/admin/send-verification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(email ? { email } : {}),

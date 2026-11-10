@@ -26,7 +26,7 @@ export function CodesTab({ courses }: { courses: CourseSummary[] }) {
 
   const fetchInvites = useCallback(async () => {
     setLoadingInvites(true);
-    const res = await fetch("/academy/api/admin/invite");
+    const res = await fetch("/api/admin/invite");
     if (res.ok) setInvites(await res.json());
     setLoadingInvites(false);
   }, []);
@@ -39,7 +39,7 @@ export function CodesTab({ courses }: { courses: CourseSummary[] }) {
     setGenerating(true);
     setInviteError("");
     try {
-      const res = await fetch("/academy/api/admin/invite", {
+      const res = await fetch("/api/admin/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ course_id: selectedCourse, expires_days: expiresDays ? parseInt(expiresDays) : null }),
@@ -61,7 +61,7 @@ export function CodesTab({ courses }: { courses: CourseSummary[] }) {
   async function deleteInvite(id: string) {
     setInviteError("");
     try {
-      const res = await fetch("/academy/api/admin/invite", {
+      const res = await fetch("/api/admin/invite", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),

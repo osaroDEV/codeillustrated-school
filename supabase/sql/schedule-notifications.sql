@@ -13,7 +13,7 @@ select cron.schedule(
   '*/15 * * * *',
   $job$
   select net.http_get(
-    url := 'https://codeillustrated.com/academy/api/cron/notifications',
+    url := 'https://codeillustrated.com/api/cron/notifications',
     headers := jsonb_build_object(
       'Authorization', 'Bearer ' || (select value from public.internal_settings where key = 'cron_token')
     ),

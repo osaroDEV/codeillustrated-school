@@ -17,7 +17,7 @@ export function ResendVerification({ email }: { email: string }) {
     const { error: resendError } = await supabase.auth.resend({
       type: "signup",
       email,
-      options: { emailRedirectTo: `${window.location.origin}/academy/auth/confirm` },
+      options: { emailRedirectTo: `${window.location.origin}/auth/confirm` },
     });
     if (resendError) {
       setError(resendError.message);

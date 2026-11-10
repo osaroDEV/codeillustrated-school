@@ -19,11 +19,8 @@ export async function GET(req: NextRequest) {
   // either a PKCE code or nothing readable (tokens in the URL #fragment).
   const code = req.nextUrl.searchParams.get("code");
 
-  // Redirect with a relative Location. In production codeillustrated.com/academy
-  // is proxied to the Vercel deployment, so req.url carries the deployment's
-  // own *.vercel.app host; an absolute URL built from it would move the learner
-  // off the domain their new session cookie was set on. Route handlers also
-  // don't apply next.config basePath to redirects, so it's prefixed here.
+  // Redirect with a relative Location, so the learner stays on the domain
+  // their new session cookie was set on whatever host the request reports.
   const redirectTo = (path: string) =>
     new NextResponse(null, { status: 307, headers: { Location: `${BASE_PATH}${path}` } });
 

@@ -3,7 +3,9 @@
  */
 
 export const SITE_URL = "https://codeillustrated.com";
-export const BASE_PATH = "/academy";
+// The site is served from the domain root. Kept as a constant so URLs built
+// as `${SITE_URL}${BASE_PATH}/…` stay correct if that ever changes again.
+export const BASE_PATH = "";
 export const SITE_NAME = "Code Illustrated Online School";
 export const SITE_DESCRIPTION =
   "1-on-1 coding training for complete beginners. Learn to code with personalized mentorship and become a software engineer.";
