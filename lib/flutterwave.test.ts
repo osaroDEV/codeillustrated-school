@@ -31,7 +31,7 @@ describe("createCheckoutLink", () => {
       txRef: "sub_1",
       amount: 50000,
       currency: "NGN",
-      redirectUrl: "https://codeillustrated.com/academy/checkout/complete",
+      redirectUrl: "https://codeillustrated.com/checkout/complete",
       customer: { email: "a@b.test", name: "Ada" },
       paymentPlan: 9001,
       title: "Junior Web Creator",

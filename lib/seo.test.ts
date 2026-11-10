@@ -14,9 +14,9 @@ describe("SEO constants", () => {
     expect(SITE_URL).toBe("https://codeillustrated.com");
   });
 
-  it("BASE_PATH starts with a slash and has no trailing slash", () => {
-    expect(BASE_PATH.startsWith("/")).toBe(true);
-    expect(BASE_PATH.endsWith("/")).toBe(false);
+  it("serves the site from the domain root", () => {
+    expect(BASE_PATH).toBe("");
+    expect(getCanonicalUrl("/courses")).toBe("https://codeillustrated.com/courses");
   });
 
   it("SITE_NAME and SITE_DESCRIPTION are non-empty strings", () => {

@@ -48,7 +48,7 @@ const valid = {
 
 const post = (body: unknown) =>
   POST(
-    new Request("https://x.test/academy/api/contact", {
+    new Request("https://x.test/api/contact", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),

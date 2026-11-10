@@ -51,7 +51,7 @@ function SignupForm() {
     setError("");
 
     try {
-      const res = await fetch("/academy/api/auth/complete-signup", {
+      const res = await fetch("/api/auth/complete-signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

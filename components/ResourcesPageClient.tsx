@@ -686,7 +686,7 @@ export default function ResourcesPageClient() {
                       description:
                         "The most-used CSS properties with visual examples. Covers layout, colors, fonts, and responsive design.",
                       cta: "Download PDF",
-                      href: "/academy/files/html-cheat-sheet.pdf",
+                      href: "/files/html-cheat-sheet.pdf",
                       color: "secondary" as const,
                     },
                     {
@@ -695,7 +695,7 @@ export default function ResourcesPageClient() {
                       description:
                         "Variables, functions, loops, and DOM methods explained simply with code snippets you can copy and paste.",
                       cta: "Download PDF",
-                      href: "/academy/files/html-cheat-sheet.pdf",
+                      href: "/files/html-cheat-sheet.pdf",
                       color: "accent" as const,
                     },
                     {
@@ -704,7 +704,7 @@ export default function ResourcesPageClient() {
                       description:
                         "The complete Code Illustrated curriculum across all courses. See every module and learning outcome.",
                       cta: "Download PDF",
-                      href: "/academy/files/html-cheat-sheet.pdf",
+                      href: "/files/html-cheat-sheet.pdf",
                       color: "primary" as const,
                     },
                     {
@@ -713,7 +713,7 @@ export default function ResourcesPageClient() {
                       description:
                         "A visual roadmap from beginner to job-ready developer. Know exactly where you are and what's ahead.",
                       cta: "Download PDF",
-                      href: "/academy/files/html-cheat-sheet.pdf",
+                      href: "/files/html-cheat-sheet.pdf",
                       color: "secondary" as const,
                     },
                   ].map((asset, i) => (

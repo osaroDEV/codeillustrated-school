@@ -26,7 +26,7 @@ vi.mock("@/lib/supabase-server", () => ({ rejectNonAdmin: async () => null }));
 const ENROLMENT = "11111111-1111-4111-8111-111111111111";
 const add = () =>
   POST(
-    new NextRequest("https://x.test/academy/api/admin/cohorts/k1/members", { method: "POST", body: JSON.stringify({ enrollment_id: ENROLMENT }) }),
+    new NextRequest("https://x.test/api/admin/cohorts/k1/members", { method: "POST", body: JSON.stringify({ enrollment_id: ENROLMENT }) }),
     { params: Promise.resolve({ id: "k1" }) }
   );
 

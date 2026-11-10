@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     const { error } = await anon.auth.resend({
       type: "signup",
       email: u.email!,
-      options: { emailRedirectTo: `${req.nextUrl.origin}/academy/auth/confirm` },
+      options: { emailRedirectTo: `${req.nextUrl.origin}/auth/confirm` },
     });
     if (error) failed.push({ email: u.email!, error: error.message });
     else sent.push(u.email!);

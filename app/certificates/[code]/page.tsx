@@ -35,7 +35,7 @@ export default async function CertificatePage({ params }: Params) {
               {certificate.code}
             </p>
             <a
-              href={`/academy/api/certificates/${certificate.code}/pdf`}
+              href={`/api/certificates/${certificate.code}/pdf`}
               className="inline-flex items-center gap-2 mt-8 bg-primary text-white font-bold px-6 py-3 rounded-2xl hover:opacity-90 transition-opacity"
             >
               <Download className="w-4 h-4" /> Download PDF

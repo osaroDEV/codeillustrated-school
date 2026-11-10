@@ -14,7 +14,7 @@ export const errorClass = "px-4 py-3 rounded-xl bg-red-500/10 border border-red-
 /** fetch() a JSON admin route; resolves to an error message, or null on success. */
 export async function send(path: string, method: string, body?: unknown): Promise<string | null> {
   try {
-    const res = await fetch(`/academy/api/admin${path}`, {
+    const res = await fetch(`/api/admin${path}`, {
       method,
       headers: { "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -34,7 +34,7 @@ export async function request<T = Record<string, unknown>>(
   body?: unknown
 ): Promise<{ error: string | null; data: T | null }> {
   try {
-    const res = await fetch(`/academy/api/admin${path}`, {
+    const res = await fetch(`/api/admin${path}`, {
       method,
       headers: { "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),

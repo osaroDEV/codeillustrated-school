@@ -15,14 +15,14 @@ export function ClaimCertificateButton({ courseId, price }: { courseId: string; 
     setBusy(true);
     setError("");
     try {
-      const res = await fetch("/academy/api/certificates/claim", {
+      const res = await fetch("/api/certificates/claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ course_id: courseId, currency }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Couldn't claim your certificate. Please try again.");
-      window.location.href = data.link ?? `/academy/certificates/${data.code}`;
+      window.location.href = data.link ?? `/certificates/${data.code}`;
     } catch (err) {
       setError((err as Error).message);
       setBusy(false);

@@ -29,7 +29,7 @@ vi.mock("@/lib/cohorts", async (original) => ({
 }));
 
 const patch = (body: unknown) =>
-  PATCH(new NextRequest("https://x.test/academy/api/admin/sessions/s1", { method: "PATCH", body: JSON.stringify(body) }), {
+  PATCH(new NextRequest("https://x.test/api/admin/sessions/s1", { method: "PATCH", body: JSON.stringify(body) }), {
     params: Promise.resolve({ id: "s1" }),
   });
 

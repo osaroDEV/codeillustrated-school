@@ -54,7 +54,7 @@ export default function Benefits() {
               playground.
             </p>
             <a
-              href="/academy/files/Code_Illustrated_Prospectus_2026.pdf"
+              href="/files/Code_Illustrated_Prospectus_2026.pdf"
               download
               target="_blank"
               rel="noopener noreferrer"

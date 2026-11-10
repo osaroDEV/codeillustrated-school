@@ -147,7 +147,7 @@ function NewsletterForm() {
     setMessage("");
 
     try {
-      const response = await fetch("/academy/api/subscribe", {
+      const response = await fetch("/api/subscribe", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
         // next_path is read back by /auth/confirm: the email templates link
         // there directly, so emailRedirectTo can't carry it.
         data: { full_name: fullName || null, ...(nextPath ? { next_path: nextPath } : {}) },
-        emailRedirectTo: `${req.nextUrl.origin}/academy/auth/confirm`,
+        emailRedirectTo: `${req.nextUrl.origin}/auth/confirm`,
       },
     });
 

@@ -65,7 +65,7 @@ function Submission({ submission: s }: { submission: SubmissionRow }) {
       </p>
       {s.body && <p className="text-white/80 text-sm mt-3 whitespace-pre-wrap break-words">{s.body}</p>}
       {s.file_path && (
-        <a href={`/academy/api/submissions/${s.id}/file`} className="inline-flex items-center gap-1.5 text-[#3da3bc] hover:text-white text-xs mt-3">
+        <a href={`/api/submissions/${s.id}/file`} className="inline-flex items-center gap-1.5 text-[#3da3bc] hover:text-white text-xs mt-3">
           <Paperclip className="w-3.5 h-3.5" /> {storedFileName(s.file_path)}
         </a>
       )}

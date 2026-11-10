@@ -315,7 +315,7 @@ export default async function CoursesPage() {
                       {courseResources.map((r) => (
                         <a
                           key={r.id}
-                          href={`/academy/api/resources/${r.id}/open`}
+                          href={`/api/resources/${r.id}/open`}
                           target="_blank"
                           rel="noopener"
                           className="flex items-center gap-3 px-4 py-3 rounded-xl border bg-white/[0.02] border-white/[0.06] hover:border-white/[0.15] transition-colors"

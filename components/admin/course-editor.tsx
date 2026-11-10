@@ -33,7 +33,7 @@ export function CourseEditor({ course }: { course: AdminCourse }) {
           <h1 className="text-2xl font-bold text-white">{course.title}</h1>
           {course.is_published && (
             <a
-              href={`/academy/courses/${course.slug}`}
+              href={`/courses/${course.slug}`}
               target="_blank"
               rel="noopener"
               className="inline-flex items-center gap-1 text-[#3da3bc] hover:text-white text-xs"
@@ -135,7 +135,7 @@ function CourseDetails({ course }: { course: AdminCourse }) {
         </Field>
         <Field label="Web address" id="d-slug" className="sm:col-span-3">
           <div className="flex items-center gap-2">
-            <span className="text-white/40 text-sm whitespace-nowrap">/academy/courses/</span>
+            <span className="text-white/40 text-sm whitespace-nowrap">/courses/</span>
             <input id="d-slug" required value={form.slug} onChange={set("slug")} className={inputClass} />
           </div>
           <p className="text-white/30 text-[11px] mt-1">

@@ -1,6 +1,6 @@
 {
   "crons": [
-    { "path": "/academy/api/cron/billing", "schedule": "0 6 * * *" },
-    { "path": "/academy/api/cron/notifications", "schedule": "0 7 * * *" }
+    { "path": "/api/cron/billing", "schedule": "0 6 * * *" },
+    { "path": "/api/cron/notifications", "schedule": "0 7 * * *" }
   ]
 }

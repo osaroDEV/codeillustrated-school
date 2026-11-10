@@ -35,7 +35,7 @@ vi.mock("@/lib/lessons", () => ({ loadLesson: async () => state.found, signedFil
 
 const LESSON = "11111111-1111-4111-8111-111111111111";
 const ctx = { params: Promise.resolve({ id: LESSON }) };
-const req = new NextRequest(`https://x.test/academy/api/lessons/${LESSON}/progress`, { method: "POST" });
+const req = new NextRequest(`https://x.test/api/lessons/${LESSON}/progress`, { method: "POST" });
 const found = (access: string) => ({
   lesson: { id: LESSON },
   courseId: "c1",
@@ -96,7 +96,7 @@ describe("lesson files", () => {
     state.user = null;
     const res = await getFile(req, ctx);
     expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toContain("/academy/login?redirectTo=");
+    expect(res.headers.get("location")).toBe("/login?redirectTo=%2Fdashboard%2Fcourses");
     expect(signedFileUrl).not.toHaveBeenCalled();
   });
 

@@ -14,7 +14,7 @@ export function CancelSubscriptionButton({ id }: { id: string }) {
     setBusy(true);
     setError("");
     try {
-      const res = await fetch(`/academy/api/billing/subscriptions/${id}/cancel`, { method: "POST" });
+      const res = await fetch(`/api/billing/subscriptions/${id}/cancel`, { method: "POST" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Couldn't cancel. Please try again.");
       router.refresh();

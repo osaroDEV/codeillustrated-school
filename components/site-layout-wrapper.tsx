@@ -16,8 +16,7 @@ export function SiteLayoutWrapper({
   footerCourses: CourseLink[];
 }) {
   const pathname = usePathname();
-  // Signed-in areas and account pages have their own chrome. usePathname()
-  // excludes the /academy base path.
+  // Signed-in areas and account pages have their own chrome.
   const isAppRoute = isAppChromeFree(pathname);
 
   if (isAppRoute) {

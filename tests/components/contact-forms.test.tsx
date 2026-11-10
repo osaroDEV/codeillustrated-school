@@ -117,7 +117,7 @@ describe.each([
     expect(event.defaultPrevented).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe("/academy/api/contact");
+    expect(url).toBe("/api/contact");
     expect(JSON.parse(init.body)).toMatchObject({
       name: "Ada Obi",
       email: "ada@example.test",

@@ -61,7 +61,7 @@ export function CoursesAdminList({ courses, loadError }: { courses: Row[]; loadE
           <div>
             <label className={labelClass} htmlFor="course-slug">Web address</label>
             <input id="course-slug" required value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="junior-web-creator" className={inputClass} />
-            <p className="text-white/30 text-[11px] mt-1">The course page will be at /academy/courses/{slug || "…"}. You can change it later.</p>
+            <p className="text-white/30 text-[11px] mt-1">The course page will be at /courses/{slug || "…"}. You can change it later.</p>
           </div>
           {error && <div className={`${errorClass} sm:col-span-2`}>{error}</div>}
           <div className="sm:col-span-2 flex gap-2">

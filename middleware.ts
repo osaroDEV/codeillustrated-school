@@ -35,9 +35,8 @@ export async function middleware(request: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) {
-    // Middleware sees the path without the /academy base path, and redirects
-    // must be absolute here.
-    return NextResponse.redirect(new URL(`/academy${loginPath(pathname)}`, request.url));
+    // Redirects from middleware must be absolute.
+    return NextResponse.redirect(new URL(loginPath(pathname), request.url));
   }
 
   return response;

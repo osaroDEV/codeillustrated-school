@@ -20,7 +20,7 @@ export type ContactInput = z.infer<typeof contactSchema>;
 /** Send the form to /api/contact. Returns an error to show, or null if it was sent. */
 export async function submitContact(data: ContactInput): Promise<string | null> {
   try {
-    const res = await fetch("/academy/api/contact", {
+    const res = await fetch("/api/contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),

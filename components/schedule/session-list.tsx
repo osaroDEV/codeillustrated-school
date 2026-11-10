@@ -64,14 +64,14 @@ export function UpcomingSessions({
             </div>
             {s.locked ? (
               <a
-                href="/academy/dashboard/billing"
+                href="/dashboard/billing"
                 className="flex-shrink-0 text-[#ffbd59] text-xs border border-[#ffbd59]/30 px-3 py-2 rounded-xl hover:bg-[#ffbd59]/10"
               >
                 Renew to join
               </a>
             ) : state === "open" && s.has_meeting_link ? (
               <a
-                href={`/academy/api/sessions/${s.id}/join`}
+                href={`/api/sessions/${s.id}/join`}
                 target="_blank"
                 rel="noopener"
                 className="flex-shrink-0 bg-[#c31d24] hover:bg-[#b01a20] text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors"

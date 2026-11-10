@@ -160,16 +160,15 @@ max_indexes = 5
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-# The app is served under next.config.js basePath "/academy", and the email
-# templates build links as {{ .SiteURL }}/auth/confirm, so the base path is
-# part of the site URL. Production: https://codeillustrated.com/academy
-site_url = "http://localhost:3000/academy"
+# The email templates build links as {{ .SiteURL }}/auth/confirm.
+# Production: https://codeillustrated.com
+site_url = "http://localhost:3000"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
 additional_redirect_urls = [
-  "http://localhost:3000/academy/auth/confirm",
-  "https://codeillustrated.com/academy/auth/confirm",
+  "http://localhost:3000/auth/confirm",
+  "https://codeillustrated.com/auth/confirm",
 ]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
