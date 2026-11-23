@@ -1,10 +1,12 @@
-import Benefits from "@/components/Benefits";
 import Courses from "@/components/Courses";
 import { getCourses } from "@/lib/courses";
 import CTA from "@/components/CTA";
 import { HeroSection } from "@/components/hero-section";
 import HowItWorks from "@/components/HowItWorks";
 import ReviewsSection from "@/components/ReviewsSection";
+import { ForParents } from "@/components/home/for-parents";
+import { HomeFaq } from "@/components/home/home-faq";
+import { TwoWays } from "@/components/home/two-ways";
 import {
   BASE_PATH,
   getCanonicalUrl,
@@ -74,13 +76,15 @@ export default async function Home() {
   const courses = await getCourses();
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-white">
       <OrganizationSchema />
       <HeroSection />
       <Courses courses={courses} />
+      <TwoWays />
       <HowItWorks />
-      <Benefits />
+      <ForParents />
       <ReviewsSection />
+      <HomeFaq />
       <CTA />
     </main>
   );

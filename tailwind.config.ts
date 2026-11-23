@@ -9,6 +9,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        heading: ["var(--font-heading)", "var(--font-sans)", "system-ui", "sans-serif"],
+      },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
@@ -85,6 +88,23 @@ const config: Config = {
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
+        },
+        // Marketing pages: text and tinted surfaces from the redesign.
+        ink: {
+          DEFAULT: "#1d2a30",
+          muted: "#3c4b52",
+          subtle: "#4a5a61",
+        },
+        surface: {
+          amber: "#fff7ea",
+          "amber-line": "#f1dcb6",
+          crimson: "#fdf0f0",
+          "crimson-line": "#f3d2d3",
+          teal: "#eef5f7",
+          "teal-line": "#d3e4e9",
+          mist: "#f4f8f9",
+          line: "#e1e8ea",
+          night: "#12333d",
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

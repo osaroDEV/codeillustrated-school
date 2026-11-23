@@ -1,71 +1,56 @@
-"use client";
-
-import { CourseIcon } from "@/components/course-icon";
-import type { Course } from "@/lib/course-types";
-import { motion } from "framer-motion";
-import { PriceDisplay } from "./price-display";
 import Link from "next/link";
+import type { Course } from "@/lib/course-types";
+import { ageGroup, displayAge, lowestMonthlyPrice } from "@/lib/course-groups";
+import { GROUP_STYLES } from "@/components/course-card-styles";
+import { SectionHeading } from "@/components/marketing/ui";
+import { PriceDisplay } from "./price-display";
+import { cn } from "@/lib/utils";
 
+/** Home page course cards. The whole card links to the course. */
 export default function Courses({ courses }: { courses: Course[] }) {
   return (
-    <section id="courses" className="py-24 bg-background">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
-          <div className="max-w-2xl">
-            <p className="text-secondary-600 font-bold tracking-widest uppercase text-sm mb-4">
-              Our Learning Paths
-            </p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black mb-0">
-              Curated Courses for Every Level
-            </h2>
-          </div>
-          <p className="text-base sm:text-lg text-muted-foreground flex-1 max-w-sm">
-            We follow a structured curriculum that grows with you, from basic
-            logic to advanced engineering.
-          </p>
+    <section id="courses" className="scroll-mt-20 py-20 sm:py-24">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-10 px-4 sm:px-6">
+        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
+          <SectionHeading
+            eyebrow="Our courses"
+            title="A course for every age and stage"
+            intro="Every course comes two ways: live group classes, or self-paced lessons on a monthly or yearly subscription."
+          />
+          <Link href="/courses" className="py-2 font-semibold text-accent-500 hover:underline">
+            Compare all courses →
+          </Link>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {courses.map((course, idx) => (
-            <motion.div
-              key={course.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              viewport={{ once: true }}
-              className="group relative p-8 rounded-[2rem] bg-white border border-border hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 flex flex-col items-start h-full"
-            >
-              <div
-                className={`${course.bg} ${course.color} w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}
-              >
-                <CourseIcon icon={course.icon} className="w-8 h-8" />
-              </div>
-              <span className="inline-block px-3 py-1 rounded-full bg-slate-100 text-xs font-bold text-slate-600 mb-4 tracking-wider uppercase">
-                {course.age}
-              </span>
-              <h3 className="text-xl sm:text-2xl font-bold mb-4">
-                {course.title}
-              </h3>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-6 flex-1">
-                {course.description}
-              </p>
-              
-              <div className="w-full pt-4 border-t border-slate-100 flex items-center justify-between mt-auto">
-                <div className="flex flex-col">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Starts from</span>
-                  <PriceDisplay price={course.price.group} className="text-lg text-slate-900" />
-                </div>
+        <ul className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))]">
+          {courses.map((course) => {
+            const style = GROUP_STYLES[ageGroup(course)];
+            return (
+              <li key={course.id} className="flex">
                 <Link
                   href={`/courses/${course.slug}`}
-                  className="text-primary font-bold inline-flex items-center gap-2 group/btn after:absolute after:inset-0"
+                  className={cn(
+                    "flex flex-1 flex-col gap-3.5 rounded-[22px] border-2 p-7 text-ink transition-colors hover:border-accent-500 focus-visible:border-accent-500 focus-visible:outline-none",
+                    style.card
+                  )}
                 >
-                  Details
-                  <span className="block w-2 h-2 bg-primary rounded-full group-hover/btn:w-8 transition-all" />
+                  <span className={cn("self-start rounded-full px-3 py-1.5 text-[13px] font-bold", style.badge)}>
+                    {displayAge(course.age)}
+                  </span>
+                  <h3 className="font-heading text-[26px] font-bold leading-tight">{course.title}</h3>
+                  <p className="flex-grow text-base leading-relaxed text-ink-muted">{course.description}</p>
+                  <span className={cn("flex items-center justify-between gap-3 border-t pt-3.5", style.line)}>
+                    <span className="text-[15px] text-ink-muted">
+                      from <PriceDisplay price={lowestMonthlyPrice(course)} showPeriod={false} className="text-lg font-bold text-ink" />
+                      /month
+                    </span>
+                    <span className="font-semibold text-accent-500">View course →</span>
+                  </span>
                 </Link>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </section>
   );

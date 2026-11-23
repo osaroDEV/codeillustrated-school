@@ -7,7 +7,8 @@ import { Navbar } from "@/components/Navbar";
 // React 19 exports act, but the installed @types/react doesn't list it yet.
 const act = (React as unknown as { act: (fn: () => unknown) => Promise<void> }).act;
 
-const { auth } = vi.hoisted(() => ({
+const { auth, nav } = vi.hoisted(() => ({
+  nav: { pathname: "/" as string | null },
   auth: {
     session: null as object | null,
     listener: null as null | ((event: string, session: object | null) => void),
@@ -27,20 +28,7 @@ vi.mock("@/lib/supabase", () => ({
   },
 }));
 vi.mock("next/image", () => ({ default: () => null }));
-vi.mock("framer-motion", async () => {
-  const React = await import("react");
-  return {
-    motion: new Proxy(
-      {},
-      {
-        get: (_t, tag: string) => ({ initial, animate, exit, ...rest }: Record<string, unknown>) => {
-          void [initial, animate, exit];
-          return React.createElement(tag, rest);
-        },
-      }
-    ),
-  };
-});
+vi.mock("next/navigation", () => ({ usePathname: () => nav.pathname }));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -49,7 +37,7 @@ let host: HTMLDivElement;
 
 const links = (scope: string) =>
   Array.from(host.querySelectorAll<HTMLAnchorElement>(`${scope} a`)).map((a) => [a.textContent?.trim(), a.getAttribute("href")]);
-const desktop = () => links("header .md\\:flex.space-x-4");
+const desktop = () => links('[data-testid="nav-actions"]');
 const mobile = () => links('nav[aria-label="Mobile navigation"]');
 
 async function render() {
@@ -58,11 +46,12 @@ async function render() {
 
 async function openMobileMenu() {
   await act(async () => {
-    host.querySelector<HTMLButtonElement>("header .md\\:hidden button")!.click();
+    host.querySelector<HTMLButtonElement>('button[aria-controls="mobile-menu"]')!.click();
   });
 }
 
 beforeEach(() => {
+  nav.pathname = "/";
   auth.session = null;
   auth.listener = null;
   auth.unsubscribe.mockClear();
@@ -77,11 +66,37 @@ afterEach(() => {
 });
 
 describe("Navbar account links", () => {
-  it("shows visitors Log in and Get Started on desktop", async () => {
+  it("shows visitors Log in and Find your course on desktop", async () => {
     await render();
     expect(desktop()).toEqual([
       ["Log in", "/login"],
-      ["Get Started", "/start"],
+      ["Find your course", "/start"],
+    ]);
+  });
+
+  it("turns the main button into Enrol on a course page", async () => {
+    nav.pathname = "/courses/junior-web-creator";
+    await render();
+    expect(desktop()).toEqual([
+      ["Log in", "/login"],
+      ["Enrol", "#enroll"],
+    ]);
+  });
+
+  it("keeps Find your course on the course list", async () => {
+    nav.pathname = "/courses";
+    await render();
+    expect(desktop()).toContainEqual(["Find your course", "/start"]);
+  });
+
+  it("links the main sections, with Resources and Contact left to the footer", async () => {
+    await render();
+    expect(links('nav[aria-label="Main navigation"]')).toEqual([
+      ["Courses", "/courses"],
+      ["How it works", "/#how-it-works"],
+      ["For parents", "/#parents"],
+      ["Reviews", "/#reviews"],
+      ["About", "/about-us"],
     ]);
   });
 
@@ -91,7 +106,7 @@ describe("Navbar account links", () => {
     expect(mobile()).toEqual(
       expect.arrayContaining([
         ["Log in", "/login"],
-        ["Get Started", "/start"],
+        ["Find your course", "/start"],
       ])
     );
     expect(host.innerHTML).not.toContain("wa.me");
@@ -104,7 +119,7 @@ describe("Navbar account links", () => {
     expect(desktop()).toEqual([["My Dashboard", "/dashboard"]]);
     expect(mobile()).toContainEqual(["My Dashboard", "/dashboard"]);
     expect(host.textContent).not.toContain("Log in");
-    expect(host.textContent).not.toContain("Get Started");
+    expect(host.textContent).not.toContain("Find your course");
   });
 
   it("switches when someone signs in or out", async () => {

@@ -232,7 +232,7 @@ export default function AboutUsClient() {
             className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tight leading-[1.08] mb-6"
           >
             We Build{" "}
-            <span className="bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
+            <span className="text-primary-500">
               Engineers,
             </span>
             <br />
@@ -259,7 +259,7 @@ export default function AboutUsClient() {
           >
             <Link
               href="/courses"
-              className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-600 hover:to-secondary-500 text-white font-bold px-8 py-4 rounded-2xl transition-all shadow-xl shadow-primary-500/20 hover:shadow-primary-500/40 active:scale-95"
+              className="inline-flex items-center justify-center gap-2 bg-primary-500 hover:bg-primary-700 text-white font-bold px-8 py-4 rounded-2xl transition-all shadow-xl shadow-primary-500/20 hover:shadow-primary-500/40 active:scale-95"
             >
               Explore Courses <ArrowRight className="w-4 h-4" />
             </Link>
@@ -312,7 +312,7 @@ export default function AboutUsClient() {
                 </p>
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight mb-8">
                   Born from a{" "}
-                  <span className="bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
+                  <span className="text-primary-500">
                     Simple Belief
                   </span>
                 </h2>
@@ -397,7 +397,7 @@ export default function AboutUsClient() {
               </p>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black">
                 Our Core{" "}
-                <span className="bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
+                <span className="text-primary-500">
                   Values
                 </span>
               </h2>
@@ -448,7 +448,7 @@ export default function AboutUsClient() {
               </p>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-4">
                 Meet Our{" "}
-                <span className="bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
+                <span className="text-primary-500">
                   Leadership
                 </span>
               </h2>
@@ -484,7 +484,7 @@ export default function AboutUsClient() {
               </p>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight mb-8">
                 Why Students Choose{" "}
-                <span className="bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
+                <span className="text-primary-500">
                   Code Illustrated
                 </span>
               </h2>
@@ -548,7 +548,7 @@ export default function AboutUsClient() {
                     </p>
                     <Link
                       href="/contact-us"
-                      className="inline-flex items-center justify-center gap-2 w-full bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-600 hover:to-secondary-500 text-white font-bold px-6 py-4 rounded-2xl transition-all shadow-lg hover:shadow-primary-500/30 active:scale-95"
+                      className="inline-flex items-center justify-center gap-2 w-full bg-primary-500 hover:bg-primary-700 text-white font-bold px-6 py-4 rounded-2xl transition-all shadow-lg hover:shadow-primary-500/30 active:scale-95"
                     >
                       Book a Free Session <ArrowRight className="w-4 h-4" />
                     </Link>

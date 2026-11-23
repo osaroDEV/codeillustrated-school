@@ -342,7 +342,7 @@ export default function ResourcesPageClient() {
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl text-white font-bold mb-6 leading-tight">
               Student{" "}
-              <span className="bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
+              <span className="text-primary-500">
                 Resource Hub
               </span>
             </h1>

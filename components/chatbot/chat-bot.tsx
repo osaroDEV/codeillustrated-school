@@ -186,7 +186,7 @@ export function ChatBot() {
             className="mb-4 w-[350px] sm:w-[400px] h-[500px] bg-white dark:bg-zinc-950 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col overflow-hidden backdrop-blur-xl"
           >
             {/* Header */}
-            <div className="p-4 bg-gradient-to-r from-red-600 to-orange-500 text-white flex items-center justify-between">
+            <div className="p-4 bg-primary-500 text-white flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md">
                   <Bot className="w-6 h-6" />
@@ -277,7 +277,7 @@ export function ChatBot() {
                 <Button
                   type="submit"
                   size="icon"
-                  className="rounded-full bg-gradient-to-r from-red-600 to-orange-500 hover:opacity-90 transition-opacity"
+                  className="rounded-full bg-primary-500 hover:opacity-90 transition-opacity"
                   disabled={!inputValue.trim()}
                 >
                   <Send className="w-4 h-4" />
@@ -296,7 +296,7 @@ export function ChatBot() {
           "w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300",
           isOpen
             ? "bg-zinc-900 text-white rotate-90"
-            : "bg-gradient-to-r from-red-600 to-orange-500 text-white",
+            : "bg-primary-500 text-white",
         )}
       >
         {isOpen ? (

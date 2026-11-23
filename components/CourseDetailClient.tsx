@@ -1,183 +1,395 @@
-"use client";
-
-import { CourseIcon } from "@/components/course-icon";
-import type { Course } from "@/lib/course-types";
-import { motion } from "framer-motion";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  Clock,
-  GraduationCap,
-  Send,
-} from "lucide-react";
 import Link from "next/link";
+import { ShieldCheck } from "lucide-react";
+import type { Course } from "@/lib/course-types";
+import { ageGroup, displayAge, moduleName } from "@/lib/course-groups";
+import { reviewForCourse } from "@/lib/reviews";
+import { CourseIcon } from "@/components/course-icon";
+import { buttonClass, CheckItem, CURRENCY_NOTE, Eyebrow, Faq, SectionHeading, WHATSAPP_URL } from "@/components/marketing/ui";
+import { COURSE_FINDER_PATH } from "@/lib/routes";
+import { cn } from "@/lib/utils";
 import { EnrollOptions } from "./enroll-options";
 
-interface CourseDetailClientProps {
-  course: Course;
-}
+/**
+ * A course page. Courses whose youngest learners are under 13 use the playful
+ * style (amber hero, rounded shapes); everything else uses the calm one (dark
+ * teal hero with a code panel). Content comes from the course data either way.
+ */
+export default function CourseDetailClient({ course }: { course: Course }) {
+  const group = ageGroup(course);
+  const playful = group === "kids";
+  // Under-18 courses speak to parents; teens & adults courses get career support.
+  const forParents = group !== "adults";
+  const review = reviewForCourse(course.id);
+  const age = displayAge(course.age);
 
-export default function CourseDetailClient({
-  course,
-}: CourseDetailClientProps) {
   return (
     <>
-      {/* Hero Section */}
-      <div className="pt-32 pb-16 bg-white border-b border-border">
-        <div className="max-w-7xl mx-auto px-6">
-          <Link
-            href="/courses"
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-8 transition-colors group"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Back to Courses
-          </Link>
+      {playful ? <PlayfulHero course={course} age={age} /> : <CalmHero course={course} age={age} />}
 
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div
-                className={`${course.bg} ${course.color} w-16 h-16 rounded-2xl flex items-center justify-center mb-6`}
-              >
-                <CourseIcon icon={course.icon} className="w-8 h-8" />
-              </div>
-              <h1 className="text-4xl lg:text-6xl font-heading font-black mb-6">
-                {course.title}
-              </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed mb-8">
-                {course.fullDescription}
-              </p>
+      <Curriculum course={course} playful={playful} forChild={forParents} />
 
-              <div className="flex flex-wrap gap-4 mb-8">
-                <div className="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-full text-sm font-semibold text-slate-600">
-                  <Clock className="w-4 h-4" />
-                  {course.duration}
-                </div>
-                <div className="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-full text-sm font-semibold text-slate-600">
-                  <GraduationCap className="w-4 h-4" />
-                  {course.level}
-                </div>
-                <div className="flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full text-sm font-semibold text-primary-600">
-                  {course.age}
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-8 rounded-4xl border border-border shadow-xl relative overflow-hidden flex flex-col h-full">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full translate-x-1/2 -translate-y-1/2" />
-              <h2 className="text-2xl font-bold mb-6">Course Benefits</h2>
-              <ul className="space-y-4 mb-8 text-slate-600 flex-1">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-accent-500 mt-0.5 shrink-0" />
-                  <span>Live instructor-led sessions</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-accent-500 mt-0.5 shrink-0" />
-                  <span>Hands-on project-based learning</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-accent-500 mt-0.5 shrink-0" />
-                  <span>Lifetime access to course materials</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-accent-500 mt-0.5 shrink-0" />
-                  <span>Certificate of Completion</span>
-                </li>
-              </ul>
-
-              <EnrollOptions course={course} />
-
-              <p className="text-center text-sm text-slate-500 mt-6">
-                Not ready yet?{" "}
-                <Link
-                  href="/resources"
-                  className="text-primary font-bold hover:underline"
-                >
-                  Check our free resources
-                </Link>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Curriculum Section */}
-      <section className="py-24 px-6" aria-label="Course curriculum">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl lg:text-4xl font-heading font-black mb-12 text-center">
-            What You&apos;ll Learn
-          </h2>
-
-          <div className="space-y-8">
-            {course.curriculum.map((module, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-white p-8 rounded-3xl border border-border hover:shadow-lg transition-all"
-              >
-                <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
-                    {idx + 1}
-                  </span>
-                  {module.module}
-                </h3>
-                <ul className="grid sm:grid-cols-2 gap-4">
-                  {module.lessons.map((lesson, lIdx) => (
-                    <li
-                      key={lIdx}
-                      className="flex items-center gap-3 text-slate-600"
-                    >
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />
-                      {module.previewIds?.[lIdx] ? (
-                        <Link
-                          href={`/dashboard/courses/${course.id}/lessons/${module.previewIds[lIdx]}`}
-                          className="text-primary font-medium hover:underline"
-                        >
-                          {lesson} <span className="text-xs font-bold uppercase tracking-wide">· Free preview</span>
-                        </Link>
-                      ) : (
-                        lesson
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            ))}
-          </div>
+      <section id="enroll" className="scroll-mt-16 bg-surface-mist py-20 sm:py-24" aria-labelledby="enroll-title">
+        <div className="mx-auto flex max-w-[1100px] flex-col gap-9 px-4 sm:px-6">
+          <SectionHeading
+            id="enroll-title"
+            center
+            eyebrow="Enrol"
+            title={forParents ? "Choose how your child learns" : "Choose how you learn"}
+            intro={CURRENCY_NOTE}
+          />
+          <EnrollOptions course={course} forChild={forParents} ageLabel={playful ? age : undefined} />
+          <p className="mx-auto max-w-[640px] rounded-2xl border border-surface-line bg-white px-6 py-4 text-center text-[15px] leading-relaxed text-ink-muted">
+            <strong className="text-ink">Group class times</strong> are shown in your time zone, and your schedule email
+            confirms them.
+          </p>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section
-        className="pb-24 px-6 text-center"
-        aria-label="Enroll call to action"
-      >
-        <div className="max-w-7xl mx-auto bg-slate-900 rounded-[3rem] p-12 lg:p-24 text-white relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-64 h-64 bg-primary/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
-          <h2 className="text-3xl lg:text-5xl font-heading font-black mb-8 relative z-10">
-            Start Your Journey with <br className="hidden sm:block" />{" "}
-            {course.title}
+      <section className="py-20 sm:py-24">
+        <div className="mx-auto flex max-w-[1100px] flex-col gap-8 px-4 sm:px-6">
+          {forParents ? <ParentsBlock course={course} /> : <CareerSupport />}
+          {review && (
+            <blockquote
+              className={cn(
+                "m-0 flex flex-col gap-5 rounded-[28px] p-8 sm:p-11",
+                playful ? "bg-surface-amber text-ink" : "bg-surface-night text-white"
+              )}
+            >
+              <p className="font-heading text-[22px] font-medium leading-snug sm:text-[28px]">&ldquo;{review.quote}&rdquo;</p>
+              <footer className={cn("text-base", playful ? "text-ink-muted" : "text-[#cfe1e6]")}>
+                <strong className={playful ? "text-ink" : "text-white"}>{review.name}</strong> · {review.role}
+              </footer>
+            </blockquote>
+          )}
+        </div>
+      </section>
+
+      <section className="bg-surface-mist py-20 sm:py-[88px]" aria-labelledby="course-faq-title">
+        <div className="mx-auto flex max-w-[860px] flex-col gap-7 px-4 sm:px-6">
+          <h2 id="course-faq-title" className="font-heading text-3xl font-extrabold leading-tight text-ink sm:text-[40px]">
+            Questions about {course.title}
           </h2>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 relative z-10">
-            <a
-              href={course.offerings?.length ? "#enroll" : "https://wa.me/447405786279"}
-              {...(course.offerings?.length ? {} : { target: "_blank", rel: "noreferrer" })}
-              className="bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500 px-12 py-5 rounded-2xl font-black text-xl hover:bg-white hover:text-primary transition-all shadow-xl shadow-black/20 active:scale-95 text-center flex items-center justify-center"
-            >
-              Enroll Now
-            </a>
-            <Link
-              href="mailto:info@codeillustrated.com"
-              className="bg-transparent border border-white/30 hover:bg-white/10 px-12 py-5 rounded-2xl font-bold transition-all text-center flex items-center justify-center text-white gap-3"
-            >
-              Ask a Question
-              <Send className="w-5 h-5" />
-            </Link>
+          <Faq items={courseFaq(course, forParents)} />
+        </div>
+      </section>
+
+      <section className="py-20 sm:py-[88px]">
+        <div className="mx-auto max-w-[1100px] px-4 sm:px-6">
+          <div
+            className={cn(
+              "relative flex flex-wrap items-center justify-between gap-7 overflow-hidden bg-accent-500 px-6 py-12 sm:px-12 sm:py-14",
+              playful ? "rounded-[32px]" : "rounded-3xl"
+            )}
+          >
+            {playful && <div aria-hidden="true" className="absolute -right-14 -top-28 h-[200px] w-[200px] rounded-full bg-secondary-400" />}
+            <div className="relative flex flex-[1_1_460px] flex-col gap-3">
+              <h2 className="font-heading text-3xl font-extrabold leading-tight text-white sm:text-[40px]">
+                {forParents ? "Ready for their first class?" : `Ready to start ${course.title}?`}
+              </h2>
+              <p className="text-lg text-[#d6eef3]">Pick live group classes or self-paced. Cancel any time.</p>
+            </div>
+            <div className="relative flex flex-col items-start gap-3">
+              <a href="#enroll" className={buttonClass("primary", true)}>
+                Enrol
+              </a>
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-[44px] items-center text-[15px] text-white underline underline-offset-4 hover:text-[#d6eef3]"
+              >
+                Questions? Chat on WhatsApp
+              </a>
+            </div>
           </div>
         </div>
       </section>
     </>
   );
+}
+
+function Breadcrumb({ title, className }: { title: string; className: string }) {
+  return (
+    <nav aria-label="Breadcrumb" className={cn("text-sm", className)}>
+      <Link href="/courses" className="underline-offset-4 hover:underline">
+        Courses
+      </Link>{" "}
+      <span aria-hidden="true">/</span> <span aria-current="page">{title}</span>
+    </nav>
+  );
+}
+
+function HeroActions({ light }: { light: boolean }) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-7 gap-y-4 pt-1.5">
+      <a href="#enroll" className={buttonClass("primary", true, "px-10")}>
+        Enrol
+      </a>
+      <Link
+        href={COURSE_FINDER_PATH}
+        className={cn(
+          "inline-flex min-h-[44px] items-center text-base font-bold underline-offset-4 hover:underline",
+          light ? "text-ink" : "text-white"
+        )}
+      >
+        Try a free class first (no card) →
+      </Link>
+    </div>
+  );
+}
+
+function badges(course: Course, age: string) {
+  return [age, course.level, course.duration, "Certificate"].filter(Boolean);
+}
+
+function PlayfulHero({ course, age }: { course: Course; age: string }) {
+  return (
+    <section className="relative overflow-hidden bg-secondary-400">
+      <div aria-hidden="true" className="absolute -bottom-28 -left-20 h-[280px] w-[280px] rounded-full bg-[#ffcf80]" />
+      <div aria-hidden="true" className="absolute right-[38%] top-10 hidden h-[26px] w-[26px] rotate-45 rounded bg-primary-500 lg:block" />
+      <div aria-hidden="true" className="absolute right-[44%] top-[120px] hidden h-3.5 w-3.5 rounded-full bg-accent-500 lg:block" />
+      <div className="relative mx-auto flex max-w-[1200px] flex-col gap-10 px-4 pb-16 pt-7 sm:px-6 sm:pb-20">
+        <Breadcrumb title={course.title} className="text-[#3a2a00]" />
+        <div className="flex flex-wrap items-center gap-12">
+          <div className="flex min-w-0 flex-[1_1_520px] flex-col gap-[22px]">
+            <ul className="flex flex-wrap gap-2.5" aria-label="Course details">
+              {badges(course, age).map((b) => (
+                <li key={b} className="rounded-full bg-white px-3.5 py-2 text-sm font-bold text-ink">
+                  {b}
+                </li>
+              ))}
+            </ul>
+            <h1 className="font-heading text-[44px] font-extrabold leading-none tracking-tight text-ink sm:text-[68px]">
+              {course.title}
+            </h1>
+            <p className="max-w-[560px] text-lg leading-normal text-[#3a2a00] sm:text-[21px]">{course.fullDescription}</p>
+            <HeroActions light />
+          </div>
+
+          <div aria-hidden="true" className="flex min-w-0 flex-[1_1_400px] justify-center">
+            <div className="w-full max-w-[440px] rotate-2 overflow-hidden rounded-[28px] bg-white shadow-[0_24px_60px_rgba(90,60,0,0.25)]">
+              <div className="flex items-center gap-2 bg-accent-500 px-4 py-3">
+                <span className="h-2.5 w-2.5 rounded-full bg-secondary-400" />
+                <span className="h-2.5 w-2.5 rounded-full bg-white" />
+                <span className="ml-2.5 flex h-5 flex-1 items-center rounded-full bg-[#2b6e81] pl-3 text-[11px] text-[#d6eef3]">
+                  my-project
+                </span>
+              </div>
+              <div className="flex flex-col gap-4 p-6">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-teal text-accent-500">
+                    <CourseIcon icon={course.icon} className="h-6 w-6" />
+                  </span>
+                  <p className="font-heading text-2xl font-extrabold text-primary-500">{course.title}</p>
+                </div>
+                <ol className="flex flex-col gap-2.5">
+                  {course.curriculum.slice(0, 3).map((m, i) => (
+                    <li
+                      key={m.module}
+                      className={cn(
+                        "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-bold",
+                        i === 0 ? "bg-primary-500 text-white" : i === 1 ? "bg-surface-teal text-ink" : "bg-[#fff1d6] text-ink"
+                      )}
+                    >
+                      <span>{i + 1}</span>
+                      {moduleName(m.module)}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CalmHero({ course, age }: { course: Course; age: string }) {
+  const modules = course.curriculum.slice(0, 4).map((m) => moduleName(m.module));
+  return (
+    <section className="bg-surface-night text-white">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-11 px-4 pb-20 pt-7 sm:px-6 sm:pb-[88px]">
+        <Breadcrumb title={course.title} className="text-[#b9d3da]" />
+        <div className="flex flex-wrap items-center gap-14">
+          <div className="flex min-w-0 flex-[1_1_520px] flex-col gap-[22px]">
+            <ul className="flex flex-wrap gap-2.5 text-sm font-semibold" aria-label="Course details">
+              {badges(course, age).map((b) => (
+                <li key={b} className="rounded-lg border border-[#3f6b78] px-3.5 py-[7px] text-[#e3eff2]">
+                  {b}
+                </li>
+              ))}
+            </ul>
+            <h1 className="font-heading text-[44px] font-extrabold leading-[1.02] tracking-tight sm:text-[64px]">{course.title}</h1>
+            <p className="max-w-[580px] text-lg leading-normal text-[#cfe1e6] sm:text-[21px]">{course.fullDescription}</p>
+            <HeroActions light={false} />
+          </div>
+
+          <div aria-hidden="true" className="min-w-0 flex-[1_1_420px]">
+            <div className="overflow-hidden rounded-2xl bg-[#0b2128] shadow-[0_30px_70px_rgba(0,0,0,0.35)]">
+              <div className="flex border-b border-[#1f3f48] font-mono text-[13px]">
+                <span className="border-r border-[#1f3f48] bg-surface-night px-[18px] py-3 text-white">course.ts</span>
+                <span className="px-[18px] py-3 text-[#7d9aa2]">progress.ts</span>
+              </div>
+              <pre className="m-0 overflow-x-auto px-6 pb-6 pt-5 font-mono text-[14px] leading-[1.85] text-[#e3eff2]">
+                <span className="text-secondary-400">const</span> <span className="text-[#7fd3e6]">course</span> = {"{\n"}
+                {"  "}title: <span className="text-[#b8e986]">&quot;{course.title}&quot;</span>,{"\n"}
+                {"  "}level: <span className="text-[#b8e986]">&quot;{course.level}&quot;</span>,{"\n"}
+                {"  "}modules: [{"\n"}
+                {modules.map((m) => (
+                  <span key={m}>
+                    {"    "}
+                    <span className="text-[#b8e986]">&quot;{m}&quot;</span>,{"\n"}
+                  </span>
+                ))}
+                {"  "}],{"\n"}
+                {"};"}
+              </pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const MODULE_TINTS = ["bg-surface-amber", "bg-surface-teal", "bg-surface-crimson"];
+const NUMBER_TILES = [
+  "bg-primary-500 text-white -rotate-6",
+  "bg-accent-500 text-white rotate-[5deg]",
+  "bg-secondary-400 text-[#3a2a00] -rotate-[4deg]",
+];
+
+function Curriculum({ course, playful, forChild }: { course: Course; playful: boolean; forChild: boolean }) {
+  if (!course.curriculum.length) return null;
+  return (
+    <section className="py-20 sm:py-24" aria-labelledby="curriculum-title">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-10 px-4 sm:px-6">
+        <SectionHeading
+          id="curriculum-title"
+          eyebrow={forChild ? "What they'll learn" : "What you'll learn"}
+          title={playful ? "Build it yourself, one module at a time" : "Real tools, real projects"}
+          intro={`${course.curriculum.length} ${course.curriculum.length === 1 ? "module" : "modules"}${course.duration ? ` over ${course.duration.toLowerCase()}` : ""}.`}
+        />
+        <ol className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))]">
+          {course.curriculum.map((module, idx) => (
+            <li
+              key={module.module}
+              className={cn(
+                "flex flex-col gap-4",
+                playful ? cn("rounded-[28px] p-7 sm:p-8", MODULE_TINTS[idx % 3]) : "rounded-2xl border border-[#dde7ea] p-6 sm:p-7"
+              )}
+            >
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "flex items-center justify-center font-heading font-extrabold",
+                  playful
+                    ? cn("h-14 w-14 rounded-[18px] text-2xl", NUMBER_TILES[idx % 3])
+                    : "h-10 w-10 rounded-lg bg-surface-teal text-lg text-accent-500"
+                )}
+              >
+                {idx + 1}
+              </span>
+              <h3 className="font-heading text-2xl font-bold leading-tight text-ink sm:text-[26px]">
+                <span className="sr-only">Module {idx + 1}: </span>
+                {moduleName(module.module)}
+              </h3>
+              <ul className="flex list-disc flex-col gap-2 pl-5 text-base leading-normal text-ink-muted marker:text-ink-subtle">
+                {module.lessons.map((lesson, lIdx) => (
+                  <li key={`${lesson}-${lIdx}`}>
+                    {module.previewIds?.[lIdx] ? (
+                      <Link
+                        href={`/dashboard/courses/${course.id}/lessons/${module.previewIds[lIdx]}`}
+                        className="font-medium text-accent-500 underline-offset-4 hover:underline"
+                      >
+                        {lesson} <span className="text-sm font-semibold">(free preview)</span>
+                      </Link>
+                    ) : (
+                      lesson
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+function ParentsBlock({ course }: { course: Course }) {
+  return (
+    <div className="flex flex-col gap-6">
+      <h2 className="font-heading text-3xl font-extrabold leading-tight text-ink sm:text-[40px]">For parents</h2>
+      <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))]">
+        <div className="flex flex-col gap-3.5 rounded-3xl bg-surface-teal p-7">
+          <h3 className="font-heading text-[22px] font-bold text-ink">How lessons run online</h3>
+          <p className="text-[15px] leading-relaxed text-ink-muted">
+            Your child joins from home on a laptop or desktop. The tutor explains each idea with pictures, then the small
+            group codes along together.
+          </p>
+          <p className="flex items-start gap-2 text-[15px] leading-relaxed text-ink-muted">
+            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-accent-500" aria-hidden="true" />
+            Our learner community is moderated by our team.
+          </p>
+        </div>
+        <div className="flex flex-col gap-3.5 rounded-3xl bg-surface-teal p-7">
+          <h3 className="font-heading text-[22px] font-bold text-ink">Following their progress</h3>
+          <p className="text-[15px] leading-relaxed text-ink-muted">
+            Log in to the learner dashboard to see lessons completed, projects built and tutor feedback. When they finish
+            the course, your child earns a certificate.
+          </p>
+          <Link href="/#parents" className="font-semibold text-accent-500 underline-offset-4 hover:underline">
+            See an example dashboard →
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CareerSupport() {
+  return (
+    <div className="flex flex-col gap-4 rounded-[20px] border border-[#dde7ea] p-7 sm:p-[30px]">
+      <Eyebrow>Included</Eyebrow>
+      <h2 className="font-heading text-[26px] font-bold text-ink">Career support</h2>
+      <ul className="grid gap-3 text-base text-ink sm:grid-cols-2">
+        <CheckItem>CV and portfolio reviews</CheckItem>
+        <CheckItem>Mock interviews</CheckItem>
+        <CheckItem>Guidance on finding your first role</CheckItem>
+        <CheckItem>A certificate of completion</CheckItem>
+      </ul>
+    </div>
+  );
+}
+
+function courseFaq(course: Course, forChild: boolean) {
+  const beginner = /beginner|intro/i.test(course.level);
+  const who = forChild ? "my child" : "I";
+  return [
+    {
+      q: forChild ? "Does my child need any coding experience?" : "Do I need any experience?",
+      a: beginner
+        ? "No. This course is for complete beginners."
+        : `This is ${/^[aeiou]/i.test(course.level) ? "an" : "a"} ${course.level.toLowerCase()} course, so some basics help. If you're not sure it's the right level, the course finder suggests a starting point in under a minute.`,
+    },
+    {
+      q: forChild ? "What do they need at home?" : "What do I need?",
+      a: "A laptop or desktop computer with an internet connection.",
+    },
+    {
+      q: forChild ? "Group or self-paced: which is better for my child?" : "Can I fit it around a full-time job?",
+      a: forChild
+        ? "Most children do best in live group classes, where a tutor keeps them on track. Self-paced suits confident learners with a parent nearby to help."
+        : "Yes. Choose self-paced to learn whenever suits you, or group classes at times shown in your own time zone.",
+    },
+    { q: forChild ? "What currency will we pay in?" : "What currency will I pay in?", a: `${CURRENCY_NOTE} You pay securely by card.` },
+    {
+      q: `Can ${who} try it before paying?`,
+      a: "Yes. The first interactive class is free and you don't need a card.",
+    },
+    { q: "Can we cancel?", a: "Yes, any time from your dashboard." },
+  ];
 }
