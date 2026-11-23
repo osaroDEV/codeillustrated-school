@@ -97,7 +97,7 @@ export function ContactForm({ courses }: { courses: CourseLink[] }) {
         >
           <h1 className="text-3xl text-white sm:text-4xl font-bold mb-4">
             Get in{" "}
-            <span className="bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
+            <span className="text-primary-500">
               Touch
             </span>
           </h1>
@@ -129,7 +129,7 @@ export function ContactForm({ courses }: { courses: CourseLink[] }) {
                     transition={{ delay: index * 0.1 }}
                     className="flex items-center space-x-4"
                   >
-                    <div className="w-12 h-12 bg-gradient-to-r from-primary-500 to-secondary-400 rounded-lg flex items-center justify-center">
+                    <div className="w-12 h-12 bg-primary-500 rounded-lg flex items-center justify-center">
                       <info.icon className="h-6 w-6 text-white" />
                     </div>
                     <div>
@@ -150,7 +150,7 @@ export function ContactForm({ courses }: { courses: CourseLink[] }) {
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-primary-500 to-secondary-400 rounded-2xl p-8 text-white">
+            <div className="bg-primary-500 rounded-2xl p-8 text-white">
               <h4 className="text-xl font-semibold mb-4">Why Choose Us?</h4>
               <ul className="space-y-2">
                 <li>• Expert instructors with industry experience</li>
@@ -289,7 +289,7 @@ export function ContactForm({ courses }: { courses: CourseLink[] }) {
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
+                      className="w-full bg-primary-500 hover:bg-primary-700"
                     >
                       {isSubmitting ? (
                         "Sending..."

@@ -53,7 +53,7 @@ export function FeaturesSection() {
         >
           <h2 className="text-3xl text-white sm:text-4xl font-bold mb-4">
             Why Choose{" "}
-            <span className="bg-gradient-to-r from-primary-500 to-secondary-400 bg-clip-text text-transparent">
+            <span className="text-primary-500">
               Code Illustrated
             </span>
           </h2>
@@ -74,7 +74,7 @@ export function FeaturesSection() {
               className="group p-6 rounded-2xl bg-card border shadow-lg hover:shadow-xl transition-all duration-300"
             >
               <div className="mb-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-primary-500 to-secondary-400 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <div className="w-12 h-12 bg-primary-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <feature.icon className="h-6 w-6 text-white" />
                 </div>
               </div>

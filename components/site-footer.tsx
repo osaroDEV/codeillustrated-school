@@ -11,14 +11,14 @@ export default function Footer({ courses }: { courses: CourseLink[] }) {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-white border-t border-border pt-24 pb-12 bg-gradient-to-br from-slate-900 via-accent-950 to-slate-900">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
+    <footer className="bg-surface-night pt-16 pb-10 sm:pt-20">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           <div className="lg:col-span-1">
             <BrandLogo href="/" size={48} className="mb-6" />
-            <p className="text-sm sm:text-base text-white/75 leading-relaxed mb-8">
-              Empowering the next generation of builders through visual
-              illustration and interactive mentorship.
+            <p className="text-sm sm:text-base text-[#d6e6ea] leading-relaxed mb-8">
+              Helping the next generation of builders learn through
+              illustration and live teaching.
             </p>
             <div className="flex gap-4">
               {[
@@ -39,7 +39,7 @@ export default function Footer({ courses }: { courses: CourseLink[] }) {
                   target="_blank"
                   rel="noreferrer"
                   aria-label={label}
-                  className="w-10 h-10 rounded-full border border-white flex items-center justify-center text-white hover:text-primary hover:border-primary transition-all"
+                  className="w-11 h-11 rounded-full border border-white/60 flex items-center justify-center text-white hover:text-secondary-400 hover:border-secondary-400 transition-colors"
                 >
                   <Icon className="w-5 h-5" />
                 </a>
@@ -64,7 +64,7 @@ export default function Footer({ courses }: { courses: CourseLink[] }) {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-white/75 round hover:text-primary transition-colors"
+                    className="text-[#d6e6ea] hover:text-secondary-400 transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -75,30 +75,43 @@ export default function Footer({ courses }: { courses: CourseLink[] }) {
 
           <div>
             <h4 className="font-bold text-base text-white sm:text-lg mb-6">
-              Company
+              School
             </h4>
+            <ul className="space-y-4 mb-8">
+              {[
+                { name: "About us", href: "/about-us" },
+                { name: "Free resources", href: "/resources" },
+                { name: "Contact us", href: "/contact-us" },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-[#d6e6ea] hover:text-secondary-400 transition-colors">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
             <ul className="space-y-4">
               <li className="flex items-center space-x-3">
-                <Mail className="h-5 w-5 text-red-400" />
+                <Mail className="h-5 w-5 text-secondary-400 shrink-0" />
                 <a
                   href="mailto:admin@codeillustrated.com"
-                  className="text-white/75 hover:text-red-400 transition-colors"
+                  className="text-[#d6e6ea] hover:text-secondary-400 transition-colors break-all"
                 >
                   admin@codeillustrated.com
                 </a>
               </li>
               <li className="flex items-center space-x-3">
-                <Phone className="h-5 w-5 text-red-400" />
+                <Phone className="h-5 w-5 text-secondary-400 shrink-0" />
                 <a
                   href="https://wa.me/447405786279"
-                  className="text-white/75 hover:text-red-400 transition-colors"
+                  className="text-[#d6e6ea] hover:text-secondary-400 transition-colors break-all"
                 >
                   +44 7405 786 279
                 </a>
               </li>
               <li className="flex items-center space-x-3">
-                <MapPin className="h-5 w-5 text-red-400" />
-                <span className="text-white/75">Online Worldwide</span>
+                <MapPin className="h-5 w-5 text-secondary-400 shrink-0" />
+                <span className="text-[#d6e6ea]">Classes online, wherever you are</span>
               </li>
             </ul>
           </div>
@@ -107,22 +120,22 @@ export default function Footer({ courses }: { courses: CourseLink[] }) {
             <h4 className="font-bold text-base text-white sm:text-lg mb-6">
               Newsletter
             </h4>
-            <p className="text-white/75 mb-6">
+            <p className="text-[#d6e6ea] mb-6">
               Get coding tips and school updates delivered to your inbox.
             </p>
             <NewsletterForm />
           </div>
         </div>
 
-        <div className="pt-12 border-t border-border flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-white">
+        <div className="pt-8 border-t border-[#2b4c56] flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-[#d6e6ea]">
           <p>
             © {currentYear} Code Illustrated Online School. All rights reserved.
           </p>
           <div className="flex gap-8">
-            <Link href="/terms-of-service" className="hover:text-white/60">
+            <Link href="/terms-of-service" className="hover:text-secondary-400">
               Terms of Service
             </Link>
-            <Link href="/privacy-policy" className="hover:text-white/60">
+            <Link href="/privacy-policy" className="hover:text-secondary-400">
               Privacy Policy
             </Link>
           </div>
@@ -183,7 +196,8 @@ function NewsletterForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full bg-white/5 border border-white/10 px-4 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all text-white placeholder:text-white/30 disabled:opacity-50"
+          aria-label="Your email address"
+          className="w-full bg-white/5 border border-white/20 px-4 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all text-white placeholder:text-white/50 disabled:opacity-50"
           disabled={status === "loading" || status === "success"}
         />
         {status === "loading" && (
@@ -195,7 +209,7 @@ function NewsletterForm() {
       <button
         type="submit"
         disabled={status === "loading" || status === "success"}
-        className="relative overflow-hidden bg-gradient-to-r from-primary-500 to-secondary-400 text-white font-bold py-3.5 rounded-xl hover:shadow-lg hover:shadow-primary-500/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+        className="relative min-h-[48px] bg-primary-500 text-white font-bold py-3 rounded-full hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <span className="relative z-10">
           {status === "success"
@@ -207,7 +221,7 @@ function NewsletterForm() {
       </button>
       {message && (
         <p
-          className={`text-sm font-medium mt-1 animate-in fade-in slide-in-from-top-1 ${status === "success" ? "text-secondary-400" : "text-red-400"}`}
+          className={`text-sm font-medium mt-1 animate-in fade-in slide-in-from-top-1 ${status === "success" ? "text-secondary-400" : "text-secondary-400 shrink-0"}`}
         >
           {message}
         </p>

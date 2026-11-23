@@ -1,55 +1,33 @@
-"use client";
-
-import { Send } from "lucide-react";
 import Link from "next/link";
+import { buttonClass, WHATSAPP_URL } from "@/components/marketing/ui";
 import { COURSE_FINDER_PATH } from "@/lib/routes";
 
 export default function CTA() {
   return (
-    <section id="contact" className="py-24 px-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-gradient-to-br from-primary-600 via-primary-800 to-accent-900 rounded-[3rem] p-12 lg:p-24 text-center text-white relative overflow-hidden shadow-2xl shadow-primary/30">
-          {/* Decorative circles */}
-          <div className="absolute top-0 left-0 w-96 h-96 bg-secondary-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-secondary-500/10 rounded-full blur-3xl translate-x-1/3 translate-y-1/3 pointer-events-none" />
-
-          {/* Grid pattern overlay */}
-          <div className="absolute inset-0 opacity-10 pointer-events-none">
-            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px]" />
-          </div>
-
-          <div className="relative z-10 max-w-4xl mx-auto">
-            <h2 className="text-4xl sm:text-5xl lg:text-7xl font-heading font-black mb-8 leading-tight drop-shadow-sm">
-              Ready to Code Your Future?
+    <section id="contact" className="py-20 sm:py-24">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+        <div className="relative flex flex-wrap items-center justify-between gap-8 overflow-hidden rounded-[32px] bg-primary-500 px-6 py-12 sm:px-12 sm:py-16">
+          <div aria-hidden="true" className="absolute -right-16 -top-28 h-[260px] w-[260px] rounded-full bg-secondary-400/90" />
+          <div className="relative flex flex-[1_1_480px] flex-col gap-3.5">
+            <h2 className="font-heading text-3xl font-extrabold leading-tight text-white sm:text-[44px] sm:leading-[1.1]">
+              Start with a free interactive class
             </h2>
-            <p className="text-lg sm:text-xl lg:text-2xl text-primary-50 mb-12 leading-relaxed font-medium max-w-2xl mx-auto">
-              Book your first free interactive class today. No credit card
-              required. Experience the "Illustrated" difference for yourself.
+            <p className="text-lg leading-relaxed text-[#ffe9ea] sm:text-[19px]">
+              No credit card required. Answer three quick questions and we&apos;ll match you to the right course.
             </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-              <Link
-                href={COURSE_FINDER_PATH}
-                className="group relative overflow-hidden bg-secondary-500 text-secondary-950 w-full sm:w-auto px-10 py-5 rounded-2xl font-black text-xl hover:bg-secondary-400 transition-all shadow-xl shadow-black/20 hover:shadow-secondary-500/20 active:scale-95 flex items-center justify-center"
-              >
-                <span className="relative z-10">Find your course</span>
-                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-              </Link>
-              <a
-                href="https://wa.me/447405786279"
-                target="_blank"
-                rel="noreferrer"
-                className="group bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 hover:border-white/40 w-full sm:w-auto px-10 py-5 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all text-white"
-              >
-                Talk to an advisor
-                <Send className="hidden sm:block w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </a>
-            </div>
-
-            <p className="mt-12 text-primary-200 text-sm font-medium flex items-center justify-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-secondary-500 animate-pulse" />
-              Limited spots available for this month's cohort
-            </p>
+          </div>
+          <div className="relative flex flex-col items-start gap-3.5">
+            <Link href={COURSE_FINDER_PATH} className={buttonClass("white", true)}>
+              Find your course
+            </Link>
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-[44px] items-center text-[15px] font-medium text-white underline underline-offset-4 hover:text-[#ffe9ea]"
+            >
+              Questions? Chat with us on WhatsApp
+            </a>
           </div>
         </div>
       </div>

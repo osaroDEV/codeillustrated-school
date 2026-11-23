@@ -53,7 +53,7 @@ export function ResourceCard({ resource }: ResourceCardProps) {
 
         <Button
           onClick={handleDownload}
-          className="w-full bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
+          className="w-full bg-primary-500 hover:bg-primary-700"
         >
           <Download className="mr-2 h-4 w-4" />
           Download

@@ -15,7 +15,7 @@ vi.mock("@/hooks/use-currency", () => ({ useCurrency: () => ({ currency: "USD", 
 const group = { kind: "cohort_group" as const, price: { usd: 50, ngn: 75000 } };
 const selfPaced = { kind: "self_paced" as const, price: { usd: 10, ngn: 15000 }, yearlyPrice: { usd: 100, ngn: 150000 } };
 const course = (offerings: Course["offerings"]) =>
-  ({ id: "c1", slug: "c", price: { group: group.price, oneOnOne: group.price }, offerings }) as unknown as Course;
+  ({ id: "c1", slug: "c", price: { group: group.price }, offerings }) as unknown as Course;
 
 const fetchMock = vi.fn();
 let root: Root;
@@ -47,7 +47,7 @@ describe("EnrollOptions self-paced", () => {
   it("charges monthly by default", async () => {
     await render(course([group, selfPaced]));
     expect(host.textContent).toContain("$10");
-    await act(async () => button("Subscribe monthly")!.parentElement && Array.from(host.querySelectorAll("button")).at(-1)!.click());
+    await act(async () => button("Enrol self-paced")!.click());
     expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ course_id: "c1", kind: "self_paced", currency: "USD", interval: "monthly" });
   });
 
@@ -55,8 +55,8 @@ describe("EnrollOptions self-paced", () => {
     await render(course([group, selfPaced]));
     await act(async () => button("yearly")!.click());
     expect(host.textContent).toContain("$100");
-    expect(host.textContent).toContain("/yr");
-    await act(async () => button("Subscribe yearly")!.click());
+    expect(host.textContent).toContain("/ year");
+    await act(async () => button("Enrol self-paced")!.click());
     expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ kind: "self_paced", interval: "yearly" });
   });
 
@@ -69,7 +69,7 @@ describe("EnrollOptions self-paced", () => {
   it("keeps live classes monthly", async () => {
     await render(course([group, selfPaced]));
     await act(async () => button("yearly")!.click());
-    await act(async () => button("Subscribe monthly")!.click());
+    await act(async () => button("Enrol in group classes")!.click());
     expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ kind: "cohort_group", interval: "monthly" });
   });
 });
@@ -80,17 +80,27 @@ describe("EnrollOptions for signed-out visitors", () => {
     const location = { href: "" };
     vi.stubGlobal("location", location);
     await render(course([group]));
-    expect(host.textContent).toContain("Create your free account");
-    await act(async () => button("Subscribe monthly")!.click());
+    await act(async () => button("Enrol in group classes")!.click());
     expect(location.href).toBe("/signup?redirectTo=%2Fcourses%2Fc%23enroll");
+  });
+});
+
+describe("EnrollOptions without online sales", () => {
+  it("keeps WhatsApp enrolment for catalogue-only courses", async () => {
+    await render(course(undefined));
+    expect(button("Enrol in group classes")).toBeUndefined();
+    const enrol = Array.from(host.querySelectorAll("a")).find((a) => a.textContent?.trim() === "Enrol on WhatsApp");
+    expect(enrol?.getAttribute("href")).toContain("wa.me");
+    expect(host.textContent).not.toContain("Flutterwave");
   });
 });
 
 describe("EnrollOptions formats", () => {
   it("offers group classes and self-paced only, never 1-on-1", async () => {
     await render(course([group, selfPaced, { kind: "cohort_1on1", price: { usd: 85, ngn: 120000 } }] as never));
-    expect(host.textContent).toContain("Group Classes");
+    expect(host.textContent).toContain("Live group classes");
     expect(host.textContent).toContain("Self-paced");
     expect(host.textContent).not.toMatch(/1-on-1/i);
+    expect(host.textContent).not.toMatch(/lifetime access/i);
   });
 });

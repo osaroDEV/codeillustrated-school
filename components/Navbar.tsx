@@ -1,16 +1,29 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getSession } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { BrandLogo } from "@/components/brand-logo";
+import { buttonClass } from "@/components/marketing/ui";
 import { COURSE_FINDER_PATH, LOGIN_PATH } from "@/lib/routes";
+import { cn } from "@/lib/utils";
+
+const NAV_ITEMS = [
+  { href: "/courses", label: "Courses" },
+  { href: "/#how-it-works", label: "How it works" },
+  { href: "/#parents", label: "For parents" },
+  { href: "/#reviews", label: "Reviews" },
+  { href: "/about-us", label: "About" },
+];
+
+/** A single course page, /courses/<slug>, where the main action is enrolling. */
+const isCoursePage = (pathname: string | null) => !!pathname && /^\/courses\/[^/]+\/?$/.test(pathname);
 
 export function Navbar() {
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // Public pages are cached, so this is only known in the browser. Until then
   // show the signed-out links, which are also what search engines should see.
@@ -30,129 +43,78 @@ export function Navbar() {
     };
   }, []);
 
-  const navItems = [
-    { href: "/", label: "Home" },
-    { href: "/courses", label: "Courses" },
-    { href: "/resources", label: "Resources" },
-    { href: "/about-us", label: "About" },
-    { href: "/contact-us", label: "Contact" },
-  ];
+  const action = signedIn
+    ? { href: "/dashboard", label: "My Dashboard" }
+    : isCoursePage(pathname)
+      ? { href: "#enroll", label: "Enrol" }
+      : { href: COURSE_FINDER_PATH, label: "Find your course" };
+
+  const linkClass = "text-[15px] font-medium text-ink transition-colors hover:text-primary-500";
 
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-    >
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <BrandLogo href="/" size={44} tone="light" priority className="min-w-0" />
+    <header className="sticky top-0 z-50 w-full border-b border-surface-line bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
+      <div className="mx-auto flex h-[72px] max-w-[1200px] items-center justify-between gap-6 px-4 sm:px-6">
+        <BrandLogo href="/" size={44} tone="light" priority className="min-w-0" />
 
-          {/* Desktop Navigation */}
-          <nav
-            className="hidden md:flex items-center space-x-8"
-            aria-label="Main navigation"
-          >
-            {navItems.map((item) => (
+        <nav className="hidden items-center gap-7 lg:flex" aria-label="Main navigation">
+          {NAV_ITEMS.map((item) => (
+            <Link key={item.href} href={item.href} className={cn(linkClass, "py-3")}>
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="hidden items-center gap-5 lg:flex" data-testid="nav-actions">
+          {!signedIn && (
+            <Link href={LOGIN_PATH} className={cn(linkClass, "py-3")}>
+              Log in
+            </Link>
+          )}
+          <Link href={action.href} className={buttonClass("primary", false, "min-h-[46px] px-[22px] text-[15px]")}>
+            {action.label}
+          </Link>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsMenuOpen((open) => !open)}
+          className="flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-surface-mist lg:hidden"
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-menu"
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+        >
+          {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
+      </div>
+
+      {isMenuOpen && (
+        <div id="mobile-menu" className="border-t border-surface-line bg-white lg:hidden">
+          <nav className="mx-auto flex max-w-[1200px] flex-col px-4 py-3 sm:px-6" aria-label="Mobile navigation">
+            {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-sm font-medium transition-colors hover:text-primary-500 dark:hover:text-primary-400"
+                className={cn(linkClass, "flex min-h-[48px] items-center border-b border-surface-mist")}
+                onClick={() => setIsMenuOpen(false)}
               >
                 {item.label}
               </Link>
             ))}
-          </nav>
-
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4">
-            {signedIn ? (
-              <Button
-                asChild
-                className="bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
+            {!signedIn && (
+              <Link
+                href={LOGIN_PATH}
+                className={cn(linkClass, "flex min-h-[48px] items-center")}
+                onClick={() => setIsMenuOpen(false)}
               >
-                <Link href="/dashboard">My Dashboard</Link>
-              </Button>
-            ) : (
-              <>
-                <Link
-                  href={LOGIN_PATH}
-                  className="text-sm font-medium transition-colors hover:text-primary-500 dark:hover:text-primary-400"
-                >
-                  Log in
-                </Link>
-                <Button
-                  asChild
-                  className="bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
-                >
-                  <Link href={COURSE_FINDER_PATH}>Get Started</Link>
-                </Button>
-              </>
+                Log in
+              </Link>
             )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="flex items-center space-x-2 md:hidden">
-            {/* <ThemeToggle /> */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="h-9 w-9 px-0"
-            >
-              {isMenuOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
-            </Button>
-          </div>
+            <Link href={action.href} className={buttonClass("primary", false, "mt-3 w-full")} onClick={() => setIsMenuOpen(false)}>
+              {action.label}
+            </Link>
+          </nav>
         </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t"
-          >
-            <nav className="py-4 space-y-4" aria-label="Mobile navigation">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="block text-sm font-medium transition-colors hover:text-primary-500 dark:hover:text-primary-400"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              {!signedIn && (
-                <Link
-                  href={LOGIN_PATH}
-                  className="block text-sm font-medium transition-colors hover:text-primary-500 dark:hover:text-primary-400"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Log in
-                </Link>
-              )}
-              <Button
-                asChild
-                className="w-full bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500"
-              >
-                <Link
-                  href={signedIn ? "/dashboard" : COURSE_FINDER_PATH}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {signedIn ? "My Dashboard" : "Get Started"}
-                </Link>
-              </Button>
-            </nav>
-          </motion.div>
-        )}
-      </div>
-    </motion.header>
+      )}
+    </header>
   );
 }

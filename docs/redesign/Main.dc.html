@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Code Illustrated — Home</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:#1d2a30;background:#ffffff}
+a{color:#1a596c}a:hover{color:#0f3d4a}
+h1,h2,h3,h4{font-family:'Bricolage Grotesque',Inter,sans-serif;margin:0}
+p{margin:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 28px;border-radius:999px;background:#c31d24;color:#ffffff;font-weight:600;font-size:17px;text-decoration:none;box-sizing:border-box}
+.btn:hover{background:#a1161c;color:#ffffff}
+.card-link{text-decoration:none;color:#1d2a30;display:flex}
+.card-link:hover{color:#1d2a30}
+.card-link:hover > div{border-color:#1a596c}
+.navlink{color:#1d2a30;text-decoration:none;font-weight:500;font-size:15px;padding:12px 4px}
+.navlink:hover{color:#c31d24}
+summary{cursor:pointer;font-weight:600;font-size:17px;padding:20px 0;list-style:none}
+summary::-webkit-details-marker{display:none}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 100vh; background: #ffffff">
+
+<!-- Header -->
+<header style="border-bottom: 1px solid #e6ecee; background: #ffffff">
+<div style="max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
+<a href="https://codeillustrated.com/" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1d2a30">
+<svg width="44" height="44" viewBox="0 0 44 44" role="img" aria-label="Code Illustrated logo (stand-in)"><circle cx="22" cy="22" r="22" fill="#c31d24"></circle><circle cx="22" cy="22" r="16" fill="none" stroke="#ffbd59" stroke-width="3"></circle><circle cx="22" cy="22" r="11" fill="#1a596c"></circle><text x="22" y="26.5" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="12" fill="#ffffff">CI</text></svg>
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 20px; line-height: 1.1">Code Illustrated<br><span style="font-family: Inter, sans-serif; font-weight: 500; font-size: 12px; color: #4a5a61; letter-spacing: 0.04em">ONLINE SCHOOL</span></span>
+</a>
+<nav aria-label="Main" style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 24px">
+<a class="navlink" href="Courses.dc.html">Courses</a>
+<a class="navlink" href="#how">How it works</a>
+<a class="navlink" href="#parents">For parents</a>
+<a class="navlink" href="#reviews">Reviews</a>
+<a class="navlink" href="https://codeillustrated.com/about-us">About</a>
+</nav>
+<div style="display: flex; align-items: center; gap: 20px">
+<a class="navlink" href="https://codeillustrated.com/login">Log in</a>
+<a class="btn" href="https://codeillustrated.com/start" style="min-height: 46px; padding: 0 22px; font-size: 15px">Find your course</a>
+</div>
+</div>
+</header>
+
+<!-- Hero -->
+<section style="background: #fff7ea; overflow: hidden">
+<div style="max-width: 1200px; margin: 0 auto; padding: 72px 24px 80px; display: flex; flex-wrap: wrap; align-items: center; gap: 56px">
+<div style="flex: 1 1 480px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+<p style="display: inline-flex; align-self: flex-start; align-items: center; gap: 8px; background: #ffffff; border: 1px solid #f1dcb6; border-radius: 999px; padding: 8px 16px; font-size: 14px; font-weight: 600; color: #1a596c">Live online coding classes · ages 8 to adult</p>
+<h1 style="font-size: 64px; line-height: 1.02; font-weight: 800; letter-spacing: -0.02em; color: #1d2a30">Learn to code with a real tutor, in a small group.</h1>
+<p style="font-size: 20px; line-height: 1.55; color: #3c4b52; max-width: 560px">Live group classes or self-paced lessons, from a child's first website to an adult's first developer job. Start with a free interactive class. No card needed.</p>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; padding-top: 8px">
+<a class="btn" href="https://codeillustrated.com/start" style="min-height: 58px; padding: 0 34px; font-size: 18px">Find your course
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+<p style="font-size: 15px; color: #3c4b52">3 quick questions · then a free first class</p>
+</div>
+<p style="font-size: 15px; color: #3c4b52">or <a href="Courses.dc.html" style="font-weight: 600">browse all six courses</a></p>
+</div>
+
+<!-- Hero visual -->
+<div aria-hidden="true" style="flex: 1 1 440px; min-width: 0; position: relative; min-height: 440px">
+<div style="position: absolute; right: -40px; top: -30px; width: 300px; height: 300px; border-radius: 50%; background: #ffbd59"></div>
+<div style="position: absolute; left: 10px; bottom: 0; width: 120px; height: 120px; border-radius: 50%; background: #1a596c; opacity: 0.12"></div>
+<div style="position: relative; margin: 30px 0 0 0; background: #12333d; border-radius: 20px; box-shadow: 0 24px 60px rgba(18,51,61,0.25); overflow: hidden; max-width: 480px">
+<div style="display: flex; gap: 8px; padding: 14px 18px; background: #0d2830">
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #c31d24"></span>
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #ffbd59"></span>
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #5fb3c6"></span>
+<span style="margin-left: 12px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #9fc3cd">my-first-game.js</span>
+</div>
+<div style="padding: 22px 24px 28px; font-family: 'JetBrains Mono', monospace; font-size: 15px; line-height: 1.9; color: #e8f1f3">
+<div><span style="color: #ffbd59">let</span> score = <span style="color: #ff9b9f">0</span>;</div>
+<div><span style="color: #ffbd59">function</span> <span style="color: #7fd3e6">catchStar</span>() {</div>
+<div style="padding-left: 24px">score = score + <span style="color: #ff9b9f">1</span>;</div>
+<div style="padding-left: 24px"><span style="color: #7fd3e6">show</span>(<span style="color: #b8e986">"You got it!"</span>);</div>
+<div>}</div>
+</div>
+</div>
+<div style="position: relative; margin: -40px 0 0 auto; width: 240px; background: #ffffff; border-radius: 18px; box-shadow: 0 18px 40px rgba(18,51,61,0.18); padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<div style="height: 110px; border-radius: 12px; background: #e9f3f5; position: relative; overflow: hidden">
+<div style="position: absolute; left: 24px; bottom: 18px; width: 38px; height: 38px; border-radius: 10px; background: #c31d24"></div>
+<div style="position: absolute; right: 40px; top: 22px; width: 20px; height: 20px; transform: rotate(45deg); background: #ffbd59"></div>
+<div style="position: absolute; right: 90px; top: 50px; width: 14px; height: 14px; transform: rotate(45deg); background: #ffbd59"></div>
+</div>
+<div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; color: #1d2a30"><span>Score</span><span style="color: #c31d24">3</span></div>
+</div>
+<div style="position: absolute; left: -8px; top: 0; background: #ffffff; border-radius: 14px; padding: 12px 16px; box-shadow: 0 12px 30px rgba(18,51,61,0.15); font-size: 14px; font-weight: 600; color: #1a596c; display: flex; align-items: center; gap: 8px">
+<span style="width: 10px; height: 10px; border-radius: 50%; background: #2fa36b"></span>Free first class · no card</div>
+</div>
+</div>
+
+<!-- Proof strip -->
+<div style="max-width: 1200px; margin: 0 auto; padding: 0 24px 56px">
+<div style="background: #ffffff; border-radius: 20px; border: 1px solid #f1dcb6; padding: 24px 32px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px 40px">
+<div><p style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 32px; font-weight: 800; color: #c31d24">300+</p><p style="font-size: 15px; color: #3c4b52">students taught</p></div>
+<div><p style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 32px; font-weight: 800; color: #c31d24">97%</p><p style="font-size: 15px; color: #3c4b52">course completion</p></div>
+<div><p style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 32px; font-weight: 800; color: #c31d24">10+</p><p style="font-size: 15px; color: #3c4b52">expert tutors</p></div>
+<div><p style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 32px; font-weight: 800; color: #c31d24">Since 2023</p><p style="font-size: 15px; color: #3c4b52">teaching learners in many countries</p></div>
+</div>
+</div>
+</section>
+
+<!-- Courses -->
+<section id="courses" style="padding: 96px 0 80px">
+<div style="max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; flex-direction: column; gap: 40px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px 40px">
+<div style="display: flex; flex-direction: column; gap: 12px; max-width: 640px">
+<p style="font-size: 14px; font-weight: 700; letter-spacing: 0.08em; color: #c31d24">SIX COURSES</p>
+<h2 style="font-size: 44px; line-height: 1.1; font-weight: 800">A course for every age and stage</h2>
+<p style="font-size: 18px; line-height: 1.6; color: #3c4b52">Every course comes two ways: live group classes, or self-paced lessons on a monthly or yearly subscription.</p>
+</div>
+<a href="Courses.dc.html" style="font-weight: 600; font-size: 16px">Compare all courses →</a>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 24px">
+<a class="card-link" href="Course-Junior-Web-Creator.dc.html"><div style="flex: 1; border: 2px solid #eef1f2; border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 14px; background: #fff7ea">
+<p style="align-self: flex-start; background: #ffbd59; color: #3a2a00; font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 999px">Ages 8–12</p>
+<h3 style="font-size: 26px; font-weight: 700">Junior Web Creator</h3>
+<p style="font-size: 16px; line-height: 1.55; color: #3c4b52; flex-grow: 1">Build real websites and mini-games with HTML, CSS and JavaScript.</p>
+<div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1dcb6; padding-top: 14px"><p style="font-size: 15px; color: #3c4b52">from <strong style="color: #1d2a30; font-size: 18px">[PRICE]</strong>/month</p><span style="font-weight: 600; color: #1a596c">View course →</span></div>
+</div></a>
+
+<a class="card-link" href="https://codeillustrated.com/courses/generative-ai-mastery"><div style="flex: 1; border: 2px solid #eef1f2; border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 14px; background: #fff7ea">
+<p style="align-self: flex-start; background: #ffbd59; color: #3a2a00; font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 999px">Ages 8–20</p>
+<h3 style="font-size: 26px; font-weight: 700">Generative AI Mastery</h3>
+<p style="font-size: 16px; line-height: 1.55; color: #3c4b52; flex-grow: 1">From chatting with AI to building AI-powered projects. No coding experience needed.</p>
+<div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1dcb6; padding-top: 14px"><p style="font-size: 15px; color: #3c4b52">from <strong style="color: #1d2a30; font-size: 18px">[PRICE]</strong>/month</p><span style="font-weight: 600; color: #1a596c">View course →</span></div>
+</div></a>
+
+<a class="card-link" href="https://codeillustrated.com/courses/game-dev-pro"><div style="flex: 1; border: 2px solid #eef1f2; border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 14px; background: #fdf0f0">
+<p style="align-self: flex-start; background: #c31d24; color: #ffffff; font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 999px">Ages 13–17</p>
+<h3 style="font-size: 26px; font-weight: 700">Game Dev Pro</h3>
+<p style="font-size: 16px; line-height: 1.55; color: #3c4b52; flex-grow: 1">Logic and physics with Python and JavaScript to make games you can actually play.</p>
+<div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f3d2d3; padding-top: 14px"><p style="font-size: 15px; color: #3c4b52">from <strong style="color: #1d2a30; font-size: 18px">[PRICE]</strong>/month</p><span style="font-weight: 600; color: #1a596c">View course →</span></div>
+</div></a>
+
+<a class="card-link" href="Course-Frontend-Developer.dc.html"><div style="flex: 1; border: 2px solid #eef1f2; border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 14px; background: #eef5f7">
+<p style="align-self: flex-start; background: #1a596c; color: #ffffff; font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 999px">Teens &amp; adults</p>
+<h3 style="font-size: 26px; font-weight: 700">Frontend Developer</h3>
+<p style="font-size: 16px; line-height: 1.55; color: #3c4b52; flex-grow: 1">React and Next.js, building professional-grade web applications.</p>
+<div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #d3e4e9; padding-top: 14px"><p style="font-size: 15px; color: #3c4b52">from <strong style="color: #1d2a30; font-size: 18px">[PRICE]</strong>/month</p><span style="font-weight: 600; color: #1a596c">View course →</span></div>
+</div></a>
+
+<a class="card-link" href="https://codeillustrated.com/courses/frontend-advanced"><div style="flex: 1; border: 2px solid #eef1f2; border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 14px; background: #eef5f7">
+<p style="align-self: flex-start; background: #1a596c; color: #ffffff; font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 999px">Teens &amp; adults</p>
+<h3 style="font-size: 26px; font-weight: 700">Frontend Architect</h3>
+<p style="font-size: 16px; line-height: 1.55; color: #3c4b52; flex-grow: 1">Advanced React and Next.js architecture patterns for larger apps.</p>
+<div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #d3e4e9; padding-top: 14px"><p style="font-size: 15px; color: #3c4b52">from <strong style="color: #1d2a30; font-size: 18px">[PRICE]</strong>/month</p><span style="font-weight: 600; color: #1a596c">View course →</span></div>
+</div></a>
+
+<a class="card-link" href="https://codeillustrated.com/courses/data-science-intro"><div style="flex: 1; border: 2px solid #eef1f2; border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 14px; background: #eef5f7">
+<p style="align-self: flex-start; background: #1a596c; color: #ffffff; font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 999px">Teens &amp; adults</p>
+<h3 style="font-size: 26px; font-weight: 700">Data Science Intro</h3>
+<p style="font-size: 16px; line-height: 1.55; color: #3c4b52; flex-grow: 1">Python for data visualisation and automating everyday work.</p>
+<div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #d3e4e9; padding-top: 14px"><p style="font-size: 15px; color: #3c4b52">from <strong style="color: #1d2a30; font-size: 18px">[PRICE]</strong>/month</p><span style="font-weight: 600; color: #1a596c">View course →</span></div>
+</div></a>
+</div>
+</div>
+</section>
+
+<!-- Two ways -->
+<section style="background: #f4f8f9; padding: 88px 0">
+<div style="max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; flex-direction: column; gap: 40px">
+<div style="display: flex; flex-direction: column; gap: 12px; max-width: 680px">
+<p style="font-size: 14px; font-weight: 700; letter-spacing: 0.08em; color: #c31d24">TWO WAYS TO LEARN</p>
+<h2 style="font-size: 44px; line-height: 1.1; font-weight: 800">Learn live with a tutor, or at your own pace</h2>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 24px">
+<div style="background: #ffffff; border-radius: 24px; padding: 36px; display: flex; flex-direction: column; gap: 18px; border: 2px solid #1a596c">
+<div style="display: flex; align-items: center; gap: 14px">
+<div style="width: 52px; height: 52px; border-radius: 14px; background: #1a596c; display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"></circle><circle cx="17" cy="9" r="2.5"></circle><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15 14.5c3 0 6 1.8 6 5.5"></path></svg></div>
+<div><h3 style="font-size: 26px; font-weight: 700">Live group classes</h3><p style="font-size: 15px; color: #3c4b52">Billed monthly</p></div>
+</div>
+<p style="font-size: 17px; line-height: 1.6; color: #3c4b52">Small groups with a tutor, on a fixed weekly schedule. Ask questions as you go and get feedback on every project.</p>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 16px">
+<li style="display: flex; gap: 10px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a596c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>We place you in a class and email the schedule</li>
+<li style="display: flex; gap: 10px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a596c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Class times shown in your own time zone</li>
+<li style="display: flex; gap: 10px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a596c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Best for: younger learners and anyone who likes structure</li>
+</ul>
+</div>
+<div style="background: #ffffff; border-radius: 24px; padding: 36px; display: flex; flex-direction: column; gap: 18px; border: 2px solid #e1e8ea">
+<div style="display: flex; align-items: center; gap: 14px">
+<div style="width: 52px; height: 52px; border-radius: 14px; background: #ffbd59; display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3a2a00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M10 8.5l4 2.5-4 2.5z"></path><path d="M8 21h8"></path></svg></div>
+<div><h3 style="font-size: 26px; font-weight: 700">Self-paced</h3><p style="font-size: 15px; color: #3c4b52">Billed monthly or yearly</p></div>
+</div>
+<p style="font-size: 17px; line-height: 1.6; color: #3c4b52">All the lessons plus selected class recordings. No live classes. Start straight away and learn whenever suits you.</p>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 16px">
+<li style="display: flex; gap: 10px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a596c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Start the moment you pay</li>
+<li style="display: flex; gap: 10px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a596c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Pay monthly or yearly</li>
+<li style="display: flex; gap: 10px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a596c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Best for: busy adults and confident self-starters</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+
+<!-- How it works -->
+<section id="how" style="padding: 96px 0">
+<div style="max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; flex-direction: column; gap: 44px">
+<div style="display: flex; flex-direction: column; gap: 12px; max-width: 680px">
+<p style="font-size: 14px; font-weight: 700; letter-spacing: 0.08em; color: #c31d24">HOW IT WORKS</p>
+<h2 style="font-size: 44px; line-height: 1.1; font-weight: 800">From first click to first class in four steps</h2>
+</div>
+<ol style="margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 24px">
+<li style="display: flex; flex-direction: column; gap: 12px; padding: 28px; border-radius: 22px; background: #fff7ea">
+<span style="width: 44px; height: 44px; border-radius: 50%; background: #c31d24; color: #ffffff; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; display: flex; align-items: center; justify-content: center">1</span>
+<h3 style="font-size: 21px; font-weight: 700">Find your course</h3>
+<p style="font-size: 16px; line-height: 1.55; color: #3c4b52">Answer 3 quick questions and we match you to the right course.</p>
+</li>
+<li style="display: flex; flex-direction: column; gap: 12px; padding: 28px; border-radius: 22px; background: #fff7ea">
+<span style="width: 44px; height: 44px; border-radius: 50%; background: #c31d24; color: #ffffff; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; display: flex; align-items: center; justify-content: center">2</span>
+<h3 style="font-size: 21px; font-weight: 700">Try a free class</h3>
+<p style="font-size: 16px; line-height: 1.55; color: #3c4b52">Create a free account and join an interactive class. No card needed.</p>
+</li>
+<li style="display: flex; flex-direction: column; gap: 12px; padding: 28px; border-radius: 22px; background: #fff7ea">
+<span style="width: 44px; height: 44px; border-radius: 50%; background: #c31d24; color: #ffffff; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; display: flex; align-items: center; justify-content: center">3</span>
+<h3 style="font-size: 21px; font-weight: 700">Enrol and pay by card</h3>
+<p style="font-size: 16px; line-height: 1.55; color: #3c4b52">Choose group or self-paced. Group learners get their class schedule by email; self-paced learners start straight away.</p>
+</li>
+<li style="display: flex; flex-direction: column; gap: 12px; padding: 28px; border-radius: 22px; background: #fff7ea">
+<span style="width: 44px; height: 44px; border-radius: 50%; background: #c31d24; color: #ffffff; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; display: flex; align-items: center; justify-content: center">4</span>
+<h3 style="font-size: 21px; font-weight: 700">Build, track, graduate</h3>
+<p style="font-size: 16px; line-height: 1.55; color: #3c4b52">Follow progress on your dashboard and earn a certificate when you finish.</p>
+</li>
+</ol>
+</div>
+</section>
+
+<!-- For parents -->
+<section id="parents" style="background: #1a596c; color: #ffffff; padding: 96px 0">
+<div style="max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; flex-direction: column; gap: 48px">
+<div style="display: flex; flex-direction: column; gap: 14px; max-width: 720px">
+<p style="font-size: 14px; font-weight: 700; letter-spacing: 0.08em; color: #ffbd59">FOR PARENTS</p>
+<h2 style="font-size: 44px; line-height: 1.1; font-weight: 800; color: #ffffff">You'll know how lessons work and how your child is doing</h2>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 24px">
+<!-- How a lesson runs -->
+<div style="background: #ffffff; color: #1d2a30; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 20px">
+<h3 style="font-size: 24px; font-weight: 700">How a live lesson runs</h3>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 16px">
+<li style="display: flex; gap: 14px"><span style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: #fff1d6; color: #8a5a00; font-weight: 700; display: flex; align-items: center; justify-content: center">1</span><p style="font-size: 16px; line-height: 1.5"><strong>Join from a link</strong> on a laptop or desktop, from home.</p></li>
+<li style="display: flex; gap: 14px"><span style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: #fff1d6; color: #8a5a00; font-weight: 700; display: flex; align-items: center; justify-content: center">2</span><p style="font-size: 16px; line-height: 1.5"><strong>The tutor explains with pictures</strong> first. That's our illustrated teaching method.</p></li>
+<li style="display: flex; gap: 14px"><span style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: #fff1d6; color: #8a5a00; font-weight: 700; display: flex; align-items: center; justify-content: center">3</span><p style="font-size: 16px; line-height: 1.5"><strong>Everyone codes along</strong> in a small group of up to [MAX] learners.</p></li>
+<li style="display: flex; gap: 14px"><span style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: #fff1d6; color: #8a5a00; font-weight: 700; display: flex; align-items: center; justify-content: center">4</span><p style="font-size: 16px; line-height: 1.5"><strong>They finish with a project</strong> to show you, and the tutor gives feedback.</p></li>
+</ol>
+<p style="font-size: 15px; line-height: 1.55; color: #3c4b52; display: flex; gap: 10px; align-items: flex-start"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a596c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"></path><path d="M9 12l2 2 4-4"></path></svg>Our learner community is moderated by our team.</p>
+</div>
+
+<!-- Progress -->
+<div style="background: #ffffff; color: #1d2a30; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 20px">
+<h3 style="font-size: 24px; font-weight: 700">See their progress</h3>
+<div aria-label="Example of the learner dashboard" role="img" style="border: 1px solid #e1e8ea; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px; background: #fbfdfd">
+<div style="display: flex; justify-content: space-between; align-items: center"><p style="font-weight: 700; font-size: 15px">Junior Web Creator</p><p style="font-size: 12px; color: #4a5a61">Example dashboard</p></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="display: flex; justify-content: space-between; font-size: 13px; color: #3c4b52"><span>Course progress</span><span>Module 2 of 3</span></div><div style="height: 10px; background: #e6ecee; border-radius: 999px"><div style="width: 58%; height: 10px; background: #1a596c; border-radius: 999px"></div></div></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div style="background: #fff7ea; border-radius: 10px; padding: 10px 12px"><p style="font-size: 12px; color: #4a5a61">Classes attended</p><p style="font-weight: 700; font-size: 18px">11 / 12</p></div>
+<div style="background: #fff7ea; border-radius: 10px; padding: 10px 12px"><p style="font-size: 12px; color: #4a5a61">Projects built</p><p style="font-weight: 700; font-size: 18px">4</p></div>
+</div>
+<div style="background: #eef5f7; border-radius: 10px; padding: 10px 12px; font-size: 13px; line-height: 1.5"><strong>Tutor note:</strong> Great work on the CSS layout this week.</div>
+</div>
+<p style="font-size: 15px; line-height: 1.55; color: #3c4b52">Log in to the dashboard any time to see lessons completed, projects and tutor feedback. A certificate is awarded at the end.</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Student work + reviews -->
+<section id="reviews" style="padding: 96px 0">
+<div style="max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; flex-direction: column; gap: 44px">
+<div style="display: flex; flex-direction: column; gap: 12px; max-width: 680px">
+<p style="font-size: 14px; font-weight: 700; letter-spacing: 0.08em; color: #c31d24">REAL STUDENTS, REAL WORK</p>
+<h2 style="font-size: 44px; line-height: 1.1; font-weight: 800">What our learners build</h2>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 24px">
+<figure style="margin: 0; display: flex; flex-direction: column; gap: 12px"><div style="aspect-ratio: 16 / 10; border-radius: 18px; background: #f4f8f9; border: 2px dashed #c9d6da; display: flex; align-items: center; justify-content: center; color: #4a5a61; font-size: 14px">[Screenshot of student project]</div><figcaption style="font-size: 15px; color: #3c4b52"><strong style="color: #1d2a30">Multi-page site with a quiz</strong> · Junior Web Creator, age [X]</figcaption></figure>
+<figure style="margin: 0; display: flex; flex-direction: column; gap: 12px"><div style="aspect-ratio: 16 / 10; border-radius: 18px; background: #f4f8f9; border: 2px dashed #c9d6da; display: flex; align-items: center; justify-content: center; color: #4a5a61; font-size: 14px">[Screenshot of student game]</div><figcaption style="font-size: 15px; color: #3c4b52"><strong style="color: #1d2a30">[Game title]</strong> · Game Dev Pro, age [X]</figcaption></figure>
+<figure style="margin: 0; display: flex; flex-direction: column; gap: 12px"><div style="aspect-ratio: 16 / 10; border-radius: 18px; background: #f4f8f9; border: 2px dashed #c9d6da; display: flex; align-items: center; justify-content: center; color: #4a5a61; font-size: 14px">[Screenshot of dashboard project]</div><figcaption style="font-size: 15px; color: #3c4b52"><strong style="color: #1d2a30">Automated weekly report dashboard</strong> · Data Science Intro, adult</figcaption></figure>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 24px">
+<blockquote style="margin: 0; background: #fff7ea; border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 18px">
+<p style="font-size: 17px; line-height: 1.6">“Six weeks ago Amara thought websites were pure magic. Now she's built her own multi-page site with animations and a JavaScript quiz.”</p>
+<footer style="font-size: 15px"><strong>Rachel Okonkwo</strong><br><span style="color: #3c4b52">Parent of Amara · Junior Web Creator</span></footer>
+</blockquote>
+<blockquote style="margin: 0; background: #eef5f7; border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 18px">
+<p style="font-size: 17px; line-height: 1.6">“React hooks, Next.js routing, Tailwind and TypeScript. I use all of it at work now.”</p>
+<footer style="font-size: 15px"><strong>Priya Nair, 22</strong><br><span style="color: #3c4b52">Frontend Developer</span></footer>
+</blockquote>
+<blockquote style="margin: 0; background: #eef5f7; border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 18px">
+<p style="font-size: 17px; line-height: 1.6">“I used Python to automate my weekly reports and build dashboards.”</p>
+<footer style="font-size: 15px"><strong>Yemi Adeyemi, 31</strong><br><span style="color: #3c4b52">Data Science Intro</span></footer>
+</blockquote>
+</div>
+</div>
+</section>
+
+<!-- FAQ -->
+<section style="background: #f4f8f9; padding: 88px 0">
+<div style="max-width: 860px; margin: 0 auto; padding: 0 24px; display: flex; flex-direction: column; gap: 28px">
+<h2 style="font-size: 40px; line-height: 1.1; font-weight: 800">Questions parents ask</h2>
+<div style="background: #ffffff; border-radius: 20px; padding: 8px 28px">
+<details style="border-bottom: 1px solid #e1e8ea" open><summary>Is the first class really free?</summary><p style="padding-bottom: 20px; font-size: 16px; line-height: 1.6; color: #3c4b52">Yes. Your first interactive class is free and you don't need a card. You only pay if you decide to enrol.</p></details>
+<details style="border-bottom: 1px solid #e1e8ea"><summary>What's the difference between group classes and self-paced?</summary><p style="padding-bottom: 20px; font-size: 16px; line-height: 1.6; color: #3c4b52">Group classes are live with a tutor and a small group, on a set weekly schedule, billed monthly. Self-paced gives you all the lessons and selected class recordings with no live classes, billed monthly or yearly.</p></details>
+<details style="border-bottom: 1px solid #e1e8ea"><summary>We're not in the same country as you. What time are classes?</summary><p style="padding-bottom: 20px; font-size: 16px; line-height: 1.6; color: #3c4b52">We teach learners in many countries. Class times on our site are shown in your own time zone, and your schedule email uses your local time too.</p></details>
+<details style="border-bottom: 1px solid #e1e8ea"><summary>What currency will I pay in?</summary><p style="padding-bottom: 20px; font-size: 16px; line-height: 1.6; color: #3c4b52">Prices show in naira (₦) in Nigeria and US dollars ($) everywhere else. You pay securely by card.</p></details>
+<details><summary>Can we cancel?</summary><p style="padding-bottom: 20px; font-size: 16px; line-height: 1.6; color: #3c4b52">Yes, any time from your dashboard.</p></details>
+</div>
+</div>
+</section>
+
+<!-- Final CTA -->
+<section style="padding: 96px 0">
+<div style="max-width: 1200px; margin: 0 auto; padding: 0 24px">
+<div style="background: #c31d24; border-radius: 32px; padding: 64px 48px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 32px; position: relative; overflow: hidden">
+<div aria-hidden="true" style="position: absolute; right: -60px; bottom: -80px; width: 260px; height: 260px; border-radius: 50%; background: #ffbd59; opacity: 0.9"></div>
+<div style="position: relative; flex: 1 1 480px; display: flex; flex-direction: column; gap: 14px">
+<h2 style="font-size: 44px; line-height: 1.1; font-weight: 800; color: #ffffff">Start with a free interactive class</h2>
+<p style="font-size: 19px; line-height: 1.55; color: #ffe9ea">No card needed. Answer 3 questions and we'll match you to the right course.</p>
+</div>
+<div style="position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 14px">
+<a class="btn" href="https://codeillustrated.com/start" style="background: #ffffff; color: #c31d24; min-height: 58px; padding: 0 34px; font-size: 18px">Find your course</a>
+<a href="https://wa.me/447405786279" style="color: #ffffff; font-size: 15px; font-weight: 500">Questions? Chat with us on WhatsApp</a>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Footer -->
+<footer style="background: #12333d; color: #d6e6ea; padding: 64px 0 40px">
+<div style="max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; flex-direction: column; gap: 40px">
+<div style="display: flex; flex-wrap: wrap; gap: 40px 64px; justify-content: space-between">
+<div style="flex: 1 1 280px; display: flex; flex-direction: column; gap: 14px; max-width: 340px">
+<p style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 22px; color: #ffffff">Code Illustrated</p>
+<p style="font-size: 15px; line-height: 1.6">Helping the next generation of builders learn through illustration and live mentorship.</p>
+</div>
+<nav aria-label="Courses" style="display: flex; flex-direction: column; gap: 10px; font-size: 15px">
+<p style="font-weight: 700; color: #ffffff">Courses</p>
+<a href="https://codeillustrated.com/courses/junior-web-creator" style="color: #d6e6ea">Junior Web Creator</a>
+<a href="https://codeillustrated.com/courses/game-dev-pro" style="color: #d6e6ea">Game Dev Pro</a>
+<a href="https://codeillustrated.com/courses/generative-ai-mastery" style="color: #d6e6ea">Generative AI Mastery</a>
+<a href="https://codeillustrated.com/courses/frontend-beginner" style="color: #d6e6ea">Frontend Developer</a>
+<a href="https://codeillustrated.com/courses/frontend-advanced" style="color: #d6e6ea">Frontend Architect</a>
+<a href="https://codeillustrated.com/courses/data-science-intro" style="color: #d6e6ea">Data Science Intro</a>
+</nav>
+<nav aria-label="Get started" style="display: flex; flex-direction: column; gap: 10px; font-size: 15px">
+<p style="font-weight: 700; color: #ffffff">Get started</p>
+<a href="https://codeillustrated.com/start" style="color: #d6e6ea">Find your course</a>
+<a href="https://codeillustrated.com/signup" style="color: #d6e6ea">Create account</a>
+<a href="https://codeillustrated.com/login" style="color: #d6e6ea">Log in</a>
+<a href="https://codeillustrated.com/resources" style="color: #d6e6ea">Free resources</a>
+</nav>
+<div style="display: flex; flex-direction: column; gap: 10px; font-size: 15px">
+<p style="font-weight: 700; color: #ffffff">Contact</p>
+<a href="mailto:admin@codeillustrated.com" style="color: #d6e6ea">admin@codeillustrated.com</a>
+<a href="https://wa.me/447405786279" style="color: #d6e6ea">WhatsApp +44 7405 786 279</a>
+<a href="https://instagram.com/code_illustrated_online_school" style="color: #d6e6ea">Instagram</a>
+<a href="https://x.com/codeillustrated" style="color: #d6e6ea">X</a>
+</div>
+</div>
+<div style="border-top: 1px solid #2b4c56; padding-top: 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; font-size: 14px">
+<p>© 2026 Code Illustrated Online School · Classes online, wherever you are</p>
+<div style="display: flex; gap: 20px"><a href="https://codeillustrated.com/terms-of-service" style="color: #d6e6ea">Terms</a><a href="https://codeillustrated.com/privacy-policy" style="color: #d6e6ea">Privacy</a></div>
+</div>
+</div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":6200}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

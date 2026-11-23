@@ -110,7 +110,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-white">
       <CourseSchema course={course} />
       <CourseDetailClient course={course} />
     </main>

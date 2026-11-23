@@ -99,7 +99,7 @@ export function ContactFormPopup({ courses }: { courses: CourseLink[] }) {
               </button>
 
               {/* Header */}
-              <div className="bg-gradient-to-r from-primary-500 to-secondary-400 px-6 sm:px-8 py-6 sm:py-8 text-white rounded-t-2xl">
+              <div className="bg-primary-500 px-6 sm:px-8 py-6 sm:py-8 text-white rounded-t-2xl">
                 <h2 className="text-2xl sm:text-3xl font-bold mb-2">
                   Start Your Coding Journey! 🚀
                 </h2>
@@ -228,7 +228,7 @@ export function ContactFormPopup({ courses }: { courses: CourseLink[] }) {
                       <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full sm:flex-1 bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500 order-1 sm:order-2"
+                        className="w-full sm:flex-1 bg-primary-500 hover:bg-primary-700 order-1 sm:order-2"
                       >
                         {isSubmitting ? "Sending..." : "Send Message"}
                       </Button>

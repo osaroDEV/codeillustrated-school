@@ -16,13 +16,15 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Inter } from "next/font/google";
+import { Bricolage_Grotesque, Inter } from "next/font/google";
 import { CurrencyProvider } from "@/components/currency-provider";
 import { SiteLayoutWrapper } from "@/components/site-layout-wrapper";
 import { getCourses } from "@/lib/courses";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], display: "swap" });
+const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-sans" });
+// Headings (Tailwind's font-heading).
+const bricolage = Bricolage_Grotesque({ subsets: ["latin"], display: "swap", variable: "--font-heading" });
 
 // Catalogue edits made in the admin panel show up on statically rendered
 // marketing pages within five minutes.
@@ -114,7 +116,7 @@ export default async function RootLayout({
           `}
         </Script>
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} ${inter.variable} ${bricolage.variable}`}>
         <noscript>
           <img
             height="1"

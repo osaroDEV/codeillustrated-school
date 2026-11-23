@@ -58,7 +58,7 @@ export default async function CoursesPage() {
   const courses = await getCourses();
 
   return (
-    <main className="min-h-screen bg-background pt-32 pb-24">
+    <main className="min-h-screen bg-white">
       <CoursesListSchema courses={courses} />
       <CoursesPageClient courses={courses} />
     </main>

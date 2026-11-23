@@ -235,7 +235,7 @@ function Results({ courses, answers, onRestart }: { courses: Course[]; answers: 
                   </div>
                   <Link
                     href={`/courses/${course.slug}#enroll`}
-                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-400 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-primary/20 transition-all hover:from-primary-700 hover:to-secondary-500"
+                    className="inline-flex items-center gap-2 rounded-xl bg-primary-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-primary/20 transition-all hover:bg-primary-700"
                   >
                     View course &amp; enrol <ArrowRight className="h-4 w-4" />
                   </Link>
