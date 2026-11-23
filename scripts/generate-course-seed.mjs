@@ -45,8 +45,9 @@ STATIC_COURSES.forEach((course, index) => {
     `on conflict (id) do nothing;`,
     "",
     `insert into public.offerings (course_id, kind, price_usd, price_ngn) values`,
-    `  (${q(course.id)}, 'cohort_group', ${course.price.group.usd}, ${course.price.group.ngn}),`,
-    `  (${q(course.id)}, 'cohort_1on1', ${course.price.oneOnOne.usd}, ${course.price.oneOnOne.ngn})`,
+    // 1-on-1 classes are no longer sold; the committed seed migration still
+    // inserts those rows, which the app now ignores.
+    `  (${q(course.id)}, 'cohort_group', ${course.price.group.usd}, ${course.price.group.ngn})`,
     `on conflict (course_id, kind) do nothing;`,
     ""
   );

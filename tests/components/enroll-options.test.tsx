@@ -85,3 +85,12 @@ describe("EnrollOptions for signed-out visitors", () => {
     expect(location.href).toBe("/signup?redirectTo=%2Fcourses%2Fc%23enroll");
   });
 });
+
+describe("EnrollOptions formats", () => {
+  it("offers group classes and self-paced only, never 1-on-1", async () => {
+    await render(course([group, selfPaced, { kind: "cohort_1on1", price: { usd: 85, ngn: 120000 } }] as never));
+    expect(host.textContent).toContain("Group Classes");
+    expect(host.textContent).toContain("Self-paced");
+    expect(host.textContent).not.toMatch(/1-on-1/i);
+  });
+});

@@ -12,7 +12,7 @@ export interface CohortListItem {
   name: string;
   course_title: string;
   status: "planned" | "running" | "finished";
-  offering_kind: "cohort_group" | "cohort_1on1";
+  offering_kind: "cohort_group";
   starts_on: string | null;
   members: number;
   capacity: number | null;
@@ -95,13 +95,6 @@ export function CohortsList({
             <input id="cohort-name" required value={form.name} onChange={set("name")} placeholder="e.g. January 2027 – Evenings" className={inputClass} />
           </div>
           <div>
-            <label className={labelClass} htmlFor="cohort-kind">Format</label>
-            <select id="cohort-kind" value={form.offering_kind} onChange={set("offering_kind")} className={inputClass}>
-              <option value="cohort_group" className="bg-[#0d0d14]">Group</option>
-              <option value="cohort_1on1" className="bg-[#0d0d14]">1-on-1</option>
-            </select>
-          </div>
-          <div>
             <label className={labelClass} htmlFor="cohort-instructor">Instructor</label>
             <select id="cohort-instructor" value={form.instructor_id} onChange={set("instructor_id")} className={inputClass}>
               <option value="" className="bg-[#0d0d14]">Not assigned</option>
@@ -120,7 +113,7 @@ export function CohortsList({
           </div>
           <div>
             <label className={labelClass} htmlFor="cohort-capacity">Capacity</label>
-            <input id="cohort-capacity" type="number" min="1" value={form.capacity} onChange={set("capacity")} placeholder={form.offering_kind === "cohort_1on1" ? "1" : "No limit"} className={inputClass} />
+            <input id="cohort-capacity" type="number" min="1" value={form.capacity} onChange={set("capacity")} placeholder="No limit" className={inputClass} />
           </div>
           <div>
             <label className={labelClass} htmlFor="cohort-meeting">Meeting link</label>
@@ -156,9 +149,6 @@ export function CohortsList({
                   <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full capitalize ${STATUS_BADGE[c.status]}`}>
                     {c.status}
                   </span>
-                  {c.offering_kind === "cohort_1on1" && (
-                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-white/50">1-on-1</span>
-                  )}
                 </div>
                 <p className="text-white/40 text-xs mt-0.5">{c.course_title}</p>
                 <div className="flex items-center gap-4 mt-2 text-xs text-white/40 flex-wrap">

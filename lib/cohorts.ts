@@ -16,7 +16,8 @@ type AdminClient = ReturnType<typeof createAdminClient>;
 export interface Cohort {
   id: string;
   course_id: string;
-  offering_kind: "cohort_group" | "cohort_1on1";
+  /** Always a group cohort; 1-on-1 classes are no longer sold. */
+  offering_kind: "cohort_group";
   name: string;
   starts_on: string | null;
   ends_on: string | null;

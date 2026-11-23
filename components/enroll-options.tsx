@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BookOpen, Loader2, User, Users } from "lucide-react";
+import { BookOpen, Loader2, Users } from "lucide-react";
 import type { BillingInterval } from "@/lib/billing";
 import type { Course, OfferingKind } from "@/lib/course-types";
 import { useCurrency } from "@/hooks/use-currency";
@@ -10,21 +10,11 @@ import { signupPath } from "@/lib/routes";
 
 const WHATSAPP = "https://wa.me/447405786279";
 
-const OPTIONS: { kind: OfferingKind; label: string; blurb: string; Icon: typeof Users; featured?: boolean }[] = [
-  { kind: "cohort_group", label: "Group Classes", blurb: "Collaborative learning with peers in small groups.", Icon: Users },
-  {
-    kind: "cohort_1on1",
-    label: "1-on-1 Classes",
-    blurb: "Dedicated mentorship and personalized learning pace.",
-    Icon: User,
-    featured: true,
-  },
-];
-
 /**
- * Price cards with a Subscribe button per offering that can be bought online
- * (monthly card subscription through Flutterwave). Courses served from the
- * static fallback catalogue have no offerings data and keep WhatsApp enrolment.
+ * Price cards for the two ways to take a course, live group classes and
+ * self-paced, each with a Subscribe button when it can be bought online (a card
+ * subscription through Flutterwave). Courses served from the static fallback
+ * catalogue have no offerings data and keep WhatsApp enrolment.
  */
 export function EnrollOptions({ course }: { course: Course }) {
   const { currency } = useCurrency();
@@ -72,46 +62,32 @@ export function EnrollOptions({ course }: { course: Course }) {
           ))}
         </ol>
       )}
-      {OPTIONS.map(({ kind, label, blurb, Icon, featured }) => {
-        const price = online.get(kind) ?? (kind === "cohort_group" ? course.price.group : course.price.oneOnOne);
-        const buyable = online.has(kind) && price.usd > 0 && price.ngn > 0;
+      {(() => {
+        const price = online.get("cohort_group") ?? course.price.group;
+        const buyable = online.has("cohort_group") && price.usd > 0 && price.ngn > 0;
         return (
-          <div
-            key={kind}
-            className={`p-4 rounded-2xl border transition-colors relative ${
-              featured ? "bg-primary/5 border-primary/10 hover:border-primary/30" : "bg-slate-50 border-slate-100 hover:border-primary/30"
-            }`}
-          >
-            {featured && (
-              <div className="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                Recommended
-              </div>
-            )}
+          <div className="p-4 rounded-2xl border transition-colors bg-primary/5 border-primary/10 hover:border-primary/30">
             <div className="flex items-center justify-between mb-2">
-              <span className={`flex items-center gap-2 text-sm font-bold ${featured ? "text-primary" : "text-slate-900"}`}>
-                <Icon className="w-4 h-4 text-primary" />
-                {label}
+              <span className="flex items-center gap-2 text-sm font-bold text-primary">
+                <Users className="w-4 h-4 text-primary" />
+                Group Classes
               </span>
-              <PriceDisplay price={price} className={`text-xl ${featured ? "text-primary" : ""}`} />
+              <PriceDisplay price={price} className="text-xl text-primary" />
             </div>
-            <p className="text-xs text-slate-500">{blurb}</p>
+            <p className="text-xs text-slate-500">Live classes with a tutor and a small group of peers, on a set schedule.</p>
             {buyable && (
               <button
-                onClick={() => subscribe(kind)}
+                onClick={() => subscribe("cohort_group")}
                 disabled={busy !== null}
-                className={`mt-3 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-sm transition-all disabled:opacity-60 ${
-                  featured
-                    ? "bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500 text-white"
-                    : "bg-slate-900 hover:bg-slate-800 text-white"
-                }`}
+                className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-sm transition-all disabled:opacity-60 bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-700 hover:to-secondary-500 text-white"
               >
-                {busy === kind && <Loader2 className="w-4 h-4 animate-spin" />}
+                {busy === "cohort_group" && <Loader2 className="w-4 h-4 animate-spin" />}
                 Subscribe monthly
               </button>
             )}
           </div>
         );
-      })}
+      })()}
 
       {selfPaced && (
         <div className="p-4 rounded-2xl border transition-colors bg-slate-50 border-slate-100 hover:border-primary/30">

@@ -102,7 +102,7 @@ export function ContactForm({ courses }: { courses: CourseLink[] }) {
             </span>
           </h1>
           <p className="text-xl text-white max-w-2xl mx-auto">
-            Ready to start your 1-on-1 coding journey? Contact us for more
+            Ready to start your coding journey? Contact us for more
             information about our beginner-friendly courses.
           </p>
         </motion.div>

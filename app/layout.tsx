@@ -31,14 +31,14 @@ export const revalidate = 300;
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Code Illustrated | 1-on-1 Coding Training",
+    default: "Code Illustrated | Live Coding Classes",
     template: "%s | Code Illustrated Online School",
   },
   description: SITE_DESCRIPTION,
   keywords: [
     "learn to code",
     "coding for beginners",
-    "1-on-1 coding training",
+    "live coding classes",
     "online coding school",
     "beginner coding classes",
     "learn programming",
@@ -59,12 +59,12 @@ export const metadata: Metadata = {
     canonical: getCanonicalUrl(),
   },
   openGraph: getOpenGraphDefaults({
-    title: "Code Illustrated | 1-on-1 Coding Training for Beginners",
+    title: "Code Illustrated | Live Coding Classes for Beginners",
     description: SITE_DESCRIPTION,
     url: getCanonicalUrl(),
   }),
   twitter: getTwitterDefaults({
-    title: "Code Illustrated | 1-on-1 Coding Training for Beginners",
+    title: "Code Illustrated | Live Coding Classes for Beginners",
     description: SITE_DESCRIPTION,
   }),
   robots: {

@@ -8,7 +8,7 @@ export const SITE_URL = "https://codeillustrated.com";
 export const BASE_PATH = "";
 export const SITE_NAME = "Code Illustrated Online School";
 export const SITE_DESCRIPTION =
-  "1-on-1 coding training for complete beginners. Learn to code with personalized mentorship and become a software engineer.";
+  "Live online coding classes for complete beginners, from age 8 to adults. Learn to code in small groups with a tutor, or at your own pace.";
 
 /**
  * Returns the full canonical URL for a given path.
@@ -40,7 +40,7 @@ export function getOpenGraphDefaults(overrides?: {
         url: `${SITE_URL}${BASE_PATH}/code-ill.svg`,
         width: 1200,
         height: 630,
-        alt: "Code Illustrated Online School - 1-on-1 Beginner Coding Training",
+        alt: "Code Illustrated Online School - Live Coding Classes for Beginners",
       },
     ],
   };

@@ -49,6 +49,7 @@ describe("course finder", () => {
     await click("My child");
     expect(host.textContent).toContain("Any coding experience?");
     await click("Brand new");
+    expect(host.textContent).not.toMatch(/1-on-1/i);
     await click("Live group classes");
     expect(host.textContent).toContain("Best match");
     expect(links()).toContainEqual(["View course & enrol", "/courses/junior-web-creator#enroll"]);

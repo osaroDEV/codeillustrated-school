@@ -21,8 +21,10 @@ const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD");
 const nullableDate = z.preprocess(emptyToNull, date.nullable());
 const nullableUuid = z.preprocess(emptyToNull, z.string().uuid().nullable());
 
-export const OFFERING_KINDS = ["cohort_group", "cohort_1on1", "self_paced"] as const;
-export const COHORT_KINDS = ["cohort_group", "cohort_1on1"] as const;
+// 1-on-1 classes are no longer sold: admins can't create offerings or
+// cohorts of that kind.
+export const OFFERING_KINDS = ["cohort_group", "self_paced"] as const;
+export const COHORT_KINDS = ["cohort_group"] as const;
 export const LESSON_TYPES = ["live", "video", "text", "file"] as const;
 export const COHORT_STATUSES = ["planned", "running", "finished"] as const;
 export const ATTENDANCE_STATUSES = ["present", "late", "absent"] as const;

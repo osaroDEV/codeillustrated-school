@@ -14,7 +14,7 @@ export const SUBSCRIPTION_GRACE_DAYS = 3;
 const GRACE_MS = SUBSCRIPTION_GRACE_DAYS * 24 * 60 * 60 * 1000;
 
 /** Offerings that can be bought online. */
-export const PURCHASABLE_KINDS = ["cohort_group", "cohort_1on1", "self_paced"] as const;
+export const PURCHASABLE_KINDS = ["cohort_group", "self_paced"] as const;
 export type PurchasableKind = (typeof PURCHASABLE_KINDS)[number];
 
 export type BillingInterval = "monthly" | "yearly";

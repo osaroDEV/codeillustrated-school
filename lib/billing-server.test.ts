@@ -337,6 +337,14 @@ describe("startCheckout", () => {
     expect(flw.createCheckoutLink).toHaveBeenCalledWith(expect.objectContaining({ amount: 15000, paymentPlan: 7 }));
   });
 
+  it("refuses 1-on-1 classes, which are no longer sold", async () => {
+    const attempt = startCheckout(checkoutDb({ offering: { ...offering, kind: "cohort_1on1" } }).admin, user, {
+      courseId: "c", kind: "cohort_1on1" as never, currency: "USD",
+    });
+    await expect(attempt).rejects.toBeInstanceOf(CheckoutError);
+    expect(flw.createCheckoutLink).not.toHaveBeenCalled();
+  });
+
   it("refuses a yearly charge for live classes", async () => {
     const attempt = startCheckout(checkoutDb({ offering: { ...offering, kind: "cohort_group" } }).admin, user, {
       courseId: "c", kind: "cohort_group", currency: "USD", interval: "yearly",

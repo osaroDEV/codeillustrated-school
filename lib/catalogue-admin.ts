@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache";
+import { isOfferingKind, type OfferingKind } from "./course-types";
 import type { createAdminClient } from "./supabase";
 import type { QuizQuestion } from "./assessments";
 
@@ -44,7 +45,7 @@ export interface AdminModule {
 export interface AdminOffering {
   id: string;
   course_id: string;
-  kind: "cohort_group" | "cohort_1on1" | "self_paced";
+  kind: OfferingKind;
   price_usd: number;
   price_ngn: number;
   yearly_price_usd: number | null;
@@ -110,7 +111,8 @@ function normalize(row: AdminCourse): AdminCourse {
       b.created_at.localeCompare(a.created_at)
     ),
     course_resources: [...(row.course_resources ?? [])].sort(byPosition),
-    offerings: (row.offerings ?? []).map((o) => ({
+    // Old 1-on-1 rows are left in the database but no longer shown or sold.
+    offerings: (row.offerings ?? []).filter((o) => isOfferingKind(o.kind)).map((o) => ({
       ...o,
       price_usd: Number(o.price_usd),
       price_ngn: Number(o.price_ngn),

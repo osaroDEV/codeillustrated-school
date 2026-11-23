@@ -8,20 +8,20 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description:
-    "Read the Code Illustrated Online School terms of service. Understand the terms governing use of our 1-on-1 coding training platform.",
+    "Read the Code Illustrated Online School terms of service. Understand the terms governing use of our online coding school.",
   alternates: {
     canonical: getCanonicalUrl("/terms-of-service"),
   },
   openGraph: getOpenGraphDefaults({
     title: "Terms of Service | Code Illustrated Online School",
     description:
-      "Read the Code Illustrated Online School terms of service. Understand the terms governing use of our 1-on-1 coding training platform.",
+      "Read the Code Illustrated Online School terms of service. Understand the terms governing use of our online coding school.",
     url: getCanonicalUrl("/terms-of-service"),
   }),
   twitter: getTwitterDefaults({
     title: "Terms of Service | Code Illustrated Online School",
     description:
-      "Read the Code Illustrated Online School terms of service. Understand the terms governing use of our 1-on-1 coding training platform.",
+      "Read the Code Illustrated Online School terms of service. Understand the terms governing use of our online coding school.",
   }),
 };
 

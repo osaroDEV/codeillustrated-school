@@ -7,7 +7,7 @@ import { dbErrorResponse, parseBody } from "@/lib/cohorts";
 
 type Params = { params: Promise<{ id: string }> };
 
-// PUT — create or update the course's offering of one kind (group, 1-on-1,
+// PUT — create or update the course's offering of one kind (group or
 // self-paced). Deactivate an offering rather than deleting it.
 export async function PUT(req: NextRequest, { params }: Params) {
   const denied = await rejectNonAdmin();

@@ -41,7 +41,6 @@ export function appUrl(): string {
 
 const KIND_LABEL: Record<PurchasableKind, string> = {
   cohort_group: "Group classes",
-  cohort_1on1: "1-on-1 classes",
   self_paced: "Self-paced",
 };
 

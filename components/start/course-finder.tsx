@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, BookOpen, Check, RotateCcw, Sparkles, User, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Check, RotateCcw, Sparkles, Users } from "lucide-react";
 import { CourseIcon } from "@/components/course-icon";
 import { PriceDisplay } from "@/components/price-display";
 import type { Course, OfferingKind } from "@/lib/course-types";
@@ -20,7 +20,6 @@ const WHATSAPP = "https://wa.me/447405786279";
 
 const KIND_LABEL: Record<OfferingKind, string> = {
   cohort_group: "Group classes",
-  cohort_1on1: "1-on-1 classes",
   self_paced: "Self-paced",
 };
 
@@ -49,7 +48,6 @@ const QUESTIONS = [
     title: "How would you like to learn?",
     choices: [
       { value: "cohort_group", label: "Live group classes", hint: "Small groups with a tutor, on a schedule" },
-      { value: "cohort_1on1", label: "Live 1-on-1 classes", hint: "A tutor just for you, at your pace" },
       { value: "self_paced", label: "At my own pace", hint: "Lessons and recordings, no live classes" },
       { value: "any", label: "Not sure yet", hint: "Show me what fits" },
     ] as Choice<Format>[],
@@ -218,7 +216,7 @@ function Results({ courses, answers, onRestart }: { courses: Course[]; answers: 
                           answers.format === k ? "bg-primary/10 text-primary" : "bg-slate-100 text-slate-600"
                         )}
                       >
-                        {k === "cohort_group" ? <Users className="h-3 w-3" /> : k === "cohort_1on1" ? <User className="h-3 w-3" /> : <BookOpen className="h-3 w-3" />}
+                        {k === "cohort_group" ? <Users className="h-3 w-3" /> : <BookOpen className="h-3 w-3" />}
                         {KIND_LABEL[k]}
                       </li>
                     ))}

@@ -58,7 +58,7 @@ export function CohortDetail(props: Props) {
           </span>
         </div>
         <p className="text-white/40 text-sm mt-1">
-          {courseTitle} · {cohort.offering_kind === "cohort_1on1" ? "1-on-1" : "Group"} · {members.length}
+          {courseTitle} · {members.length}
           {cohort.capacity ? ` / ${cohort.capacity}` : ""} learners
         </p>
       </div>
@@ -157,12 +157,6 @@ function CohortSettings({ cohort, staff }: Props) {
           <option value="planned" className="bg-[#0d0d14]">Planned</option>
           <option value="running" className="bg-[#0d0d14]">Running</option>
           <option value="finished" className="bg-[#0d0d14]">Finished</option>
-        </select>
-      </Field>
-      <Field label="Format" id="c-kind">
-        <select id="c-kind" value={form.offering_kind} onChange={set("offering_kind")} className={inputClass}>
-          <option value="cohort_group" className="bg-[#0d0d14]">Group</option>
-          <option value="cohort_1on1" className="bg-[#0d0d14]">1-on-1</option>
         </select>
       </Field>
       <Field label="Instructor" id="c-instructor">

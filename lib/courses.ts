@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { STATIC_COURSES } from "./course-catalog";
-import type { Course, OfferingKind, PriceTier } from "./course-types";
+import { isOfferingKind, type Course, type OfferingKind, type PriceTier, type StoredOfferingKind } from "./course-types";
 
 export type { Course, CourseLink, CourseSummary, OfferingKind, PriceTier } from "./course-types";
 
@@ -38,7 +38,7 @@ export interface CourseRow {
     | null;
   offerings:
     | {
-        kind: OfferingKind;
+        kind: StoredOfferingKind;
         price_usd: number | string;
         price_ngn: number | string;
         yearly_price_usd?: number | string | null;
@@ -54,6 +54,7 @@ const byPosition = (a: { position: number }, b: { position: number }) =>
 export function mapCourseRow(row: CourseRow): Course {
   const offerings = (row.offerings ?? [])
     .filter((o) => o.is_active)
+    .flatMap((o) => (isOfferingKind(o.kind) ? [{ ...o, kind: o.kind }] : []))
     .map((o) => ({
       kind: o.kind,
       price: { usd: Number(o.price_usd), ngn: Number(o.price_ngn) } as PriceTier,
@@ -93,7 +94,6 @@ export function mapCourseRow(row: CourseRow): Course {
     }),
     price: {
       group,
-      oneOnOne: priceFor("cohort_1on1") ?? group,
     },
     offerings,
   };

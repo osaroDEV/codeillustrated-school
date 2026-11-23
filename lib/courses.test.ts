@@ -87,7 +87,7 @@ describe("mapCourseRow", () => {
     ]);
   });
 
-  it("takes group and 1-on-1 prices from the matching offerings", () => {
+  it("takes the group price from its offering and ignores old 1-on-1 offerings", () => {
     const course = mapCourseRow(
       row({
         offerings: [
@@ -97,7 +97,8 @@ describe("mapCourseRow", () => {
       })
     );
     expect(course.price.group).toEqual({ usd: 50, ngn: 75000 });
-    expect(course.price.oneOnOne).toEqual({ usd: 85, ngn: 120000 });
+    expect(course.price).not.toHaveProperty("oneOnOne");
+    expect(course.offerings?.map((o) => o.kind)).toEqual(["cohort_group"]);
   });
 
   it("ignores inactive offerings and falls back to the cheapest active one", () => {
@@ -110,7 +111,6 @@ describe("mapCourseRow", () => {
       })
     );
     expect(course.price.group).toEqual({ usd: 30, ngn: 40000 });
-    expect(course.price.oneOnOne).toEqual({ usd: 30, ngn: 40000 });
   });
 
   it("returns zero prices when a course has no offerings", () => {

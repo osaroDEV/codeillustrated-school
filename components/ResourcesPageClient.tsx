@@ -405,7 +405,7 @@ export default function ResourcesPageClient() {
                   <InfoCard
                     icon={Lightbulb}
                     title="What to Expect"
-                    description="Live 1-on-1 sessions, weekly projects, homework reviews, and a supportive mentor who guides you every step of the way."
+                    description="Live group sessions, weekly projects, homework reviews, and a supportive mentor who guides you every step of the way."
                     cta="See How It Works"
                     href="/#how-it-works"
                     color="accent"
@@ -963,7 +963,7 @@ export default function ResourcesPageClient() {
                     },
                     {
                       q: "How long is each class session?",
-                      a: "Each 1-on-1 session is 60 minutes. Group sessions are 90 minutes. Sessions are scheduled at times that work for you and your mentor.",
+                      a: "Each group session is 90 minutes. Once you enrol we place you in a class and email you its schedule.",
                     },
                     {
                       q: "Can I reschedule a class?",
@@ -971,7 +971,7 @@ export default function ResourcesPageClient() {
                     },
                     {
                       q: "What age group is the Junior Web Creator course for?",
-                      a: "It's designed for students aged 8–12, but any young beginner can benefit. The pace and content are adapted to each student's level during 1-on-1 sessions.",
+                      a: "It's designed for students aged 8–12, but any young beginner can benefit. Tutors keep groups small so they can adapt to each student's level.",
                     },
                     {
                       q: "How do parents track their child's progress?",
