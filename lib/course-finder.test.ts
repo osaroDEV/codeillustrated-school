@@ -16,7 +16,7 @@ const course = (id: string, age: string, level: string, kinds: string[] = ["coho
 const CATALOGUE = [
   course("junior-web", "Age 8-12", "Beginner"),
   course("game-dev", "Age 13-17", "Intermediate"),
-  course("frontend", "Teens & Adults", "Intermediate", ["cohort_group", "cohort_1on1"]),
+  course("frontend", "Teens & Adults", "Intermediate"),
   course("architect", "Teens & Adults", "Advanced"),
   course("data", "Teens & Adults", "Beginner", ["cohort_group", "self_paced"]),
   course("gen-ai", "Age 8-20", "Beginner"),
@@ -53,7 +53,7 @@ describe("recommendCourses", () => {
   });
 
   it("suggests harder courses to experienced adults", () => {
-    const picks = recommendCourses(CATALOGUE, { learner: "adult", experience: "some", format: "cohort_1on1" });
+    const picks = recommendCourses(CATALOGUE, { learner: "adult", experience: "some", format: "cohort_group" });
     expect(picks[0].course.id).toBe("frontend");
   });
 

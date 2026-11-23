@@ -12,20 +12,20 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "About Us – Our Mission & Team",
   description:
-    "Meet the Code Illustrated team. We offer personalized 1-on-1 coding training for beginners, helping students become software engineers since 2023.",
+    "Meet the Code Illustrated team. We teach beginners to code in live online group classes and self-paced courses, and have since 2023.",
   alternates: {
     canonical: getCanonicalUrl("/about-us"),
   },
   openGraph: getOpenGraphDefaults({
     title: "About Code Illustrated Online School",
     description:
-      "Meet the Code Illustrated team. We offer personalized 1-on-1 coding training for beginners, helping students become software engineers since 2023.",
+      "Meet the Code Illustrated team. We teach beginners to code in live online group classes and self-paced courses, and have since 2023.",
     url: getCanonicalUrl("/about-us"),
   }),
   twitter: getTwitterDefaults({
     title: "About Code Illustrated Online School",
     description:
-      "Meet the Code Illustrated team. We offer personalized 1-on-1 coding training for beginners, helping students become software engineers since 2023.",
+      "Meet the Code Illustrated team. We teach beginners to code in live online group classes and self-paced courses, and have since 2023.",
   }),
 };
 
@@ -38,7 +38,7 @@ function EducationalOrganizationSchema() {
     url: `${SITE_URL}${BASE_PATH}`,
     logo: `${SITE_URL}${BASE_PATH}/code-ill.svg`,
     description:
-      "Code Illustrated Online School offers 1-on-1 coding training for complete beginners who want to become software engineers.",
+      "Code Illustrated Online School offers live online coding classes and self-paced courses for complete beginners.",
     foundingDate: "2023",
     founder: {
       "@type": "Person",

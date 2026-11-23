@@ -10,7 +10,7 @@ export const ENROL_STEPS = [
   {
     icon: UserPlus,
     title: "Create your account",
-    body: "Sign up for free, then pick group classes, 1-on-1 classes or self-paced learning and pay monthly by card.",
+    body: "Sign up for free, then choose live group classes or self-paced learning and pay by card.",
   },
   {
     icon: MonitorPlay,

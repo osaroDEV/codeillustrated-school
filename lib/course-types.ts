@@ -6,7 +6,19 @@ export interface PriceTier {
   ngn: number;
 }
 
-export type OfferingKind = "cohort_group" | "cohort_1on1" | "self_paced";
+/** How a course is sold: live group classes, or self-paced access. */
+export type OfferingKind = "cohort_group" | "self_paced";
+export const OFFERING_KINDS: readonly OfferingKind[] = ["cohort_group", "self_paced"];
+
+/**
+ * Kinds the database can hold. "cohort_1on1" is no longer sold or shown
+ * anywhere; old rows of that kind are ignored.
+ */
+export type StoredOfferingKind = OfferingKind | "cohort_1on1";
+
+export function isOfferingKind(kind: string): kind is OfferingKind {
+  return (OFFERING_KINDS as readonly string[]).includes(kind);
+}
 
 export interface Course {
   /** Permanent internal ID; enrolments, cohorts and orders refer to it. */
@@ -31,7 +43,6 @@ export interface Course {
   level: string;
   price: {
     group: PriceTier;
-    oneOnOne: PriceTier;
   };
   /**
    * Active offerings from the database, used for online checkout. Absent on

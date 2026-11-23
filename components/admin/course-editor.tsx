@@ -18,7 +18,6 @@ import {
 
 const OFFERING_LABELS: Record<AdminOffering["kind"], string> = {
   cohort_group: "Group cohort",
-  cohort_1on1: "1-on-1",
   self_paced: "Self-paced",
 };
 

@@ -47,7 +47,6 @@ const CATALOGUE: Omit<Course, "slug">[] = [
     level: "Beginner",
     price: {
       group: { usd: 50, ngn: 75000 },
-      oneOnOne: { usd: 85, ngn: 120000 },
     },
   },
   {
@@ -87,7 +86,6 @@ const CATALOGUE: Omit<Course, "slug">[] = [
     level: "Intermediate",
     price: {
       group: { usd: 60, ngn: 90000 },
-      oneOnOne: { usd: 100, ngn: 150000 },
     },
   },
   {
@@ -119,7 +117,6 @@ const CATALOGUE: Omit<Course, "slug">[] = [
     level: "Intermediate",
     price: {
       group: { usd: 75, ngn: 100000 },
-      oneOnOne: { usd: 120, ngn: 180000 },
     },
   },
   {
@@ -151,7 +148,6 @@ const CATALOGUE: Omit<Course, "slug">[] = [
     level: "Advanced",
     price: {
       group: { usd: 100, ngn: 150000 },
-      oneOnOne: { usd: 150, ngn: 220000 },
     },
   },
   {
@@ -191,7 +187,6 @@ const CATALOGUE: Omit<Course, "slug">[] = [
     level: "Beginner",
     price: {
       group: { usd: 65, ngn: 90000 },
-      oneOnOne: { usd: 90, ngn: 160000 },
     },
   },
   {
@@ -235,7 +230,6 @@ const CATALOGUE: Omit<Course, "slug">[] = [
     level: "Beginner",
     price: {
       group: { usd: 55, ngn: 80000 },
-      oneOnOne: { usd: 90, ngn: 130000 },
     },
   },
 ];

@@ -27,19 +27,11 @@ describe("static course catalogue integrity", () => {
     }
   });
 
-  it("every course has positive group and one-on-one prices in both currencies", () => {
+  it("every course has a positive group price in both currencies, and no 1-on-1 price", () => {
     for (const course of courses) {
       expect(course.price.group.usd).toBeGreaterThan(0);
       expect(course.price.group.ngn).toBeGreaterThan(0);
-      expect(course.price.oneOnOne.usd).toBeGreaterThan(0);
-      expect(course.price.oneOnOne.ngn).toBeGreaterThan(0);
-    }
-  });
-
-  it("one-on-one pricing is always at least as expensive as group pricing", () => {
-    for (const course of courses) {
-      expect(course.price.oneOnOne.usd).toBeGreaterThanOrEqual(course.price.group.usd);
-      expect(course.price.oneOnOne.ngn).toBeGreaterThanOrEqual(course.price.group.ngn);
+      expect(Object.keys(course.price)).toEqual(["group"]);
     }
   });
 

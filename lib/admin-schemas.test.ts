@@ -161,3 +161,13 @@ describe("attendancePutSchema", () => {
     expect(attendancePutSchema.safeParse({ records: [{ user_id: uuid(1), status: "excused" }] }).success).toBe(false);
   });
 });
+
+describe("1-on-1 classes", () => {
+  it("can't be put on sale or used for a cohort any more", () => {
+    expect(offeringUpsertSchema.safeParse({ kind: "cohort_1on1", price_usd: "85", price_ngn: "120000" }).success).toBe(false);
+    expect(offeringUpsertSchema.safeParse({ kind: "cohort_group", price_usd: "50", price_ngn: "75000" }).success).toBe(true);
+    expect(
+      cohortCreateSchema.safeParse({ course_id: "junior-web-creator", name: "Jan 2027", offering_kind: "cohort_1on1" }).success
+    ).toBe(false);
+  });
+});

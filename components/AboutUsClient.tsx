@@ -493,8 +493,8 @@ export default function AboutUsClient() {
                 {[
                   {
                     icon: <Users className="w-5 h-5" />,
-                    title: "1-on-1 Live Mentorship",
-                    desc: "Real-time sessions with your personal instructor — no pre-recorded content.",
+                    title: "Live Group Classes",
+                    desc: "Real-time sessions with an instructor and a small group of classmates, not just pre-recorded videos.",
                   },
                   {
                     icon: <BookOpen className="w-5 h-5" />,

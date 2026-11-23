@@ -12,20 +12,20 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Coding Courses for Beginners",
   description:
-    "Browse all 1-on-1 coding courses at Code Illustrated. From web development to data science – beginner-friendly training with live mentors.",
+    "Browse all Code Illustrated coding courses. From web development to data science – beginner-friendly live group classes and self-paced learning.",
   alternates: {
     canonical: getCanonicalUrl("/courses"),
   },
   openGraph: getOpenGraphDefaults({
     title: "Coding Courses for Beginners | Code Illustrated",
     description:
-      "Browse all 1-on-1 coding courses at Code Illustrated. From web development to data science – beginner-friendly training with live mentors.",
+      "Browse all Code Illustrated coding courses. From web development to data science – beginner-friendly live group classes and self-paced learning.",
     url: getCanonicalUrl("/courses"),
   }),
   twitter: getTwitterDefaults({
     title: "Coding Courses for Beginners | Code Illustrated",
     description:
-      "Browse all 1-on-1 coding courses at Code Illustrated. From web development to data science – beginner-friendly training with live mentors.",
+      "Browse all Code Illustrated coding courses. From web development to data science – beginner-friendly live group classes and self-paced learning.",
   }),
 };
 
@@ -36,7 +36,7 @@ function CoursesListSchema({ courses }: { courses: Course[] }) {
     "@type": "ItemList",
     name: "Coding Courses for Beginners",
     description:
-      "All available 1-on-1 coding courses at Code Illustrated Online School.",
+      "All coding courses at Code Illustrated Online School.",
     numberOfItems: courses.length,
     itemListElement: courses.map((course, index) => ({
       "@type": "ListItem",

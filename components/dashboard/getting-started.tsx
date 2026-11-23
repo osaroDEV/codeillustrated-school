@@ -20,7 +20,7 @@ export function GettingStarted() {
     },
     {
       title: "Enrol",
-      body: "Pick group classes, 1-on-1 classes or self-paced learning on the course page and pay monthly by card.",
+      body: "Choose live group classes or self-paced learning on the course page and pay by card.",
       done: false,
     },
     {

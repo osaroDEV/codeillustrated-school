@@ -16,22 +16,22 @@ import {
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "1-on-1 Coding Training for Beginners",
+  title: "Live Coding Classes for Beginners",
   description:
-    "Learn to code with personalized 1-on-1 training. Code Illustrated helps complete beginners become software engineers through live mentorship.",
+    "Learn to code in live online group classes, or at your own pace. Code Illustrated takes complete beginners, from age 8 to adults, from first lines of code to real projects.",
   alternates: {
     canonical: getCanonicalUrl(),
   },
   openGraph: getOpenGraphDefaults({
-    title: "Code Illustrated | 1-on-1 Coding Training for Beginners",
+    title: "Code Illustrated | Live Coding Classes for Beginners",
     description:
-      "Learn to code with personalized 1-on-1 training. Code Illustrated helps complete beginners become software engineers through live mentorship.",
+      "Learn to code in live online group classes, or at your own pace. Code Illustrated takes complete beginners, from age 8 to adults, from first lines of code to real projects.",
     url: getCanonicalUrl(),
   }),
   twitter: getTwitterDefaults({
-    title: "Code Illustrated | 1-on-1 Coding Training for Beginners",
+    title: "Code Illustrated | Live Coding Classes for Beginners",
     description:
-      "Learn to code with personalized 1-on-1 training. Code Illustrated helps complete beginners become software engineers through live mentorship.",
+      "Learn to code in live online group classes, or at your own pace. Code Illustrated takes complete beginners, from age 8 to adults, from first lines of code to real projects.",
   }),
 };
 
@@ -44,7 +44,7 @@ function OrganizationSchema() {
     url: `${SITE_URL}${BASE_PATH}`,
     logo: `${SITE_URL}${BASE_PATH}/code-ill.svg`,
     description:
-      "Code Illustrated Online School offers 1-on-1 coding training for complete beginners who want to become software engineers.",
+      "Code Illustrated Online School offers live online coding classes and self-paced courses for complete beginners.",
     contactPoint: {
       "@type": "ContactPoint",
       telephone: "+44-7405-786-279",
