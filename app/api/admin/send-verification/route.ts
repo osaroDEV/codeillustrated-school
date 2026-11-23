@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase";
 import { listAllAuthUsers } from "@/lib/auth-admin";
 import { rejectNonAdmin } from "@/lib/supabase-server";
@@ -33,17 +32,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No unverified account with that email." }, { status: 404 });
   }
 
-  // resend() is a public (anon) auth endpoint, not part of the admin API.
-  const anon = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
+  // resend() is a public auth endpoint, not part of the admin API. Calling it
+  // with the service-role key lets it past Supabase's CAPTCHA check.
+  const service = createAdminClient();
   const sent: string[] = [];
   const failed: { email: string; error: string }[] = [];
 
   for (const u of targets) {
-    const { error } = await anon.auth.resend({
+    const { error } = await service.auth.resend({
       type: "signup",
       email: u.email!,
       options: { emailRedirectTo: `${req.nextUrl.origin}/auth/confirm` },

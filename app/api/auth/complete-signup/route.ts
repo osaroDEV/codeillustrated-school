@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase";
+import { screenSignup } from "@/lib/signup-guard";
+import { verifyTurnstile } from "@/lib/turnstile";
 import { findUsableInvite, redeemInvite } from "@/lib/invites";
 import { safeRedirectPath } from "@/lib/utils";
 
@@ -14,7 +15,16 @@ const bodySchema = z.object({
   // Where the verification link should land them, e.g. the course they were
   // enrolling in. Only paths on this site are kept.
   redirectTo: z.string().max(300).optional(),
+  // Bot checks (lib/signup-guard.ts, lib/turnstile.ts).
+  captchaToken: z.string().max(4096).optional(),
+  formMs: z.number().optional(),
+  honeypot: z.string().max(500).optional(),
 });
+
+/** The visitor's IP as Vercel reports it, for the CAPTCHA check. */
+function clientIp(req: NextRequest): string | null {
+  return req.headers.get("x-real-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,8 +32,27 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ error: "Please provide a valid email and a password of at least 8 characters." }, { status: 400 });
     }
-    const { email, password, fullName, inviteCode } = parsed.data;
+    const { email, password, fullName, inviteCode, captchaToken, formMs, honeypot } = parsed.data;
     const nextPath = safeRedirectPath(parsed.data.redirectTo, "") || null;
+
+    // Bots first, before anything that reveals whether an address has an account.
+    const screen = screenSignup({ formMs, honeypot });
+    if (screen === "honeypot") {
+      // Look like it worked, so the bot has nothing to learn from.
+      return NextResponse.json({ success: true, enrolled: false, email }, { status: 201 });
+    }
+    if (screen === "too_fast") {
+      return NextResponse.json(
+        { error: "That was quick! Please check your details, then press Create my account again." },
+        { status: 400 }
+      );
+    }
+    if (!(await verifyTurnstile(captchaToken, clientIp(req)))) {
+      return NextResponse.json(
+        { error: "Please complete the security check, then try again.", code: "captcha_failed" },
+        { status: 400 }
+      );
+    }
 
     const supabase = createAdminClient();
 
@@ -47,14 +76,11 @@ export async function POST(req: NextRequest) {
       if (!found.ok) return NextResponse.json({ error: found.error }, { status: found.status });
     }
 
-    // 1. Create the auth user through the regular (anon) signup so Supabase
-    // emails the verification link; the account can't sign in until it's clicked.
-    const anon = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { auth: { autoRefreshToken: false, persistSession: false } }
-    );
-    const { data: authData, error: authError } = await anon.auth.signUp({
+    // 1. Create the auth user through the regular signup endpoint so Supabase
+    // emails the verification link; the account can't sign in until it's
+    // clicked. It's called with the service-role key, which Supabase lets past
+    // its own CAPTCHA check: the token was checked above, with the visitor's IP.
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {

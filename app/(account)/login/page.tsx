@@ -7,6 +7,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import { FORGOT_PASSWORD_PATH, signupPath } from "@/lib/routes";
 import { signIn } from "@/lib/auth";
 import { ResendVerification } from "@/components/auth/resend-verification";
+import { useCaptcha } from "@/components/auth/captcha";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { safeRedirectPath } from "@/lib/utils";
 
@@ -27,6 +28,7 @@ function LoginForm() {
       : ""
   );
   const [unverified, setUnverified] = useState(false);
+  const captcha = useCaptcha();
   const notice =
     searchParams.get("notice") === "verified"
       ? "If you just clicked a verification link, your email is verified. Sign in to continue."
@@ -38,7 +40,9 @@ function LoginForm() {
     setError("");
     setUnverified(false);
 
-    const { error: signInError } = await signIn(email, password);
+    const { error: signInError } = await signIn(email, password, captcha.token);
+    // Each CAPTCHA token works once.
+    captcha.reset();
     if (signInError) {
       const msg = signInError.message.toLowerCase();
       if (msg.includes("email not confirmed")) {
@@ -145,10 +149,13 @@ function LoginForm() {
               </div>
             </div>
 
+            {captcha.widget}
+            {captcha.error && <p className="text-red-400 text-xs text-center">{captcha.error}</p>}
+
             <button
               id="login-submit"
               type="submit"
-              disabled={loading}
+              disabled={loading || !captcha.ready}
               className="w-full bg-gradient-to-r from-[#c31d24] to-[#e53535] hover:from-[#b01a20] hover:to-[#c31d24] text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-[#c31d24]/25 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? (
