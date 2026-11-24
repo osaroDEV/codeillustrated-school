@@ -1,4 +1,4 @@
-import { CURRENCY_NOTE, Faq } from "@/components/marketing/ui";
+import { Faq } from "@/components/marketing/ui";
 
 const ITEMS = [
   {
@@ -11,11 +11,7 @@ const ITEMS = [
   },
   {
     q: "What time zone are classes in?",
-    a: "We teach learners in many countries. Group class times are shown in your own time zone on your dashboard, and your schedule email confirms them.",
-  },
-  {
-    q: "What currency will I pay in?",
-    a: `${CURRENCY_NOTE} You pay securely by card.`,
+    a: "We teach learners in many countries. Group class times are shown in your own time zone on your dashboard. Reminder emails show WAT and UTC.",
   },
   {
     q: "Is there a learner community?",
@@ -23,7 +19,7 @@ const ITEMS = [
   },
   {
     q: "Can we cancel?",
-    a: "Yes, any time from your dashboard.",
+    a: "Yes, any time from your dashboard. You keep access until the end of the period you've already paid for, but cancelling doesn't refund payments already made.",
   },
 ];
 

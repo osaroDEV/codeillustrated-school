@@ -39,8 +39,7 @@ export default function CourseDetailClient({ course }: { course: Course }) {
           />
           <EnrollOptions course={course} forChild={forParents} ageLabel={playful ? age : undefined} />
           <p className="mx-auto max-w-[640px] rounded-2xl border border-surface-line bg-white px-6 py-4 text-center text-[15px] leading-relaxed text-ink-muted">
-            <strong className="text-ink">Group class times</strong> are shown in your time zone, and your schedule email
-            confirms them.
+            <strong className="text-ink">Group class times</strong> are shown in your time zone. Reminder emails show WAT and UTC.
           </p>
         </div>
       </section>
@@ -386,7 +385,6 @@ function courseFaq(course: Course, forChild: boolean) {
         ? "Most children do best in live group classes, where a tutor keeps them on track. Self-paced suits confident learners with a parent nearby to help."
         : "Yes. Choose self-paced to learn whenever suits you, or group classes at times shown in your own time zone.",
     },
-    { q: forChild ? "What currency will we pay in?" : "What currency will I pay in?", a: `${CURRENCY_NOTE} You pay securely by card.` },
     {
       q: `Can ${who} try it before paying?`,
       a: "Yes. The first interactive class is free and you don't need a card.",
@@ -395,6 +393,9 @@ function courseFaq(course: Course, forChild: boolean) {
       q: "Is there a learner community?",
       a: "Yes. Every enrolled learner gets an invite to our learner community on Slack, moderated by our team. We send the invite link after you enrol.",
     },
-    { q: "Can we cancel?", a: "Yes, any time from your dashboard." },
+    {
+      q: "Can we cancel?",
+      a: "Yes, any time from your dashboard. You keep access until the end of the period you've already paid for, but cancelling doesn't refund payments already made.",
+    },
   ];
 }
