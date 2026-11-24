@@ -1,8 +1,10 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ResendVerification } from "@/components/auth/resend-verification";
+import { useCaptcha } from "@/components/auth/captcha";
+import { HONEYPOT_FIELD } from "@/lib/signup-guard";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
 import { loginPath } from "@/lib/routes";
@@ -36,6 +38,14 @@ function SignupForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Bot checks: the CAPTCHA, how long the form took, and a hidden field.
+  const captcha = useCaptcha();
+  const startedAt = useRef(0);
+  const [honeypot, setHoneypot] = useState("");
+  useEffect(() => {
+    startedAt.current = Date.now();
+  }, []);
+
   // Register account (an invite code is optional)
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
@@ -45,6 +55,10 @@ function SignupForm() {
     }
     if (password.length < 8) {
       setError("Password must be at least 8 characters.");
+      return;
+    }
+    if (!captcha.ready) {
+      setError("Please wait for the security check to finish.");
       return;
     }
     setLoading(true);
@@ -61,8 +75,13 @@ function SignupForm() {
           inviteCode: inviteCode.trim() || undefined,
           // the verification link brings them back here
           redirectTo: redirectTo === "/dashboard" ? undefined : redirectTo,
+          captchaToken: captcha.token,
+          formMs: Date.now() - startedAt.current,
+          honeypot: honeypot || undefined,
         }),
       });
+      // Each CAPTCHA token works once.
+      captcha.reset();
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
@@ -199,6 +218,20 @@ function SignupForm() {
                   </div>
                 </div>
 
+                {/* Hidden from people; only bots fill it in. */}
+                <div aria-hidden="true" className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden">
+                  <label htmlFor="signup-extra">Leave this empty</label>
+                  <input
+                    id="signup-extra"
+                    name={HONEYPOT_FIELD}
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                  />
+                </div>
+
                 {showInvite ? (
                   <div>
                     <label className="block text-white/70 text-sm font-medium mb-2">Invite code (optional)</label>
@@ -225,10 +258,13 @@ function SignupForm() {
                   </button>
                 )}
 
+                {captcha.widget}
+                {captcha.error && <p className="text-red-400 text-xs text-center">{captcha.error}</p>}
+
                 <button
                   id="signup-submit"
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !captcha.ready}
                   className="w-full bg-gradient-to-r from-[#c31d24] to-[#e53535] hover:from-[#b01a20] hover:to-[#c31d24] text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-[#c31d24]/25 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
                 >
                   {loading ? (

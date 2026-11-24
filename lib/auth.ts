@@ -20,8 +20,9 @@ export async function signOut() {
   await supabase.auth.signOut();
 }
 
-export async function signIn(email: string, password: string) {
-  return supabase.auth.signInWithPassword({ email, password });
+/** `captchaToken` is required once CAPTCHA protection is on in Supabase (see lib/turnstile.ts). */
+export async function signIn(email: string, password: string, captchaToken?: string) {
+  return supabase.auth.signInWithPassword({ email, password, options: { captchaToken } });
 }
 
 export async function signUp(email: string, password: string) {

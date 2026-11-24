@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { Loader2, MailCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useCaptcha } from "@/components/auth/captcha";
 
 // Sends a fresh verification link. Supabase rate-limits resends per address,
 // so a too-soon retry surfaces its error message instead of a second email.
 export function ResendVerification({ email }: { email: string }) {
   const [state, setState] = useState<"idle" | "sending" | "sent">("idle");
   const [error, setError] = useState("");
+  const captcha = useCaptcha();
 
   async function handleResend() {
     if (!email) return;
@@ -17,8 +19,10 @@ export function ResendVerification({ email }: { email: string }) {
     const { error: resendError } = await supabase.auth.resend({
       type: "signup",
       email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/confirm` },
+      options: { emailRedirectTo: `${window.location.origin}/auth/confirm`, captchaToken: captcha.token },
     });
+    // Each CAPTCHA token works once.
+    captcha.reset();
     if (resendError) {
       setError(resendError.message);
       setState("idle");
@@ -30,6 +34,8 @@ export function ResendVerification({ email }: { email: string }) {
   return (
     <div className="space-y-2">
       {error && <p className="text-red-400 text-xs">{error}</p>}
+      {state !== "sent" && captcha.widget}
+      {captcha.error && <p className="text-red-400 text-xs">{captcha.error}</p>}
       {state === "sent" ? (
         <p className="flex items-center justify-center gap-2 text-green-400 text-sm">
           <MailCheck className="w-4 h-4" /> New link sent to {email}
@@ -39,7 +45,7 @@ export function ResendVerification({ email }: { email: string }) {
           id="resend-verification-btn"
           type="button"
           onClick={handleResend}
-          disabled={state === "sending" || !email}
+          disabled={state === "sending" || !email || !captcha.ready}
           className="w-full flex items-center justify-center gap-2 border border-white/15 hover:border-white/30 text-white/70 hover:text-white text-sm font-medium py-3 rounded-xl transition-all disabled:opacity-50"
         >
           {state === "sending" && <Loader2 className="w-4 h-4 animate-spin" />}

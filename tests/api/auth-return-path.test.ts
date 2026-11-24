@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 import { GET as confirm } from "@/app/auth/confirm/route";
@@ -19,14 +19,13 @@ vi.mock("@/lib/supabase-server", () => ({
     },
   }),
 }));
-vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ auth: { signUp } }) }));
 vi.mock("@/lib/supabase", () => ({
   createAdminClient: () => ({
     from: () => ({
       select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null }) }) }),
       upsert: async () => ({ error: null }),
     }),
-    auth: { admin: { deleteUser: vi.fn() } },
+    auth: { signUp, admin: { deleteUser: vi.fn() } },
   }),
 }));
 
@@ -65,7 +64,7 @@ describe("signup", () => {
     completeSignup(
       new NextRequest("https://x.test/api/auth/complete-signup", { method: "POST", body: JSON.stringify(body) })
     );
-  const base = { email: "new@x.test", password: "password123", fullName: "New Learner" };
+  const base = { email: "new@x.test", password: "password123", fullName: "New Learner", formMs: 20_000 };
 
   it("saves the course to return to once verified", async () => {
     expect((await post({ ...base, redirectTo: "/courses/web#enroll" })).status).toBe(201);
@@ -75,5 +74,65 @@ describe("signup", () => {
   it("drops a return path to another site", async () => {
     await post({ ...base, redirectTo: "https://evil.test" });
     expect(signUp.mock.calls[0][0].options.data).toEqual({ full_name: "New Learner" });
+  });
+});
+
+describe("signup bot checks", () => {
+  const post = (body: object, headers: Record<string, string> = {}) =>
+    completeSignup(
+      new NextRequest("https://x.test/api/auth/complete-signup", { method: "POST", body: JSON.stringify(body), headers })
+    );
+  const base = { email: "new@x.test", password: "password123", fullName: "New Learner", formMs: 20_000 };
+
+  it("refuses a form submitted too fast, with a message a person can act on", async () => {
+    const res = await post({ ...base, formMs: 1_200 });
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toMatch(/press Create my account again/);
+    expect(signUp).not.toHaveBeenCalled();
+  });
+
+  it("refuses requests that skip the signup page", async () => {
+    const { formMs, ...direct } = base;
+    void formMs;
+    expect((await post(direct)).status).toBe(400);
+    expect(signUp).not.toHaveBeenCalled();
+  });
+
+  it("pretends to succeed when the hidden field is filled, but creates nothing", async () => {
+    const res = await post({ ...base, honeypot: "spam" });
+    expect(res.status).toBe(201);
+    expect(signUp).not.toHaveBeenCalled();
+  });
+
+  describe("with the CAPTCHA configured", () => {
+    const fetchMock = vi.fn();
+    beforeEach(() => {
+      vi.stubEnv("TURNSTILE_SECRET_KEY", "secret");
+      fetchMock.mockReset();
+      vi.stubGlobal("fetch", fetchMock);
+    });
+    afterEach(() => {
+      vi.unstubAllEnvs();
+      vi.unstubAllGlobals();
+    });
+
+    it("refuses a signup without a passing check", async () => {
+      fetchMock.mockResolvedValue(new Response(JSON.stringify({ success: false })));
+      const res = await post({ ...base, captchaToken: "bad" });
+      expect(res.status).toBe(400);
+      expect((await res.json()).code).toBe("captcha_failed");
+      expect(signUp).not.toHaveBeenCalled();
+    });
+
+    it("signs up once the check passes, checking it against the visitor's IP", async () => {
+      fetchMock.mockResolvedValue(new Response(JSON.stringify({ success: true })));
+      const res = await post({ ...base, captchaToken: "good" }, { "x-real-ip": "203.0.113.9" });
+      expect(res.status).toBe(201);
+      expect(Object.fromEntries(fetchMock.mock.calls[0][1].body as URLSearchParams)).toMatchObject({
+        response: "good",
+        remoteip: "203.0.113.9",
+      });
+      expect(signUp).toHaveBeenCalledTimes(1);
+    });
   });
 });

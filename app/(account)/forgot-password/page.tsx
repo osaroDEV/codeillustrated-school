@@ -6,6 +6,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import { LOGIN_PATH } from "@/lib/routes";
 import { KeyRound, Loader2, MailCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useCaptcha } from "@/components/auth/captcha";
 
 // Emails a password-reset link (supabase/templates/recovery.html). Supabase
 // answers the same way whether or not the address has an account, so the
@@ -14,6 +15,7 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent">("idle");
   const [error, setError] = useState("");
+  const captcha = useCaptcha();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -21,7 +23,10 @@ export default function ForgotPasswordPage() {
     setError("");
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       redirectTo: `${window.location.origin}/auth/confirm`,
+      captchaToken: captcha.token,
     });
+    // Each CAPTCHA token works once.
+    captcha.reset();
     if (resetError) {
       setError(resetError.message);
       setState("idle");
@@ -82,10 +87,13 @@ export default function ForgotPasswordPage() {
                   placeholder="you@example.com"
                   className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/25 text-sm focus:outline-none focus:border-[#c31d24]/60 focus:bg-white/[0.08] transition-all"
                 />
+                {captcha.widget}
+                {captcha.error && <p className="text-red-400 text-xs text-center">{captcha.error}</p>}
+
                 <button
                   id="forgot-password-submit"
                   type="submit"
-                  disabled={state === "sending"}
+                  disabled={state === "sending" || !captcha.ready}
                   className="w-full bg-gradient-to-r from-[#c31d24] to-[#e53535] hover:from-[#b01a20] hover:to-[#c31d24] text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-[#c31d24]/25 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {state === "sending" && <Loader2 className="w-4 h-4 animate-spin" />}
