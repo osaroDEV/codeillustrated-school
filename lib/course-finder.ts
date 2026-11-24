@@ -82,3 +82,26 @@ export function recommendCourses(courses: Course[], answers: FinderAnswers, limi
     .slice(0, limit)
     .map(({ course, formatAvailable }) => ({ course, formatAvailable }));
 }
+
+/**
+ * The WhatsApp message for booking the free first class, pre-filled from the
+ * finder's answers and the top match, e.g. "Hi! I'd like to book a free first
+ * class for Junior Web Creator. It's for my child, who is brand new to coding."
+ */
+export function freeClassMessage(
+  answers: Pick<FinderAnswers, "learner" | "experience">,
+  courseTitle?: string
+): string {
+  const opening = `Hi! I'd like to book a free first class${courseTitle ? ` for ${courseTitle}` : ""}.`;
+  const isNew = answers.experience === "new";
+  if (answers.learner === "adult") {
+    return `${opening} ${isNew ? "I'm brand new to coding." : "I have some coding experience."}`;
+  }
+  const who = answers.learner === "child" ? "my child" : "my teenager";
+  return `${opening} It's for ${who}, who ${isNew ? "is brand new to coding" : "has some coding experience"}.`;
+}
+
+/** A WhatsApp link that opens a chat with `message` already typed. */
+export function whatsAppLink(baseUrl: string, message: string): string {
+  return `${baseUrl}?text=${encodeURIComponent(message)}`;
+}

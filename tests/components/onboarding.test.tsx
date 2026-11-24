@@ -67,6 +67,56 @@ describe("course finder", () => {
     await click("Start again");
     expect(host.textContent).toContain("Who is learning?");
   });
+
+  it("changes one answer from the results and keeps the others", async () => {
+    await act(async () => root.render(<CourseFinder courses={courses} />));
+    await click("My child");
+    await click("Brand new");
+    await click("Live group classes");
+    expect(host.textContent).toContain("Junior Web Creator");
+
+    // Change only "who is learning" and go straight back to the results.
+    await click("My child");
+    expect(host.textContent).toContain("Who is learning?");
+    await click("Me");
+    expect(host.textContent).toContain("Best match");
+    expect(host.textContent).toContain("Frontend Developer");
+    expect(host.textContent).not.toContain("Junior Web Creator");
+    const chips = Array.from(host.querySelectorAll('[aria-label="Your answers"] button')).map((b) => b.textContent);
+    expect(chips).toEqual(["For me", "Brand new", "Live group classes"]);
+  });
+
+  it("offers the free class on WhatsApp with the match already in the message", async () => {
+    await act(async () => root.render(<CourseFinder courses={courses} />));
+    await click("My child");
+    await click("Brand new");
+    await click("Not sure yet");
+    const booking = links().find(([text]) => text === "Book a free class on WhatsApp");
+    expect(booking?.[1]).toBe(
+      "https://wa.me/447405786279?text=" +
+        encodeURIComponent(
+          "Hi! I'd like to book a free first class for Junior Web Creator. It's for my child, who is brand new to coding."
+        )
+    );
+  });
+
+  it("shows the same 'from' price as /courses: the cheapest way to take the course", async () => {
+    const withSelfPaced = [
+      {
+        ...courses[0],
+        offerings: [
+          { kind: "cohort_group", price: { usd: 50, ngn: 75000 } },
+          { kind: "self_paced", price: { usd: 30, ngn: 45000 } },
+        ],
+      },
+    ] as unknown as Course[];
+    await act(async () => root.render(<CourseFinder courses={withSelfPaced} />));
+    await click("My child");
+    await click("Brand new");
+    await click("Not sure yet");
+    expect(host.textContent).toContain("from $30/mo");
+    expect(host.textContent).not.toContain("$50");
+  });
 });
 
 describe("getting started checklist", () => {

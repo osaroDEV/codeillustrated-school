@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fitsAge, parseAgeRange, recommendCourses } from "./course-finder";
+import { fitsAge, freeClassMessage, parseAgeRange, recommendCourses, whatsAppLink } from "./course-finder";
 import type { Course } from "./course-types";
 
 const course = (id: string, age: string, level: string, kinds: string[] = ["cohort_group"]) =>
@@ -61,5 +61,33 @@ describe("recommendCourses", () => {
     const adultsOnly = [course("a", "Adults", "Beginner")];
     expect(recommendCourses(adultsOnly, { learner: "child", experience: "new", format: "any" })).toHaveLength(1);
     expect(recommendCourses([], { learner: "child", experience: "new", format: "any" })).toEqual([]);
+  });
+});
+
+describe("freeClassMessage", () => {
+  it("names the course and who it's for", () => {
+    expect(freeClassMessage({ learner: "child", experience: "new" }, "Junior Web Creator")).toBe(
+      "Hi! I'd like to book a free first class for Junior Web Creator. It's for my child, who is brand new to coding."
+    );
+    expect(freeClassMessage({ learner: "teen", experience: "some" }, "Game Dev Pro")).toBe(
+      "Hi! I'd like to book a free first class for Game Dev Pro. It's for my teenager, who has some coding experience."
+    );
+    expect(freeClassMessage({ learner: "adult", experience: "new" }, "Frontend Developer")).toBe(
+      "Hi! I'd like to book a free first class for Frontend Developer. I'm brand new to coding."
+    );
+  });
+
+  it("still works without a course", () => {
+    expect(freeClassMessage({ learner: "adult", experience: "some" })).toBe(
+      "Hi! I'd like to book a free first class. I have some coding experience."
+    );
+  });
+});
+
+describe("whatsAppLink", () => {
+  it("encodes the message into the link", () => {
+    expect(whatsAppLink("https://wa.me/447405786279", "Hi! It's me & you?")).toBe(
+      "https://wa.me/447405786279?text=Hi!%20It's%20me%20%26%20you%3F"
+    );
   });
 });
