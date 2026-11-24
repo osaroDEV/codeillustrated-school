@@ -80,5 +80,3 @@ export function Faq({ items, className }: { items: FaqItem[]; className?: string
   );
 }
 
-/** The same currency wording everywhere. */
-export const CURRENCY_NOTE = "Prices show in naira (₦) in Nigeria and US dollars ($) everywhere else.";
