@@ -4,7 +4,7 @@ import type { Course } from "@/lib/course-types";
 import { ageGroup, displayAge, moduleName } from "@/lib/course-groups";
 import { reviewForCourse } from "@/lib/reviews";
 import { CourseIcon } from "@/components/course-icon";
-import { buttonClass, CheckItem, CURRENCY_NOTE, Eyebrow, Faq, SectionHeading, WHATSAPP_URL } from "@/components/marketing/ui";
+import { buttonClass, CheckItem, Eyebrow, Faq, SectionHeading, WHATSAPP_URL } from "@/components/marketing/ui";
 import { COURSE_FINDER_PATH } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { EnrollOptions } from "./enroll-options";
@@ -35,7 +35,6 @@ export default function CourseDetailClient({ course }: { course: Course }) {
             center
             eyebrow="Enrol"
             title={forParents ? "Choose how your child learns" : "Choose how you learn"}
-            intro={CURRENCY_NOTE}
           />
           <EnrollOptions course={course} forChild={forParents} ageLabel={playful ? age : undefined} />
           <p className="mx-auto max-w-[640px] rounded-2xl border border-surface-line bg-white px-6 py-4 text-center text-[15px] leading-relaxed text-ink-muted">

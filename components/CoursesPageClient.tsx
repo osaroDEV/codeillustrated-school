@@ -3,7 +3,7 @@ import type { Course } from "@/lib/course-types";
 import { AGE_GROUPS, ageGroup, displayAge, monthlyPrice, type AgeGroup } from "@/lib/course-groups";
 import { parseAgeRange } from "@/lib/course-finder";
 import { GROUP_STYLES } from "@/components/course-card-styles";
-import { CURRENCY_NOTE, WHATSAPP_URL } from "@/components/marketing/ui";
+import { WHATSAPP_URL } from "@/components/marketing/ui";
 import { COURSE_FINDER_PATH } from "@/lib/routes";
 import { PriceDisplay } from "./price-display";
 import { cn } from "@/lib/utils";
@@ -26,7 +26,7 @@ export default function CoursesPageClient({ courses }: { courses: Course[] }) {
           </h1>
           <p className="max-w-[680px] text-lg leading-relaxed text-ink-muted sm:text-[19px]">
             Each course comes in two formats: <strong className="text-ink">live group classes</strong> with a tutor, or{" "}
-            <strong className="text-ink">self-paced</strong> lessons. {CURRENCY_NOTE}
+            <strong className="text-ink">self-paced</strong> lessons.
           </p>
           <nav aria-label="Jump to an age group" className="flex flex-wrap gap-2.5">
             {groups.map((g) => (
