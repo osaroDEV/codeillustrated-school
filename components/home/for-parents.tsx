@@ -41,7 +41,7 @@ export function ForParents() {
             </ol>
             <p className="flex items-start gap-2.5 text-[15px] leading-normal text-ink-muted">
               <ShieldCheck className="h-[22px] w-[22px] shrink-0 text-accent-500" aria-hidden="true" />
-              Our learner community is moderated by our team.
+              Our learner community on Slack is moderated by our team.
             </p>
           </div>
 

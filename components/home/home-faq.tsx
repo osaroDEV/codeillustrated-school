@@ -18,6 +18,10 @@ const ITEMS = [
     a: `${CURRENCY_NOTE} You pay securely by card.`,
   },
   {
+    q: "Is there a learner community?",
+    a: "Yes. Every enrolled learner gets an invite to our learner community on Slack, moderated by our team. We send the invite link after you enrol.",
+  },
+  {
     q: "Can we cancel?",
     a: "Yes, any time from your dashboard.",
   },
