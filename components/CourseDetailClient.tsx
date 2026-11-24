@@ -332,7 +332,7 @@ function ParentsBlock({ course }: { course: Course }) {
           </p>
           <p className="flex items-start gap-2 text-[15px] leading-relaxed text-ink-muted">
             <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-accent-500" aria-hidden="true" />
-            Our learner community is moderated by our team.
+            Our learner community on Slack is moderated by our team.
           </p>
         </div>
         <div className="flex flex-col gap-3.5 rounded-3xl bg-surface-teal p-7">
@@ -360,6 +360,7 @@ function CareerSupport() {
         <CheckItem>Mock interviews</CheckItem>
         <CheckItem>Guidance on finding your first role</CheckItem>
         <CheckItem>A certificate of completion</CheckItem>
+        <CheckItem>Our learner community on Slack</CheckItem>
       </ul>
     </div>
   );
@@ -389,6 +390,10 @@ function courseFaq(course: Course, forChild: boolean) {
     {
       q: `Can ${who} try it before paying?`,
       a: "Yes. The first interactive class is free and you don't need a card.",
+    },
+    {
+      q: "Is there a learner community?",
+      a: "Yes. Every enrolled learner gets an invite to our learner community on Slack, moderated by our team. We send the invite link after you enrol.",
     },
     { q: "Can we cancel?", a: "Yes, any time from your dashboard." },
   ];

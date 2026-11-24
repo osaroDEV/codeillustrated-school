@@ -17,6 +17,7 @@ export function TwoWays() {
             points={[
               "We place you in a class and email the schedule",
               "Class times shown in your own time zone",
+              "An invite to our learner community on Slack",
               "Best for: younger learners and anyone who likes structure",
             ]}
             highlight
@@ -27,7 +28,12 @@ export function TwoWays() {
             title="Self-paced"
             billing="Billed monthly or yearly"
             body="All the lessons plus selected class recordings. No live classes. Start straight away and learn whenever suits you."
-            points={["Start the moment you pay", "Pay monthly or yearly", "Best for: busy adults and confident self-starters"]}
+            points={[
+              "Start the moment you pay",
+              "Pay monthly or yearly",
+              "An invite to our learner community on Slack",
+              "Best for: busy adults and confident self-starters",
+            ]}
           />
         </div>
       </div>
